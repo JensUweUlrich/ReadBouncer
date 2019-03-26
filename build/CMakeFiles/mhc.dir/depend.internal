@@ -96,6 +96,7 @@ CMakeFiles/mhc.dir/mhc.cpp.o
  /home/jens/Development/tutorial/seqan3/include/seqan3/range/view/char_to.hpp
  /home/jens/Development/tutorial/seqan3/include/seqan3/range/view/deep.hpp
  /home/jens/Development/tutorial/seqan3/include/seqan3/range/view/detail.hpp
+ /home/jens/Development/tutorial/seqan3/include/seqan3/range/view/kmer_hash.hpp
  /home/jens/Development/tutorial/seqan3/include/seqan3/range/view/take.hpp
  /home/jens/Development/tutorial/seqan3/include/seqan3/range/view/take_exactly.hpp
  /home/jens/Development/tutorial/seqan3/include/seqan3/range/view/take_line.hpp
@@ -219,6 +220,7 @@ CMakeFiles/mhc.dir/mhc.cpp.o
  /home/jens/Development/tutorial/seqan3/submodules/range-v3/include/range/v3/view/reverse.hpp
  /home/jens/Development/tutorial/seqan3/submodules/range-v3/include/range/v3/view/single.hpp
  /home/jens/Development/tutorial/seqan3/submodules/range-v3/include/range/v3/view/slice.hpp
+ /home/jens/Development/tutorial/seqan3/submodules/range-v3/include/range/v3/view/sliding.hpp
  /home/jens/Development/tutorial/seqan3/submodules/range-v3/include/range/v3/view/split.hpp
  /home/jens/Development/tutorial/seqan3/submodules/range-v3/include/range/v3/view/subrange.hpp
  /home/jens/Development/tutorial/seqan3/submodules/range-v3/include/range/v3/view/take.hpp
