@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>MinHash_Containment-Debug@build</name>
+	<name>MinHashContainment-Debug@build</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -124,7 +124,7 @@
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Subprojects]/MinHash_Containment</name>
+			<name>[Subprojects]/MinHashContainment</name>
 			<type>2</type>
 			<location>/home/jens/Development/MinHashContainment/source</location>
 		</link>
@@ -162,6 +162,11 @@
 			<name>[Targets]/[exe] mhc/Source Files</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] mhc/Source Files/bloomFilter.cpp</name>
+			<type>1</type>
+			<location>/home/jens/Development/MinHashContainment/source/bloomFilter.cpp</location>
 		</link>
 		<link>
 			<name>[Targets]/[exe] mhc/Source Files/mhc.cpp</name>

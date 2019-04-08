@@ -123,6 +123,33 @@ mhc/fast:
 	$(MAKE) -f CMakeFiles/mhc.dir/build.make CMakeFiles/mhc.dir/build
 .PHONY : mhc/fast
 
+bloomFilter.o: bloomFilter.cpp.o
+
+.PHONY : bloomFilter.o
+
+# target to build an object file
+bloomFilter.cpp.o:
+	$(MAKE) -f CMakeFiles/mhc.dir/build.make CMakeFiles/mhc.dir/bloomFilter.cpp.o
+.PHONY : bloomFilter.cpp.o
+
+bloomFilter.i: bloomFilter.cpp.i
+
+.PHONY : bloomFilter.i
+
+# target to preprocess a source file
+bloomFilter.cpp.i:
+	$(MAKE) -f CMakeFiles/mhc.dir/build.make CMakeFiles/mhc.dir/bloomFilter.cpp.i
+.PHONY : bloomFilter.cpp.i
+
+bloomFilter.s: bloomFilter.cpp.s
+
+.PHONY : bloomFilter.s
+
+# target to generate assembly for a file
+bloomFilter.cpp.s:
+	$(MAKE) -f CMakeFiles/mhc.dir/build.make CMakeFiles/mhc.dir/bloomFilter.cpp.s
+.PHONY : bloomFilter.cpp.s
+
 mhc.o: mhc.cpp.o
 
 .PHONY : mhc.o
@@ -159,6 +186,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... mhc"
+	@echo "... bloomFilter.o"
+	@echo "... bloomFilter.i"
+	@echo "... bloomFilter.s"
 	@echo "... mhc.o"
 	@echo "... mhc.i"
 	@echo "... mhc.s"

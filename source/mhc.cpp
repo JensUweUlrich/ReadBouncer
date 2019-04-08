@@ -1,6 +1,9 @@
 #include <string>
 #include <vector>
 
+#include "minimizer3.h"
+#include "bloomFilter.hpp"
+
 #include <seqan3/alphabet/nucleotide/dna5.hpp>
 
 #include <seqan3/argument_parser/argument_parser.hpp>
@@ -87,6 +90,14 @@ void initialize_read_until_argument_parser(argument_parser &parser, cmd_argument
 	}
 }
 
+void build_ref_bloom_filter(std::vector<uint64_t> &sketch, BloomFilter &bf)
+{
+	for (uint64_t value : sketch)
+	{
+		bf.addHashValue(value);
+	}
+
+}
 /**
  * create a bloom filter from a set of reference sequences
  * @param refFilePaths : vector of file paths
@@ -107,7 +118,17 @@ void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::
 			ref_store.push_back(get<field::SEQ>(record));
 		}
 	}
-	// TODO create bloom filter
+
+	// compute minimizer for all reference sequences
+	Minimizer minimizer{};
+	BloomFilter bf(100000, 200);
+	for (std::vector<dna5> ref : ref_store)
+	{
+		std::vector<uint64_t> sketch = minimizer.getMinimizer(ref);
+		build_ref_bloom_filter(sketch, bf);
+
+	}
+
 	// TODO store bloom filter
 }
 
@@ -128,12 +149,9 @@ void load_query_reads(std::filesystem::path &input, std::vector<dna5_vector> &qu
 
 void bottom_up_sketching(dna5_vector &read, uint8_t &k)
 {
-	// guess:
-	// sorting k-mers and delete duplicates is more computationally expensive then computing
-	// hash values and delete duplicates or just XOR all computed hash values
-	dna5_vector test{"AAAAAAAAAAAA"_dna5};
-	std::vector<size_t> hashes = test | view::kmer_hash(3);
-	debug_stream << hashes << "\n";
+	Minimizer minimizer{};
+	std::vector<uint64_t> sketch = minimizer.getMinimizer(read);
+
 }
 
 /**

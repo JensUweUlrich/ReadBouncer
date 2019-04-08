@@ -1,0 +1,8 @@
+cmake_minimum_required (VERSION 3.4)
+project (MinHashContainment CXX)
+set(SeqAn3_DIR "/home/jens/Development/tutorial/seqan3/build_system")
+find_package (SeqAn3 REQUIRED)
+include_directories("/home/jens/Development/MinHashContainment/include")
+file(GLOB SOURCES "/home/jens/Development/MinHashContainment/source/*.cpp")
+add_executable (mhc ${SOURCES})
+target_link_libraries (mhc seqan3::seqan3)

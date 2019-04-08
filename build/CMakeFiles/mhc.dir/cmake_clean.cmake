@@ -1,4 +1,5 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/mhc.dir/bloomFilter.cpp.o"
   "CMakeFiles/mhc.dir/mhc.cpp.o"
   "mhc.pdb"
   "mhc"

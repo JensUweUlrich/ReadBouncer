@@ -410,6 +410,7 @@
 				<pathentry kind="mac" name="__STDC_IEC_559_COMPLEX__" path="" value="1"/>
 				<pathentry kind="mac" name="__STDC_ISO_10646__" path="" value="201706L"/>
 				<pathentry kind="mac" name="__STDC_NO_THREADS__" path="" value="1"/>
+				<pathentry include="/home/jens/Development/MinHashContainment/include" kind="inc" path="" system="true"/>
 				<pathentry include="/home/jens/Development/tutorial/seqan3/include" kind="inc" path="" system="true"/>
 				<pathentry include="/home/jens/Development/tutorial/seqan3/submodules/sdsl-lite/include" kind="inc" path="" system="true"/>
 				<pathentry include="/home/jens/Development/tutorial/seqan3/submodules/range-v3/include" kind="inc" path="" system="true"/>
@@ -510,6 +511,6 @@
 		</cconfiguration>
 	</storageModule>
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-		<project id="MinHash_Containment.null.1" name="MinHash_Containment"/>
+		<project id="MinHashContainment.null.1" name="MinHashContainment"/>
 	</storageModule>
 </cproject>
