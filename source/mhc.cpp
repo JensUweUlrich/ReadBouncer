@@ -98,6 +98,12 @@ void build_ref_bloom_filter(std::vector<uint64_t> &sketch, BloomFilter &bf)
 	}
 
 }
+
+void initialize_bloom_filter(const uint8_t k)
+{
+	// TODO implement calculation of bloom filter size and number of hash functions
+}
+
 /**
  * create a bloom filter from a set of reference sequences
  * @param refFilePaths : vector of file paths
@@ -108,6 +114,7 @@ void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::
 	// parse all provided reference files
 	std::vector<std::vector<dna5>> ref_store
 	{ };
+	debug_stream << "start loading references ....\n";
 	for (std::filesystem::path file : refFilePaths)
 	{
 		// parse all sequences from file
@@ -116,15 +123,22 @@ void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::
 		for (auto & record : fin)
 		{
 			ref_store.push_back(get<field::SEQ>(record));
+			debug_stream << get<field::ID>(record) << " ... loaded" << "\n";
 		}
 	}
+
+	// TODO implement
+	//initialize_bloom_filter();
 
 	// compute minimizer for all reference sequences
 	Minimizer minimizer{};
 	BloomFilter bf(100000, 200);
+	int i = 1;
 	for (std::vector<dna5> ref : ref_store)
 	{
+		debug_stream << "compute minimizer for sequence " << i << "/" << ref_store.size() << "\n";
 		std::vector<uint64_t> sketch = minimizer.getMinimizer(ref);
+		debug_stream << "adding hash values to the bloom filter";
 		build_ref_bloom_filter(sketch, bf);
 
 	}
