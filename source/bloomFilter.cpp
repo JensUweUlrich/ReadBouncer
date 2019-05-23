@@ -4,7 +4,7 @@
 // default constructor
 BloomFilter::BloomFilter()
 {
-
+	// do nothing
 }
 
 /**
@@ -59,13 +59,13 @@ void BloomFilter::writeToFile(const std::experimental::filesystem::path file)
 	std::ofstream fout(file, std::ofstream::out);
 
 	// first get number of hash functions/values to store to file
-	int m = m_hashes.size();
-	fout.write((const char*) &m, sizeof(char));
+	std::vector<uint16_t>::size_type m = m_hashes.size();
+	fout.write((const char*) &m, sizeof(std::vector<bool>::size_type));
 
 	// then convert hash functions to char and save in file
 	for (uint16_t v : m_hashes)
 	{
-		fout.write((const char*) &v, sizeof(char));
+		fout.write((const char*) &v, sizeof(uint16_t));
 	}
 
 	// first get number of bits in bloom filter and write it to file
@@ -90,13 +90,13 @@ void BloomFilter::readFromFile(const std::experimental::filesystem::path file)
 {
 	std::ifstream fin(file, std::ifstream::in);
 
-	int m;
-	fin.read((char*) &m, sizeof(char));
+	std::vector<uint16_t>::size_type m;
+	fin.read((char*) &m, sizeof(std::vector<uint16_t>::size_type));
 	m_hashes.resize(m);
 
 	for (int i = 0; i < m; ++i)
 	{
-		fin.read((char*) &m_hashes.at(i), sizeof(char));
+		fin.read((char*) &m_hashes.at(i), sizeof(uint16_t));
 	}
 
 	std::vector<bool>::size_type n;

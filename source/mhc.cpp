@@ -29,8 +29,10 @@ struct cmd_arguments
 		{ };
 		std::string mode
 		{ };
-		uint8_t size_k{19};
-		float error_rate{0.05};
+		uint8_t size_k
+		{ 19 };
+		float error_rate
+		{ 0.05 };
 };
 
 void initialize_mhc_argument_parser(argument_parser &parser, cmd_arguments &args)
@@ -70,6 +72,8 @@ void initialize_bloom_argument_parser(argument_parser &parser, cmd_arguments &ar
 
 	parser.add_option(args.bloom_filter_output_path, 'b', "bloom-output", "output file path to bloom filter", option_spec::REQUIRED);
 	parser.add_option(args.error_rate, 'p', "false-positive-rate", "target false positive rate for bloom filter construction [default: 0.05]");
+	parser.add_option(args.size_k, 'k', "kmer-size", "k-mer size used for bottom up sketching reads", option_spec::ADVANCED, arithmetic_range_validator
+	{ 1, 31 });
 	parser.add_positional_option(args.sequence_files, "reference file(s) to create bloom filter for");
 }
 
@@ -85,12 +89,8 @@ void initialize_read_until_argument_parser(argument_parser &parser, cmd_argument
 	// only for debugging
 	// TODO delete after implementing client architecture
 	parser.add_option(args.query_read_file, 'q', "query", "query read file");
-	std::string k{};
-	parser.add_option(k, 'k', "kmer-size", "k-mer size used for bottom up sketching reads", option_spec::ADVANCED, arithmetic_range_validator{1,31});
-	if (k.size() > 0)
-	{
-		args.size_k = stoi(k);
-	}
+	parser.add_option(args.bloom_filter_output_path, 'b', "bloom-filter", "path to bloom filter file", option_spec::REQUIRED);
+
 }
 
 void build_ref_bloom_filter(std::vector<uint64_t> &sketch, BloomFilter &bf)
@@ -101,8 +101,6 @@ void build_ref_bloom_filter(std::vector<uint64_t> &sketch, BloomFilter &bf)
 	}
 
 }
-
-
 
 /**
  * create a bloom filter from a set of reference sequences
@@ -128,11 +126,13 @@ void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::
 	}
 
 	// compute minimizer for all reference sequences
-	Minimizer minimizer{};
+	Minimizer minimizer
+	{ };
 
 	int i = 1;
 	uint64_t minimizer_number = 0;
-	std::vector<std::vector<uint64_t>> sketch_vector {};
+	std::vector<std::vector<uint64_t>> sketch_vector
+	{ };
 	for (std::vector<dna5> ref : ref_store)
 	{
 		debug_stream << "compute minimizer for sequence " << i << "/" << ref_store.size() << "\n";
@@ -151,7 +151,8 @@ void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::
 
 	bf.writeToFile(output);
 
-	BloomFilter bf2{};
+	BloomFilter bf2
+	{ };
 	bf2.readFromFile(output);
 
 	for (int i = 0; i < bf.m_hashes.size(); ++i)
@@ -162,7 +163,7 @@ void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::
 		}
 	}
 
-	for (int i = 0; i < bf.m_bits.size();++i)
+	for (int i = 0; i < bf.m_bits.size(); ++i)
 	{
 		if (bf.m_bits.at(i) != bf2.m_bits.at(i))
 		{
@@ -170,13 +171,16 @@ void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::
 		}
 	}
 
+	debug_stream << "number of hash functions: " << bf2.m_hashes.size() << "\n";
+	debug_stream << bf2.m_hashes << "\n";
+	debug_stream << bf.m_hashes << "\n";
 
 }
 
-
 void load_query_reads(std::filesystem::path &input, std::vector<dna5_vector> &queries)
 {
-	sequence_file_input fin{input};
+	sequence_file_input fin
+	{ input };
 	for (auto & record : fin)
 	{
 		queries.push_back(get<field::SEQ>(record));
@@ -185,7 +189,8 @@ void load_query_reads(std::filesystem::path &input, std::vector<dna5_vector> &qu
 
 void bottom_up_sketching(dna5_vector &read, uint8_t &k)
 {
-	Minimizer minimizer{};
+	Minimizer minimizer
+	{ };
 	std::vector<uint64_t> sketch = minimizer.getMinimizer(read);
 
 }
@@ -202,16 +207,21 @@ void run_program(cmd_arguments &args)
 	}
 	else if (std::string("read-until").compare(args.mode) == 0)
 	{
-		//load_bloom_filter();
+		BloomFilter bf
+		{ };
+		bf.readFromFile(args.bloom_filter_output_path);
 
 		// TODO Exchange this method when implementing client architecture for pulling reads from the event sampler
 		// method only used for debugging with provided sequence file
-		std::vector<dna5_vector> queries{};
+		std::vector<dna5_vector> queries
+		{};
 		load_query_reads(args.query_read_file, queries);
 		// TODO compute bottom up minhash sketch for every read provided
-		for (dna5_vector query : queries)
+		for (std::vector<dna5> query : queries)
 		{
-			bottom_up_sketching(query, args.size_k);
+			std::vector<dna5> read(query.begin(), query.begin() + 500);
+			bottom_up_sketching(read, args.size_k);
+
 		}
 		// TODO calculate containment of sketches in reference bloom filter
 	}

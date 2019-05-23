@@ -1,19 +1,19 @@
 Performing C++ SOURCE FILE Test CXX17_BUILTIN failed with the following output:
 Change Dir: /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_14fab/fast"
-/usr/bin/make -f CMakeFiles/cmTC_14fab.dir/build.make CMakeFiles/cmTC_14fab.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_a7687/fast"
+/usr/bin/make -f CMakeFiles/cmTC_a7687.dir/build.make CMakeFiles/cmTC_a7687.dir/build
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird betreten
-Building CXX object CMakeFiles/cmTC_14fab.dir/src.cxx.o
-/usr/bin/c++   -I/home/jens/Development/seqan3/include -I/home/jens/Development/seqan3/submodules/sdsl-lite/include -I/home/jens/Development/seqan3/submodules/range-v3/include -I/home/jens/Development/seqan3/submodules/lemon/include -I/home/jens/Development/seqan3/submodules/cereal/include  -DCXX17_BUILTIN   -o CMakeFiles/cmTC_14fab.dir/src.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/src.cxx
+Building CXX object CMakeFiles/cmTC_a7687.dir/src.cxx.o
+/usr/bin/c++   -I/home/jens/Development/seqan3/include -I/home/jens/Development/seqan3/submodules/sdsl-lite/include -I/home/jens/Development/seqan3/submodules/range-v3/include -I/home/jens/Development/seqan3/submodules/lemon/include -I/home/jens/Development/seqan3/submodules/cereal/include  -DCXX17_BUILTIN   -o CMakeFiles/cmTC_a7687.dir/src.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/src.cxx
 /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/src.cxx:2:6: error: #error NOCXX17
      #error NOCXX17
       ^~~~~
-CMakeFiles/cmTC_14fab.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_14fab.dir/src.cxx.o' failed
-make[1]: *** [CMakeFiles/cmTC_14fab.dir/src.cxx.o] Error 1
+CMakeFiles/cmTC_a7687.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_a7687.dir/src.cxx.o' failed
+make[1]: *** [CMakeFiles/cmTC_a7687.dir/src.cxx.o] Error 1
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird verlassen
-Makefile:126: recipe for target 'cmTC_14fab/fast' failed
-make: *** [cmTC_14fab/fast] Error 2
+Makefile:126: recipe for target 'cmTC_a7687/fast' failed
+make: *** [cmTC_a7687/fast] Error 2
 
 Source file was:
 #if !defined (__cplusplus) || (__cplusplus < 201703L)
@@ -23,11 +23,11 @@ Source file was:
 Performing C++ SOURCE FILE Test CONCEPTS_BUILTIN failed with the following output:
 Change Dir: /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_90f2e/fast"
-/usr/bin/make -f CMakeFiles/cmTC_90f2e.dir/build.make CMakeFiles/cmTC_90f2e.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_739ec/fast"
+/usr/bin/make -f CMakeFiles/cmTC_739ec.dir/build.make CMakeFiles/cmTC_739ec.dir/build
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird betreten
-Building CXX object CMakeFiles/cmTC_90f2e.dir/src.cxx.o
-/usr/bin/c++   -I/home/jens/Development/seqan3/include -I/home/jens/Development/seqan3/submodules/sdsl-lite/include -I/home/jens/Development/seqan3/submodules/range-v3/include -I/home/jens/Development/seqan3/submodules/lemon/include -I/home/jens/Development/seqan3/submodules/cereal/include  -DCONCEPTS_BUILTIN  -std=c++17   -o CMakeFiles/cmTC_90f2e.dir/src.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/src.cxx
+Building CXX object CMakeFiles/cmTC_739ec.dir/src.cxx.o
+/usr/bin/c++   -I/home/jens/Development/seqan3/include -I/home/jens/Development/seqan3/submodules/sdsl-lite/include -I/home/jens/Development/seqan3/submodules/range-v3/include -I/home/jens/Development/seqan3/submodules/lemon/include -I/home/jens/Development/seqan3/submodules/cereal/include  -DCONCEPTS_BUILTIN  -std=c++17   -o CMakeFiles/cmTC_739ec.dir/src.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/src.cxx
 /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/src.cxx:1:16: error: ‘__cpp_concepts’ was not declared in this scope
  static_assert (__cpp_concepts >= 201507);
                 ^~~~~~~~~~~~~~
@@ -35,11 +35,11 @@ Building CXX object CMakeFiles/cmTC_90f2e.dir/src.cxx.o
  static_assert (__cpp_concepts >= 201507);
                 ^~~~~~~~~~~~~~
                 __cpp_constexpr
-CMakeFiles/cmTC_90f2e.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_90f2e.dir/src.cxx.o' failed
-make[1]: *** [CMakeFiles/cmTC_90f2e.dir/src.cxx.o] Error 1
+CMakeFiles/cmTC_739ec.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_739ec.dir/src.cxx.o' failed
+make[1]: *** [CMakeFiles/cmTC_739ec.dir/src.cxx.o] Error 1
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird verlassen
-Makefile:126: recipe for target 'cmTC_90f2e/fast' failed
-make: *** [cmTC_90f2e/fast] Error 2
+Makefile:126: recipe for target 'cmTC_739ec/fast' failed
+make: *** [cmTC_739ec/fast] Error 2
 
 Source file was:
 static_assert (__cpp_concepts >= 201507);
@@ -47,17 +47,17 @@ static_assert (__cpp_concepts >= 201507);
 Performing C++ SOURCE FILE Test CONCEPTS_FLAG-std=c++20 failed with the following output:
 Change Dir: /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_54362/fast"
-/usr/bin/make -f CMakeFiles/cmTC_54362.dir/build.make CMakeFiles/cmTC_54362.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_28c86/fast"
+/usr/bin/make -f CMakeFiles/cmTC_28c86.dir/build.make CMakeFiles/cmTC_28c86.dir/build
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird betreten
-Building CXX object CMakeFiles/cmTC_54362.dir/src.cxx.o
-/usr/bin/c++   -I/home/jens/Development/seqan3/include -I/home/jens/Development/seqan3/submodules/sdsl-lite/include -I/home/jens/Development/seqan3/submodules/range-v3/include -I/home/jens/Development/seqan3/submodules/lemon/include -I/home/jens/Development/seqan3/submodules/cereal/include  -DCONCEPTS_FLAG-std=c++20  -std=c++17 -std=c++20   -o CMakeFiles/cmTC_54362.dir/src.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/src.cxx
+Building CXX object CMakeFiles/cmTC_28c86.dir/src.cxx.o
+/usr/bin/c++   -I/home/jens/Development/seqan3/include -I/home/jens/Development/seqan3/submodules/sdsl-lite/include -I/home/jens/Development/seqan3/submodules/range-v3/include -I/home/jens/Development/seqan3/submodules/lemon/include -I/home/jens/Development/seqan3/submodules/cereal/include  -DCONCEPTS_FLAG-std=c++20  -std=c++17 -std=c++20   -o CMakeFiles/cmTC_28c86.dir/src.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/src.cxx
 c++: error: unrecognized command line option ‘-std=c++20’; did you mean ‘-std=c++03’?
-CMakeFiles/cmTC_54362.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_54362.dir/src.cxx.o' failed
-make[1]: *** [CMakeFiles/cmTC_54362.dir/src.cxx.o] Error 1
+CMakeFiles/cmTC_28c86.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_28c86.dir/src.cxx.o' failed
+make[1]: *** [CMakeFiles/cmTC_28c86.dir/src.cxx.o] Error 1
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird verlassen
-Makefile:126: recipe for target 'cmTC_54362/fast' failed
-make: *** [cmTC_54362/fast] Error 2
+Makefile:126: recipe for target 'cmTC_28c86/fast' failed
+make: *** [cmTC_28c86/fast] Error 2
 
 Source file was:
 static_assert (__cpp_concepts >= 201507);
@@ -65,17 +65,17 @@ static_assert (__cpp_concepts >= 201507);
 Performing C++ SOURCE FILE Test CONCEPTS_FLAG-std=c++2a failed with the following output:
 Change Dir: /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_5b691/fast"
-/usr/bin/make -f CMakeFiles/cmTC_5b691.dir/build.make CMakeFiles/cmTC_5b691.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_be5af/fast"
+/usr/bin/make -f CMakeFiles/cmTC_be5af.dir/build.make CMakeFiles/cmTC_be5af.dir/build
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird betreten
-Building CXX object CMakeFiles/cmTC_5b691.dir/src.cxx.o
-/usr/bin/c++   -I/home/jens/Development/seqan3/include -I/home/jens/Development/seqan3/submodules/sdsl-lite/include -I/home/jens/Development/seqan3/submodules/range-v3/include -I/home/jens/Development/seqan3/submodules/lemon/include -I/home/jens/Development/seqan3/submodules/cereal/include  -DCONCEPTS_FLAG-std=c++2a  -std=c++17 -std=c++2a   -o CMakeFiles/cmTC_5b691.dir/src.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/src.cxx
+Building CXX object CMakeFiles/cmTC_be5af.dir/src.cxx.o
+/usr/bin/c++   -I/home/jens/Development/seqan3/include -I/home/jens/Development/seqan3/submodules/sdsl-lite/include -I/home/jens/Development/seqan3/submodules/range-v3/include -I/home/jens/Development/seqan3/submodules/lemon/include -I/home/jens/Development/seqan3/submodules/cereal/include  -DCONCEPTS_FLAG-std=c++2a  -std=c++17 -std=c++2a   -o CMakeFiles/cmTC_be5af.dir/src.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/src.cxx
 c++: error: unrecognized command line option ‘-std=c++2a’; did you mean ‘-std=c++03’?
-CMakeFiles/cmTC_5b691.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_5b691.dir/src.cxx.o' failed
-make[1]: *** [CMakeFiles/cmTC_5b691.dir/src.cxx.o] Error 1
+CMakeFiles/cmTC_be5af.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_be5af.dir/src.cxx.o' failed
+make[1]: *** [CMakeFiles/cmTC_be5af.dir/src.cxx.o] Error 1
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird verlassen
-Makefile:126: recipe for target 'cmTC_5b691/fast' failed
-make: *** [cmTC_5b691/fast] Error 2
+Makefile:126: recipe for target 'cmTC_be5af/fast' failed
+make: *** [cmTC_be5af/fast] Error 2
 
 Source file was:
 static_assert (__cpp_concepts >= 201507);
@@ -83,42 +83,42 @@ static_assert (__cpp_concepts >= 201507);
 Determining if the include file filesystem exists failed with the following output:
 Change Dir: /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_b46da/fast"
-/usr/bin/make -f CMakeFiles/cmTC_b46da.dir/build.make CMakeFiles/cmTC_b46da.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_779ff/fast"
+/usr/bin/make -f CMakeFiles/cmTC_779ff.dir/build.make CMakeFiles/cmTC_779ff.dir/build
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird betreten
-Building CXX object CMakeFiles/cmTC_b46da.dir/CheckIncludeFile.cxx.o
-/usr/bin/c++   -I/home/jens/Development/seqan3/include -I/home/jens/Development/seqan3/submodules/sdsl-lite/include -I/home/jens/Development/seqan3/submodules/range-v3/include -I/home/jens/Development/seqan3/submodules/lemon/include -I/home/jens/Development/seqan3/submodules/cereal/include  -std=c++17 -fconcepts   -o CMakeFiles/cmTC_b46da.dir/CheckIncludeFile.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/CheckIncludeFile.cxx
+Building CXX object CMakeFiles/cmTC_779ff.dir/CheckIncludeFile.cxx.o
+/usr/bin/c++   -I/home/jens/Development/seqan3/include -I/home/jens/Development/seqan3/submodules/sdsl-lite/include -I/home/jens/Development/seqan3/submodules/range-v3/include -I/home/jens/Development/seqan3/submodules/lemon/include -I/home/jens/Development/seqan3/submodules/cereal/include  -std=c++17 -fconcepts   -o CMakeFiles/cmTC_779ff.dir/CheckIncludeFile.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/CheckIncludeFile.cxx
 /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/CheckIncludeFile.cxx:1:10: fatal error: filesystem: Datei oder Verzeichnis nicht gefunden
  #include <filesystem>
           ^~~~~~~~~~~~
 compilation terminated.
-CMakeFiles/cmTC_b46da.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_b46da.dir/CheckIncludeFile.cxx.o' failed
-make[1]: *** [CMakeFiles/cmTC_b46da.dir/CheckIncludeFile.cxx.o] Error 1
+CMakeFiles/cmTC_779ff.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_779ff.dir/CheckIncludeFile.cxx.o' failed
+make[1]: *** [CMakeFiles/cmTC_779ff.dir/CheckIncludeFile.cxx.o] Error 1
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird verlassen
-Makefile:126: recipe for target 'cmTC_b46da/fast' failed
-make: *** [cmTC_b46da/fast] Error 2
+Makefile:126: recipe for target 'cmTC_779ff/fast' failed
+make: *** [cmTC_779ff/fast] Error 2
 
 
 Performing C++ SOURCE FILE Test C++17FS_BUILTIN failed with the following output:
 Change Dir: /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_29686/fast"
-/usr/bin/make -f CMakeFiles/cmTC_29686.dir/build.make CMakeFiles/cmTC_29686.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_e5ec8/fast"
+/usr/bin/make -f CMakeFiles/cmTC_e5ec8.dir/build.make CMakeFiles/cmTC_e5ec8.dir/build
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird betreten
-Building CXX object CMakeFiles/cmTC_29686.dir/src.cxx.o
-/usr/bin/c++   -I/home/jens/Development/seqan3/include -I/home/jens/Development/seqan3/submodules/sdsl-lite/include -I/home/jens/Development/seqan3/submodules/range-v3/include -I/home/jens/Development/seqan3/submodules/lemon/include -I/home/jens/Development/seqan3/submodules/cereal/include  -DC++17FS_BUILTIN  -std=c++17 -fconcepts   -o CMakeFiles/cmTC_29686.dir/src.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/src.cxx
+Building CXX object CMakeFiles/cmTC_e5ec8.dir/src.cxx.o
+/usr/bin/c++   -I/home/jens/Development/seqan3/include -I/home/jens/Development/seqan3/submodules/sdsl-lite/include -I/home/jens/Development/seqan3/submodules/range-v3/include -I/home/jens/Development/seqan3/submodules/lemon/include -I/home/jens/Development/seqan3/submodules/cereal/include  -DC++17FS_BUILTIN  -std=c++17 -fconcepts   -o CMakeFiles/cmTC_e5ec8.dir/src.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/src.cxx
 <command-line>:0:2: warning: ISO C++11 requires whitespace after the macro name
-Linking CXX executable cmTC_29686
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_29686.dir/link.txt --verbose=1
-/usr/bin/c++   -DC++17FS_BUILTIN  -std=c++17 -fconcepts    -rdynamic CMakeFiles/cmTC_29686.dir/src.cxx.o  -o cmTC_29686 
-CMakeFiles/cmTC_29686.dir/src.cxx.o: In Funktion »std::experimental::filesystem::v1::__cxx11::path::path<char [6], std::experimental::filesystem::v1::__cxx11::path>(char const (&) [6])«:
+Linking CXX executable cmTC_e5ec8
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_e5ec8.dir/link.txt --verbose=1
+/usr/bin/c++   -DC++17FS_BUILTIN  -std=c++17 -fconcepts    -rdynamic CMakeFiles/cmTC_e5ec8.dir/src.cxx.o  -o cmTC_e5ec8 
+CMakeFiles/cmTC_e5ec8.dir/src.cxx.o: In Funktion »std::experimental::filesystem::v1::__cxx11::path::path<char [6], std::experimental::filesystem::v1::__cxx11::path>(char const (&) [6])«:
 src.cxx:(.text._ZNSt12experimental10filesystem2v17__cxx114pathC2IA6_cS3_EERKT_[_ZNSt12experimental10filesystem2v17__cxx114pathC5IA6_cS3_EERKT_]+0x73): Warnung: undefinierter Verweis auf »std::experimental::filesystem::v1::__cxx11::path::_M_split_cmpts()«
 collect2: error: ld returned 1 exit status
-CMakeFiles/cmTC_29686.dir/build.make:97: recipe for target 'cmTC_29686' failed
-make[1]: *** [cmTC_29686] Error 1
+CMakeFiles/cmTC_e5ec8.dir/build.make:97: recipe for target 'cmTC_e5ec8' failed
+make[1]: *** [cmTC_e5ec8] Error 1
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird verlassen
-Makefile:126: recipe for target 'cmTC_29686/fast' failed
-make: *** [cmTC_29686/fast] Error 2
+Makefile:126: recipe for target 'cmTC_e5ec8/fast' failed
+make: *** [cmTC_e5ec8/fast] Error 2
 
 Source file was:
 #include <experimental/filesystem>
