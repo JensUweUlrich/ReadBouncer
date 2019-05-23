@@ -11,7 +11,7 @@ set(CMAKE_MAKEFILE_DEPENDS
   "CMakeFiles/3.10.2/CMakeSystem.cmake"
   "CMakeFiles/feature_tests.cxx"
   "/home/jens/Development/MinHashContainment/source/CMakeLists.txt"
-  "/home/jens/Development/tutorial/seqan3/build_system/seqan3-config.cmake"
+  "/home/jens/Development/seqan3/build_system/seqan3-config.cmake"
   "/usr/share/cmake-3.10/Modules/CMakeCXXCompiler.cmake.in"
   "/usr/share/cmake-3.10/Modules/CMakeCXXCompilerABI.cpp"
   "/usr/share/cmake-3.10/Modules/CMakeCXXInformation.cmake"

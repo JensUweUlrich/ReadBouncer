@@ -1,5 +1,6 @@
 #include <string>
 #include <vector>
+#include <math.h>
 
 #include "minimizer3.h"
 #include "bloomFilter.hpp"
@@ -14,7 +15,7 @@
 #include <seqan3/io/record.hpp>
 #include <seqan3/io/sequence_file/format_fasta.hpp>
 #include <seqan3/io/sequence_file/input.hpp>
-#include <seqan3/io/stream/debug_stream.hpp>
+#include <seqan3/core/debug_stream.hpp>
 
 using namespace seqan3;
 
@@ -29,6 +30,7 @@ struct cmd_arguments
 		std::string mode
 		{ };
 		uint8_t size_k{19};
+		float error_rate{0.05};
 };
 
 void initialize_mhc_argument_parser(argument_parser &parser, cmd_arguments &args)
@@ -67,6 +69,7 @@ void initialize_bloom_argument_parser(argument_parser &parser, cmd_arguments &ar
 	parser.info.email = "ulrichj@rki.de";
 
 	parser.add_option(args.bloom_filter_output_path, 'b', "bloom-output", "output file path to bloom filter", option_spec::REQUIRED);
+	parser.add_option(args.error_rate, 'p', "false-positive-rate", "target false positive rate for bloom filter construction [default: 0.05]");
 	parser.add_positional_option(args.sequence_files, "reference file(s) to create bloom filter for");
 }
 
@@ -99,17 +102,14 @@ void build_ref_bloom_filter(std::vector<uint64_t> &sketch, BloomFilter &bf)
 
 }
 
-void initialize_bloom_filter(const uint8_t k)
-{
-	// TODO implement calculation of bloom filter size and number of hash functions
-}
+
 
 /**
  * create a bloom filter from a set of reference sequences
  * @param refFilePaths : vector of file paths
  * @param output : bloom filter output file
  */
-void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::filesystem::path &output)
+void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::filesystem::path &output, const float error_rate)
 {
 	// parse all provided reference files
 	std::vector<std::vector<dna5>> ref_store
@@ -127,30 +127,52 @@ void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::
 		}
 	}
 
-	// TODO implement
-	//initialize_bloom_filter();
-
 	// compute minimizer for all reference sequences
 	Minimizer minimizer{};
-	BloomFilter bf(100000, 200);
+
 	int i = 1;
+	uint64_t minimizer_number = 0;
+	std::vector<std::vector<uint64_t>> sketch_vector {};
 	for (std::vector<dna5> ref : ref_store)
 	{
 		debug_stream << "compute minimizer for sequence " << i << "/" << ref_store.size() << "\n";
 		std::vector<uint64_t> sketch = minimizer.getMinimizer(ref);
-		debug_stream << "adding hash values to the bloom filter";
-		build_ref_bloom_filter(sketch, bf);
-
+		minimizer_number += sketch.size();
+		sketch_vector.push_back(sketch);
+		++i;
 	}
 
-	// TODO store bloom filter
+	BloomFilter bf(error_rate, minimizer_number);
+
+	for (std::vector<uint64_t> sketch : sketch_vector)
+	{
+		build_ref_bloom_filter(sketch, bf);
+	}
+
+	bf.writeToFile(output);
+
+	BloomFilter bf2{};
+	bf2.readFromFile(output);
+
+	for (int i = 0; i < bf.m_hashes.size(); ++i)
+	{
+		if (bf.m_hashes.at(i) != bf2.m_hashes.at(i))
+		{
+			debug_stream << "hash functions unequal at position " << i << "\n";
+		}
+	}
+
+	for (int i = 0; i < bf.m_bits.size();++i)
+	{
+		if (bf.m_bits.at(i) != bf2.m_bits.at(i))
+		{
+			debug_stream << "bitvectors unequal at position " << i << "\n";
+		}
+	}
+
+
 }
 
-void load_bloom_filter()
-{
-	// TODO load bloom filter from file
-	// TODO store bloom filter in a given data structure
-}
 
 void load_query_reads(std::filesystem::path &input, std::vector<dna5_vector> &queries)
 {
@@ -176,11 +198,11 @@ void run_program(cmd_arguments &args)
 {
 	if (std::string("bloom").compare(args.mode) == 0)
 	{
-		create_bloom_filter(args.sequence_files, args.bloom_filter_output_path);
+		create_bloom_filter(args.sequence_files, args.bloom_filter_output_path, args.error_rate);
 	}
 	else if (std::string("read-until").compare(args.mode) == 0)
 	{
-		load_bloom_filter();
+		//load_bloom_filter();
 
 		// TODO Exchange this method when implementing client architecture for pulling reads from the event sampler
 		// method only used for debugging with provided sequence file

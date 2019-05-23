@@ -18,11 +18,11 @@ set(CMAKE_TARGET_DEFINITIONS_CXX
 # The include file search paths:
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "/home/jens/Development/MinHashContainment/include"
-  "/home/jens/Development/tutorial/seqan3/include"
-  "/home/jens/Development/tutorial/seqan3/submodules/sdsl-lite/include"
-  "/home/jens/Development/tutorial/seqan3/submodules/range-v3/include"
-  "/home/jens/Development/tutorial/seqan3/submodules/lemon/include"
-  "/home/jens/Development/tutorial/seqan3/submodules/cereal/include"
+  "/home/jens/Development/seqan3/include"
+  "/home/jens/Development/seqan3/submodules/sdsl-lite/include"
+  "/home/jens/Development/seqan3/submodules/range-v3/include"
+  "/home/jens/Development/seqan3/submodules/lemon/include"
+  "/home/jens/Development/seqan3/submodules/cereal/include"
   )
 
 # Targets to which this target links.

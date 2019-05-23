@@ -6,5 +6,5 @@ CXX_FLAGS = -g   -std=c++17 -fconcepts -std=gnu++1z
 
 CXX_DEFINES = -DSEQAN3_HAS_BZIP2=1 -DSEQAN3_HAS_ZLIB=1
 
-CXX_INCLUDES = -I/home/jens/Development/MinHashContainment/include -I/home/jens/Development/tutorial/seqan3/include -isystem /home/jens/Development/tutorial/seqan3/submodules/sdsl-lite/include -isystem /home/jens/Development/tutorial/seqan3/submodules/range-v3/include -isystem /home/jens/Development/tutorial/seqan3/submodules/lemon/include -isystem /home/jens/Development/tutorial/seqan3/submodules/cereal/include 
+CXX_INCLUDES = -I/home/jens/Development/MinHashContainment/include -I/home/jens/Development/seqan3/include -isystem /home/jens/Development/seqan3/submodules/sdsl-lite/include -isystem /home/jens/Development/seqan3/submodules/range-v3/include -isystem /home/jens/Development/seqan3/submodules/lemon/include -isystem /home/jens/Development/seqan3/submodules/cereal/include 
 
