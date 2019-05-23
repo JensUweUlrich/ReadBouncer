@@ -31,6 +31,11 @@ public:
         seed = newSeed;
     }
 
+    inline void setKmerSize(uint16_t newKmerSize)
+    {
+    	k = newKmerSize;
+    }
+
     std::vector<uint64_t> getMinimizer(dna5_vector & text)
     {
         if (k > text.size())

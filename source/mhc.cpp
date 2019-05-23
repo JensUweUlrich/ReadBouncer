@@ -72,7 +72,7 @@ void initialize_bloom_argument_parser(argument_parser &parser, cmd_arguments &ar
 
 	parser.add_option(args.bloom_filter_output_path, 'b', "bloom-output", "output file path to bloom filter", option_spec::REQUIRED);
 	parser.add_option(args.error_rate, 'p', "false-positive-rate", "target false positive rate for bloom filter construction [default: 0.05]");
-	parser.add_option(args.size_k, 'k', "kmer-size", "k-mer size used for bottom up sketching reads", option_spec::ADVANCED, arithmetic_range_validator
+	parser.add_option(args.size_k, 'k', "kmer-size", "k-mer size used for bottom up sketching reads", option_spec::DEFAULT, arithmetic_range_validator
 	{ 1, 31 });
 	parser.add_positional_option(args.sequence_files, "reference file(s) to create bloom filter for");
 }
@@ -107,7 +107,7 @@ void build_ref_bloom_filter(std::vector<uint64_t> &sketch, BloomFilter &bf)
  * @param refFilePaths : vector of file paths
  * @param output : bloom filter output file
  */
-void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::filesystem::path &output, const float error_rate)
+void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::filesystem::path &output, const float error_rate, uint16_t kMerSize)
 {
 	// parse all provided reference files
 	std::vector<std::vector<dna5>> ref_store
@@ -128,6 +128,7 @@ void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::
 	// compute minimizer for all reference sequences
 	Minimizer minimizer
 	{ };
+	minimizer.setKmerSize(kMerSize);
 
 	int i = 1;
 	uint64_t minimizer_number = 0;
@@ -136,13 +137,14 @@ void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::
 	for (std::vector<dna5> ref : ref_store)
 	{
 		debug_stream << "compute minimizer for sequence " << i << "/" << ref_store.size() << "\n";
+
 		std::vector<uint64_t> sketch = minimizer.getMinimizer(ref);
 		minimizer_number += sketch.size();
 		sketch_vector.push_back(sketch);
 		++i;
 	}
 
-	BloomFilter bf(error_rate, minimizer_number);
+	BloomFilter bf(error_rate, minimizer_number, kMerSize);
 
 	for (std::vector<uint64_t> sketch : sketch_vector)
 	{
@@ -187,11 +189,26 @@ void load_query_reads(std::filesystem::path &input, std::vector<dna5_vector> &qu
 	}
 }
 
-void bottom_up_sketching(dna5_vector &read, uint8_t &k)
+void bottom_up_sketching(dna5_vector &read, BloomFilter &bf)
 {
+	clock_t begin, end;
+	begin = clock();
 	Minimizer minimizer
 	{ };
 	std::vector<uint64_t> sketch = minimizer.getMinimizer(read);
+	int num_containments{0};
+	debug_stream << sketch.size() <<"\n";
+	for (uint64_t minimizer : sketch)
+	{
+		if (bf.possiblyContains(minimizer))
+		{
+			++num_containments;
+		}
+	}
+	end = clock();
+	float z = end - begin / CLOCKS_PER_SEC;
+	debug_stream << z << "\n";
+	debug_stream << "Number of minimizer Containments: " << num_containments << "\n";
 
 }
 
@@ -203,7 +220,7 @@ void run_program(cmd_arguments &args)
 {
 	if (std::string("bloom").compare(args.mode) == 0)
 	{
-		create_bloom_filter(args.sequence_files, args.bloom_filter_output_path, args.error_rate);
+		create_bloom_filter(args.sequence_files, args.bloom_filter_output_path, args.error_rate, args.size_k);
 	}
 	else if (std::string("read-until").compare(args.mode) == 0)
 	{
@@ -220,7 +237,7 @@ void run_program(cmd_arguments &args)
 		for (std::vector<dna5> query : queries)
 		{
 			std::vector<dna5> read(query.begin(), query.begin() + 500);
-			bottom_up_sketching(read, args.size_k);
+			bottom_up_sketching(read, bf);
 
 		}
 		// TODO calculate containment of sketches in reference bloom filter

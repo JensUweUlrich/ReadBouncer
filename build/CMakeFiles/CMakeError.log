@@ -126,3 +126,43 @@ Source file was:
         {
             std::experimental::filesystem::path p{"/tmp/"};
         }
+Performing C++ SOURCE FILE Test CONCEPTS_FLAG-std=c++20 failed with the following output:
+Change Dir: /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_bfa4c/fast"
+make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird betreten
+/usr/bin/make -f CMakeFiles/cmTC_bfa4c.dir/build.make CMakeFiles/cmTC_bfa4c.dir/build
+make[2]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird betreten
+Building CXX object CMakeFiles/cmTC_bfa4c.dir/src.cxx.o
+/usr/bin/c++   -I/home/jens/Development/seqan3/include -I/home/jens/Development/seqan3/submodules/sdsl-lite/include -I/home/jens/Development/seqan3/submodules/range-v3/include -I/home/jens/Development/seqan3/submodules/lemon/include -I/home/jens/Development/seqan3/submodules/cereal/include  -DCONCEPTS_FLAG-std=c++20  -std=c++17 -std=c++20   -o CMakeFiles/cmTC_bfa4c.dir/src.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/src.cxx
+c++: error: unrecognized command line option ‘-std=c++20’; did you mean ‘-std=c++03’?
+CMakeFiles/cmTC_bfa4c.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_bfa4c.dir/src.cxx.o' failed
+make[2]: *** [CMakeFiles/cmTC_bfa4c.dir/src.cxx.o] Error 1
+make[2]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird verlassen
+Makefile:126: recipe for target 'cmTC_bfa4c/fast' failed
+make[1]: *** [cmTC_bfa4c/fast] Error 2
+make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird verlassen
+
+Source file was:
+static_assert (__cpp_concepts >= 201507);
+    int main() {}
+Performing C++ SOURCE FILE Test CONCEPTS_FLAG-std=c++2a failed with the following output:
+Change Dir: /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_db58b/fast"
+make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird betreten
+/usr/bin/make -f CMakeFiles/cmTC_db58b.dir/build.make CMakeFiles/cmTC_db58b.dir/build
+make[2]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird betreten
+Building CXX object CMakeFiles/cmTC_db58b.dir/src.cxx.o
+/usr/bin/c++   -I/home/jens/Development/seqan3/include -I/home/jens/Development/seqan3/submodules/sdsl-lite/include -I/home/jens/Development/seqan3/submodules/range-v3/include -I/home/jens/Development/seqan3/submodules/lemon/include -I/home/jens/Development/seqan3/submodules/cereal/include  -DCONCEPTS_FLAG-std=c++2a  -std=c++17 -std=c++2a   -o CMakeFiles/cmTC_db58b.dir/src.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/src.cxx
+c++: error: unrecognized command line option ‘-std=c++2a’; did you mean ‘-std=c++03’?
+CMakeFiles/cmTC_db58b.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_db58b.dir/src.cxx.o' failed
+make[2]: *** [CMakeFiles/cmTC_db58b.dir/src.cxx.o] Error 1
+make[2]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird verlassen
+Makefile:126: recipe for target 'cmTC_db58b/fast' failed
+make[1]: *** [cmTC_db58b/fast] Error 2
+make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird verlassen
+
+Source file was:
+static_assert (__cpp_concepts >= 201507);
+    int main() {}

@@ -11,8 +11,9 @@ BloomFilter::BloomFilter()
  * Bloom Filter constructor
  * initializing bloom filter with optimal filter size and hash function number
  */
-BloomFilter::BloomFilter(const float error_rate, const uint64_t minimizer_number)
+BloomFilter::BloomFilter(const float error_rate, const uint64_t minimizer_number, const uint16_t k)
 {
+	kMerSize = k;
 	initialize_bloom_filter(error_rate, minimizer_number);
 }
 
@@ -45,10 +46,10 @@ void BloomFilter::addHashValue(const uint64_t value)
  */
 bool BloomFilter::possiblyContains(const uint64_t value) const
 {
-	bool result = m_bits[value];
+	bool result = m_bits[value % m_bits.size()];
 	for (uint16_t f : m_hashes)
 	{
-		result &= m_bits[value ^ f];
+		result &= m_bits[(value ^ f) % m_bits.size()];
 	}
 	return result;
 
@@ -57,6 +58,9 @@ bool BloomFilter::possiblyContains(const uint64_t value) const
 void BloomFilter::writeToFile(const std::experimental::filesystem::path file)
 {
 	std::ofstream fout(file, std::ofstream::out);
+
+	// store KmerSize in file
+	fout.write((const char*) &kMerSize, sizeof(uint16_t));
 
 	// first get number of hash functions/values to store to file
 	std::vector<uint16_t>::size_type m = m_hashes.size();
@@ -90,15 +94,22 @@ void BloomFilter::readFromFile(const std::experimental::filesystem::path file)
 {
 	std::ifstream fin(file, std::ifstream::in);
 
+	// read K-mer size used for minimizer computation
+	fin.read((char*) &kMerSize, sizeof(uint16_t));
+	seqan3::debug_stream << kMerSize << "\n";
+
+	// read number of hash functions and resize array to store hash functions
 	std::vector<uint16_t>::size_type m;
 	fin.read((char*) &m, sizeof(std::vector<uint16_t>::size_type));
 	m_hashes.resize(m);
 
+	// read hash functions from file
 	for (int i = 0; i < m; ++i)
 	{
 		fin.read((char*) &m_hashes.at(i), sizeof(uint16_t));
 	}
 
+	// read bloom filter bitwise from file
 	std::vector<bool>::size_type n;
 	fin.read((char*) &n, sizeof(std::vector<bool>::size_type));
 	m_bits.resize(n);

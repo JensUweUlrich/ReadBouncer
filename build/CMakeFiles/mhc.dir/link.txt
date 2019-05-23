@@ -1,1 +1,1 @@
-/usr/bin/c++  -g   CMakeFiles/mhc.dir/bloomFilter.cpp.o CMakeFiles/mhc.dir/mhc.cpp.o  -o mhc -static-libgcc -static-libstdc++ -lstdc++fs /usr/lib/x86_64-linux-gnu/libz.so /usr/lib/x86_64-linux-gnu/libbz2.so -lrt 
+/usr/bin/c++  -g   CMakeFiles/mhc.dir/bloomFilter.cpp.o CMakeFiles/mhc.dir/mhc.cpp.o  -o mhc -lstdc++fs /usr/lib/x86_64-linux-gnu/libz.so /usr/lib/x86_64-linux-gnu/libbz2.so -lrt 

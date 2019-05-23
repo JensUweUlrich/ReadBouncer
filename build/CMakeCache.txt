@@ -187,6 +187,9 @@ CMAKE_STRIP:FILEPATH=/usr/bin/strip
 // Studio IDE projects all commands are done without /nologo.
 CMAKE_VERBOSE_MAKEFILE:BOOL=FALSE
 
+//Test CONCEPTS_FLAG-std=c++2a
+CONCEPTS_FLAG-std:UNINITIALIZED=c++2a:INTERNAL=
+
 //Value Computed by CMake
 MinHashContainment_BINARY_DIR:STATIC=/home/jens/Development/MinHashContainment/build
 
