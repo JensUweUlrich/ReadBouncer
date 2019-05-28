@@ -15,9 +15,6 @@ class BloomFilter
 {
 	// class variables
 	private:
-		std::vector<uint16_t> m_hashes;
-		std::vector<bool> m_bits;
-		uint16_t kMerSize;
 
 		void initialize_bloom_filter(const float p, const uint64_t minimizer_number);
 		void initialize_hash_functions(const uint64_t func_number);
@@ -31,6 +28,11 @@ class BloomFilter
 	BloomFilter(const float error_rate, const uint64_t minimizer_number, const uint16_t newKmerSize);
 
 	public:
+
+		std::vector<uint16_t> hashes;
+		std::vector<bool> bits;
+		uint16_t kMerSize;
+
 		// add new  to bloom filter
 		void addHashValue(const uint64_t value);
 

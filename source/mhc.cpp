@@ -1,6 +1,7 @@
 #include <string>
 #include <vector>
 #include <math.h>
+#include <chrono>
 
 #include "minimizer3.h"
 #include "bloomFilter.hpp"
@@ -157,25 +158,25 @@ void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::
 	{ };
 	bf2.readFromFile(output);
 
-	for (int i = 0; i < bf.m_hashes.size(); ++i)
+	for (int i = 0; i < bf.hashes.size(); ++i)
 	{
-		if (bf.m_hashes.at(i) != bf2.m_hashes.at(i))
+		if (bf.hashes.at(i) != bf2.hashes.at(i))
 		{
 			debug_stream << "hash functions unequal at position " << i << "\n";
 		}
 	}
 
-	for (int i = 0; i < bf.m_bits.size(); ++i)
+	for (int i = 0; i < bf.bits.size(); ++i)
 	{
-		if (bf.m_bits.at(i) != bf2.m_bits.at(i))
+		if (bf.bits.at(i) != bf2.bits.at(i))
 		{
 			debug_stream << "bitvectors unequal at position " << i << "\n";
 		}
 	}
 
-	debug_stream << "number of hash functions: " << bf2.m_hashes.size() << "\n";
-	debug_stream << bf2.m_hashes << "\n";
-	debug_stream << bf.m_hashes << "\n";
+	debug_stream << "number of hash functions: " << bf2.hashes.size() << "\n";
+	debug_stream << bf2.hashes << "\n";
+	debug_stream << bf.hashes << "\n";
 
 }
 
@@ -191,10 +192,11 @@ void load_query_reads(std::filesystem::path &input, std::vector<dna5_vector> &qu
 
 void bottom_up_sketching(dna5_vector &read, BloomFilter &bf)
 {
-	clock_t begin, end;
-	begin = clock();
+	std::chrono::high_resolution_clock::time_point begin, end;
+	begin = std::chrono::high_resolution_clock::now();
 	Minimizer minimizer
 	{ };
+	minimizer.setKmerSize(bf.kMerSize);
 	std::vector<uint64_t> sketch = minimizer.getMinimizer(read);
 	int num_containments{0};
 	debug_stream << sketch.size() <<"\n";
@@ -205,9 +207,9 @@ void bottom_up_sketching(dna5_vector &read, BloomFilter &bf)
 			++num_containments;
 		}
 	}
-	end = clock();
-	float z = end - begin / CLOCKS_PER_SEC;
-	debug_stream << z << "\n";
+	end = std::chrono::high_resolution_clock::now();
+	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
+	debug_stream << "used time: " << duration << "\n";
 	debug_stream << "Number of minimizer Containments: " << num_containments << "\n";
 
 }
