@@ -1,4 +1,4 @@
-# Install script for directory: /home/jens/Development/MinHashContainment/source
+# Install script for directory: /home/jens/Development/MinHashContainment/src
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -35,6 +35,14 @@ endif()
 # Is this installation the result of a crosscompile?
 if(NOT DEFINED CMAKE_CROSSCOMPILING)
   set(CMAKE_CROSSCOMPILING "FALSE")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for each subdirectory.
+  include("/home/jens/Development/MinHashContainment/build/libMinimizer/cmake_install.cmake")
+  include("/home/jens/Development/MinHashContainment/build/libBloomFilter/cmake_install.cmake")
+  include("/home/jens/Development/MinHashContainment/build/main/cmake_install.cmake")
+
 endif()
 
 if(CMAKE_INSTALL_COMPONENT)

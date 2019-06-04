@@ -48,13 +48,25 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/jens/Development/MinHashContainment/source
+CMAKE_SOURCE_DIR = /home/jens/Development/MinHashContainment/src
 
 # The top-level build directory on which CMake was run.
 CMAKE_BINARY_DIR = /home/jens/Development/MinHashContainment/build
 
 #=============================================================================
 # Targets provided globally by CMake.
+
+# Special rule for the target install/strip
+install/strip: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing the project stripped..."
+	/usr/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
+.PHONY : install/strip
+
+# Special rule for the target install/strip
+install/strip/fast: preinstall/fast
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing the project stripped..."
+	/usr/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
+.PHONY : install/strip/fast
 
 # Special rule for the target edit_cache
 edit_cache:
@@ -77,6 +89,40 @@ rebuild_cache:
 rebuild_cache/fast: rebuild_cache
 
 .PHONY : rebuild_cache/fast
+
+# Special rule for the target list_install_components
+list_install_components:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Available install components are: \"Unspecified\""
+.PHONY : list_install_components
+
+# Special rule for the target list_install_components
+list_install_components/fast: list_install_components
+
+.PHONY : list_install_components/fast
+
+# Special rule for the target install/local
+install/local: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing only the local directory..."
+	/usr/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
+.PHONY : install/local
+
+# Special rule for the target install/local
+install/local/fast: preinstall/fast
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing only the local directory..."
+	/usr/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
+.PHONY : install/local/fast
+
+# Special rule for the target install
+install: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Install the project..."
+	/usr/bin/cmake -P cmake_install.cmake
+.PHONY : install
+
+# Special rule for the target install
+install/fast: preinstall/fast
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Install the project..."
+	/usr/bin/cmake -P cmake_install.cmake
+.PHONY : install/fast
 
 # The main all target
 all: cmake_check_build_system
@@ -111,71 +157,43 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named mhc
+# Target rules for targets named Minimizer
 
 # Build rule for target.
-mhc: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 mhc
-.PHONY : mhc
+Minimizer: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 Minimizer
+.PHONY : Minimizer
 
 # fast build rule for target.
-mhc/fast:
-	$(MAKE) -f CMakeFiles/mhc.dir/build.make CMakeFiles/mhc.dir/build
-.PHONY : mhc/fast
+Minimizer/fast:
+	$(MAKE) -f libMinimizer/CMakeFiles/Minimizer.dir/build.make libMinimizer/CMakeFiles/Minimizer.dir/build
+.PHONY : Minimizer/fast
 
-bloomFilter.o: bloomFilter.cpp.o
+#=============================================================================
+# Target rules for targets named BloomFilter
 
-.PHONY : bloomFilter.o
+# Build rule for target.
+BloomFilter: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 BloomFilter
+.PHONY : BloomFilter
 
-# target to build an object file
-bloomFilter.cpp.o:
-	$(MAKE) -f CMakeFiles/mhc.dir/build.make CMakeFiles/mhc.dir/bloomFilter.cpp.o
-.PHONY : bloomFilter.cpp.o
+# fast build rule for target.
+BloomFilter/fast:
+	$(MAKE) -f libBloomFilter/CMakeFiles/BloomFilter.dir/build.make libBloomFilter/CMakeFiles/BloomFilter.dir/build
+.PHONY : BloomFilter/fast
 
-bloomFilter.i: bloomFilter.cpp.i
+#=============================================================================
+# Target rules for targets named ReadUntil
 
-.PHONY : bloomFilter.i
+# Build rule for target.
+ReadUntil: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 ReadUntil
+.PHONY : ReadUntil
 
-# target to preprocess a source file
-bloomFilter.cpp.i:
-	$(MAKE) -f CMakeFiles/mhc.dir/build.make CMakeFiles/mhc.dir/bloomFilter.cpp.i
-.PHONY : bloomFilter.cpp.i
-
-bloomFilter.s: bloomFilter.cpp.s
-
-.PHONY : bloomFilter.s
-
-# target to generate assembly for a file
-bloomFilter.cpp.s:
-	$(MAKE) -f CMakeFiles/mhc.dir/build.make CMakeFiles/mhc.dir/bloomFilter.cpp.s
-.PHONY : bloomFilter.cpp.s
-
-mhc.o: mhc.cpp.o
-
-.PHONY : mhc.o
-
-# target to build an object file
-mhc.cpp.o:
-	$(MAKE) -f CMakeFiles/mhc.dir/build.make CMakeFiles/mhc.dir/mhc.cpp.o
-.PHONY : mhc.cpp.o
-
-mhc.i: mhc.cpp.i
-
-.PHONY : mhc.i
-
-# target to preprocess a source file
-mhc.cpp.i:
-	$(MAKE) -f CMakeFiles/mhc.dir/build.make CMakeFiles/mhc.dir/mhc.cpp.i
-.PHONY : mhc.cpp.i
-
-mhc.s: mhc.cpp.s
-
-.PHONY : mhc.s
-
-# target to generate assembly for a file
-mhc.cpp.s:
-	$(MAKE) -f CMakeFiles/mhc.dir/build.make CMakeFiles/mhc.dir/mhc.cpp.s
-.PHONY : mhc.cpp.s
+# fast build rule for target.
+ReadUntil/fast:
+	$(MAKE) -f main/CMakeFiles/ReadUntil.dir/build.make main/CMakeFiles/ReadUntil.dir/build
+.PHONY : ReadUntil/fast
 
 # Help Target
 help:
@@ -183,15 +201,15 @@ help:
 	@echo "... all (the default if no target is provided)"
 	@echo "... clean"
 	@echo "... depend"
+	@echo "... install/strip"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... mhc"
-	@echo "... bloomFilter.o"
-	@echo "... bloomFilter.i"
-	@echo "... bloomFilter.s"
-	@echo "... mhc.o"
-	@echo "... mhc.i"
-	@echo "... mhc.s"
+	@echo "... list_install_components"
+	@echo "... install/local"
+	@echo "... install"
+	@echo "... Minimizer"
+	@echo "... BloomFilter"
+	@echo "... ReadUntil"
 .PHONY : help
 
 

@@ -54,45 +54,174 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/jens/Development/MinHashContainment/source
+CMAKE_SOURCE_DIR = /home/jens/Development/MinHashContainment/src
 
 # The top-level build directory on which CMake was run.
 CMAKE_BINARY_DIR = /home/jens/Development/MinHashContainment/build
 
 #=============================================================================
-# Target rules for target CMakeFiles/mhc.dir
+# Directory level rules for directory libMinimizer
+
+# Convenience name for "all" pass in the directory.
+libMinimizer/all: libMinimizer/CMakeFiles/Minimizer.dir/all
+
+.PHONY : libMinimizer/all
+
+# Convenience name for "clean" pass in the directory.
+libMinimizer/clean: libMinimizer/CMakeFiles/Minimizer.dir/clean
+
+.PHONY : libMinimizer/clean
+
+# Convenience name for "preinstall" pass in the directory.
+libMinimizer/preinstall:
+
+.PHONY : libMinimizer/preinstall
+
+#=============================================================================
+# Target rules for target libMinimizer/CMakeFiles/Minimizer.dir
 
 # All Build rule for target.
-CMakeFiles/mhc.dir/all:
-	$(MAKE) -f CMakeFiles/mhc.dir/build.make CMakeFiles/mhc.dir/depend
-	$(MAKE) -f CMakeFiles/mhc.dir/build.make CMakeFiles/mhc.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/jens/Development/MinHashContainment/build/CMakeFiles --progress-num=1,2,3 "Built target mhc"
-.PHONY : CMakeFiles/mhc.dir/all
+libMinimizer/CMakeFiles/Minimizer.dir/all:
+	$(MAKE) -f libMinimizer/CMakeFiles/Minimizer.dir/build.make libMinimizer/CMakeFiles/Minimizer.dir/depend
+	$(MAKE) -f libMinimizer/CMakeFiles/Minimizer.dir/build.make libMinimizer/CMakeFiles/Minimizer.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/jens/Development/MinHashContainment/build/CMakeFiles --progress-num=3,4 "Built target Minimizer"
+.PHONY : libMinimizer/CMakeFiles/Minimizer.dir/all
 
 # Include target in all.
-all: CMakeFiles/mhc.dir/all
+all: libMinimizer/CMakeFiles/Minimizer.dir/all
 
 .PHONY : all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/mhc.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/jens/Development/MinHashContainment/build/CMakeFiles 3
-	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/mhc.dir/all
+libMinimizer/CMakeFiles/Minimizer.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/jens/Development/MinHashContainment/build/CMakeFiles 2
+	$(MAKE) -f CMakeFiles/Makefile2 libMinimizer/CMakeFiles/Minimizer.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/jens/Development/MinHashContainment/build/CMakeFiles 0
-.PHONY : CMakeFiles/mhc.dir/rule
+.PHONY : libMinimizer/CMakeFiles/Minimizer.dir/rule
 
 # Convenience name for target.
-mhc: CMakeFiles/mhc.dir/rule
+Minimizer: libMinimizer/CMakeFiles/Minimizer.dir/rule
 
-.PHONY : mhc
-
-# clean rule for target.
-CMakeFiles/mhc.dir/clean:
-	$(MAKE) -f CMakeFiles/mhc.dir/build.make CMakeFiles/mhc.dir/clean
-.PHONY : CMakeFiles/mhc.dir/clean
+.PHONY : Minimizer
 
 # clean rule for target.
-clean: CMakeFiles/mhc.dir/clean
+libMinimizer/CMakeFiles/Minimizer.dir/clean:
+	$(MAKE) -f libMinimizer/CMakeFiles/Minimizer.dir/build.make libMinimizer/CMakeFiles/Minimizer.dir/clean
+.PHONY : libMinimizer/CMakeFiles/Minimizer.dir/clean
+
+# clean rule for target.
+clean: libMinimizer/CMakeFiles/Minimizer.dir/clean
+
+.PHONY : clean
+
+#=============================================================================
+# Directory level rules for directory libBloomFilter
+
+# Convenience name for "all" pass in the directory.
+libBloomFilter/all: libBloomFilter/CMakeFiles/BloomFilter.dir/all
+
+.PHONY : libBloomFilter/all
+
+# Convenience name for "clean" pass in the directory.
+libBloomFilter/clean: libBloomFilter/CMakeFiles/BloomFilter.dir/clean
+
+.PHONY : libBloomFilter/clean
+
+# Convenience name for "preinstall" pass in the directory.
+libBloomFilter/preinstall:
+
+.PHONY : libBloomFilter/preinstall
+
+#=============================================================================
+# Target rules for target libBloomFilter/CMakeFiles/BloomFilter.dir
+
+# All Build rule for target.
+libBloomFilter/CMakeFiles/BloomFilter.dir/all:
+	$(MAKE) -f libBloomFilter/CMakeFiles/BloomFilter.dir/build.make libBloomFilter/CMakeFiles/BloomFilter.dir/depend
+	$(MAKE) -f libBloomFilter/CMakeFiles/BloomFilter.dir/build.make libBloomFilter/CMakeFiles/BloomFilter.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/jens/Development/MinHashContainment/build/CMakeFiles --progress-num=1,2 "Built target BloomFilter"
+.PHONY : libBloomFilter/CMakeFiles/BloomFilter.dir/all
+
+# Include target in all.
+all: libBloomFilter/CMakeFiles/BloomFilter.dir/all
+
+.PHONY : all
+
+# Build rule for subdir invocation for target.
+libBloomFilter/CMakeFiles/BloomFilter.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/jens/Development/MinHashContainment/build/CMakeFiles 2
+	$(MAKE) -f CMakeFiles/Makefile2 libBloomFilter/CMakeFiles/BloomFilter.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/jens/Development/MinHashContainment/build/CMakeFiles 0
+.PHONY : libBloomFilter/CMakeFiles/BloomFilter.dir/rule
+
+# Convenience name for target.
+BloomFilter: libBloomFilter/CMakeFiles/BloomFilter.dir/rule
+
+.PHONY : BloomFilter
+
+# clean rule for target.
+libBloomFilter/CMakeFiles/BloomFilter.dir/clean:
+	$(MAKE) -f libBloomFilter/CMakeFiles/BloomFilter.dir/build.make libBloomFilter/CMakeFiles/BloomFilter.dir/clean
+.PHONY : libBloomFilter/CMakeFiles/BloomFilter.dir/clean
+
+# clean rule for target.
+clean: libBloomFilter/CMakeFiles/BloomFilter.dir/clean
+
+.PHONY : clean
+
+#=============================================================================
+# Directory level rules for directory main
+
+# Convenience name for "all" pass in the directory.
+main/all: main/CMakeFiles/ReadUntil.dir/all
+
+.PHONY : main/all
+
+# Convenience name for "clean" pass in the directory.
+main/clean: main/CMakeFiles/ReadUntil.dir/clean
+
+.PHONY : main/clean
+
+# Convenience name for "preinstall" pass in the directory.
+main/preinstall:
+
+.PHONY : main/preinstall
+
+#=============================================================================
+# Target rules for target main/CMakeFiles/ReadUntil.dir
+
+# All Build rule for target.
+main/CMakeFiles/ReadUntil.dir/all: libMinimizer/CMakeFiles/Minimizer.dir/all
+main/CMakeFiles/ReadUntil.dir/all: libBloomFilter/CMakeFiles/BloomFilter.dir/all
+	$(MAKE) -f main/CMakeFiles/ReadUntil.dir/build.make main/CMakeFiles/ReadUntil.dir/depend
+	$(MAKE) -f main/CMakeFiles/ReadUntil.dir/build.make main/CMakeFiles/ReadUntil.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/jens/Development/MinHashContainment/build/CMakeFiles --progress-num=5,6 "Built target ReadUntil"
+.PHONY : main/CMakeFiles/ReadUntil.dir/all
+
+# Include target in all.
+all: main/CMakeFiles/ReadUntil.dir/all
+
+.PHONY : all
+
+# Build rule for subdir invocation for target.
+main/CMakeFiles/ReadUntil.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/jens/Development/MinHashContainment/build/CMakeFiles 6
+	$(MAKE) -f CMakeFiles/Makefile2 main/CMakeFiles/ReadUntil.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/jens/Development/MinHashContainment/build/CMakeFiles 0
+.PHONY : main/CMakeFiles/ReadUntil.dir/rule
+
+# Convenience name for target.
+ReadUntil: main/CMakeFiles/ReadUntil.dir/rule
+
+.PHONY : ReadUntil
+
+# clean rule for target.
+main/CMakeFiles/ReadUntil.dir/clean:
+	$(MAKE) -f main/CMakeFiles/ReadUntil.dir/build.make main/CMakeFiles/ReadUntil.dir/clean
+.PHONY : main/CMakeFiles/ReadUntil.dir/clean
+
+# clean rule for target.
+clean: main/CMakeFiles/ReadUntil.dir/clean
 
 .PHONY : clean
 

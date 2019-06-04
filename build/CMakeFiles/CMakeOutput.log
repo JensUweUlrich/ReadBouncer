@@ -1,4 +1,17 @@
 The system is: Linux - 4.18.0-20-generic - x86_64
+Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+Compiler: /usr/bin/cc 
+Build flags: 
+Id flags:  
+
+The output was:
+0
+
+
+Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "a.out"
+
+The C compiler identification is GNU, found in "/home/jens/Development/MinHashContainment/build/CMakeFiles/3.10.2/CompilerIdC/a.out"
+
 Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
 Compiler: /usr/bin/c++ 
 Build flags: 
@@ -12,31 +25,220 @@ Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" p
 
 The CXX compiler identification is GNU, found in "/home/jens/Development/MinHashContainment/build/CMakeFiles/3.10.2/CompilerIdCXX/a.out"
 
+Determining if the C compiler works passed with the following output:
+Change Dir: /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_12000/fast"
+/usr/bin/make -f CMakeFiles/cmTC_12000.dir/build.make CMakeFiles/cmTC_12000.dir/build
+make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird betreten
+Building C object CMakeFiles/cmTC_12000.dir/testCCompiler.c.o
+/usr/bin/cc    -o CMakeFiles/cmTC_12000.dir/testCCompiler.c.o   -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/testCCompiler.c
+Linking C executable cmTC_12000
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_12000.dir/link.txt --verbose=1
+/usr/bin/cc      CMakeFiles/cmTC_12000.dir/testCCompiler.c.o  -o cmTC_12000 
+make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird verlassen
+
+
+Detecting C compiler ABI info compiled with the following output:
+Change Dir: /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_13e38/fast"
+/usr/bin/make -f CMakeFiles/cmTC_13e38.dir/build.make CMakeFiles/cmTC_13e38.dir/build
+make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird betreten
+Building C object CMakeFiles/cmTC_13e38.dir/CMakeCCompilerABI.c.o
+/usr/bin/cc    -o CMakeFiles/cmTC_13e38.dir/CMakeCCompilerABI.c.o   -c /usr/share/cmake-3.10/Modules/CMakeCCompilerABI.c
+Linking C executable cmTC_13e38
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_13e38.dir/link.txt --verbose=1
+/usr/bin/cc     -v CMakeFiles/cmTC_13e38.dir/CMakeCCompilerABI.c.o  -o cmTC_13e38 
+Using built-in specs.
+COLLECT_GCC=/usr/bin/cc
+COLLECT_LTO_WRAPPER=/usr/lib/gcc/x86_64-linux-gnu/7/lto-wrapper
+OFFLOAD_TARGET_NAMES=nvptx-none
+OFFLOAD_TARGET_DEFAULT=1
+Target: x86_64-linux-gnu
+Configured with: ../src/configure -v --with-pkgversion='Ubuntu 7.4.0-1ubuntu1~18.04' --with-bugurl=file:///usr/share/doc/gcc-7/README.Bugs --enable-languages=c,ada,c++,go,brig,d,fortran,objc,obj-c++ --prefix=/usr --with-gcc-major-version-only --program-suffix=-7 --program-prefix=x86_64-linux-gnu- --enable-shared --enable-linker-build-id --libexecdir=/usr/lib --without-included-gettext --enable-threads=posix --libdir=/usr/lib --enable-nls --with-sysroot=/ --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --with-default-libstdcxx-abi=new --enable-gnu-unique-object --disable-vtable-verify --enable-libmpx --enable-plugin --enable-default-pie --with-system-zlib --with-target-system-zlib --enable-objc-gc=auto --enable-multiarch --disable-werror --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32,m64,mx32 --enable-multilib --with-tune=generic --enable-offload-targets=nvptx-none --without-cuda-driver --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu
+Thread model: posix
+gcc version 7.4.0 (Ubuntu 7.4.0-1ubuntu1~18.04) 
+COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/
+LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../:/lib/:/usr/lib/
+COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_13e38' '-mtune=generic' '-march=x86-64'
+ /usr/lib/gcc/x86_64-linux-gnu/7/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/7/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/7/lto-wrapper -plugin-opt=-fresolution=/tmp/cc2jvvej.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --sysroot=/ --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -z relro -o cmTC_13e38 /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/7/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/7 -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/7/../../.. CMakeFiles/cmTC_13e38.dir/CMakeCCompilerABI.c.o -lgcc --push-state --as-needed -lgcc_s --pop-state -lc -lgcc --push-state --as-needed -lgcc_s --pop-state /usr/lib/gcc/x86_64-linux-gnu/7/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crtn.o
+COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_13e38' '-mtune=generic' '-march=x86-64'
+make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird verlassen
+
+
+Parsed C implicit link information from above output:
+  link line regex: [^( *|.*[/\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command:"/usr/bin/make" "cmTC_13e38/fast"]
+  ignore line: [/usr/bin/make -f CMakeFiles/cmTC_13e38.dir/build.make CMakeFiles/cmTC_13e38.dir/build]
+  ignore line: [make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird betreten]
+  ignore line: [Building C object CMakeFiles/cmTC_13e38.dir/CMakeCCompilerABI.c.o]
+  ignore line: [/usr/bin/cc    -o CMakeFiles/cmTC_13e38.dir/CMakeCCompilerABI.c.o   -c /usr/share/cmake-3.10/Modules/CMakeCCompilerABI.c]
+  ignore line: [Linking C executable cmTC_13e38]
+  ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_13e38.dir/link.txt --verbose=1]
+  ignore line: [/usr/bin/cc     -v CMakeFiles/cmTC_13e38.dir/CMakeCCompilerABI.c.o  -o cmTC_13e38 ]
+  ignore line: [Using built-in specs.]
+  ignore line: [COLLECT_GCC=/usr/bin/cc]
+  ignore line: [COLLECT_LTO_WRAPPER=/usr/lib/gcc/x86_64-linux-gnu/7/lto-wrapper]
+  ignore line: [OFFLOAD_TARGET_NAMES=nvptx-none]
+  ignore line: [OFFLOAD_TARGET_DEFAULT=1]
+  ignore line: [Target: x86_64-linux-gnu]
+  ignore line: [Configured with: ../src/configure -v --with-pkgversion='Ubuntu 7.4.0-1ubuntu1~18.04' --with-bugurl=file:///usr/share/doc/gcc-7/README.Bugs --enable-languages=c,ada,c++,go,brig,d,fortran,objc,obj-c++ --prefix=/usr --with-gcc-major-version-only --program-suffix=-7 --program-prefix=x86_64-linux-gnu- --enable-shared --enable-linker-build-id --libexecdir=/usr/lib --without-included-gettext --enable-threads=posix --libdir=/usr/lib --enable-nls --with-sysroot=/ --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --with-default-libstdcxx-abi=new --enable-gnu-unique-object --disable-vtable-verify --enable-libmpx --enable-plugin --enable-default-pie --with-system-zlib --with-target-system-zlib --enable-objc-gc=auto --enable-multiarch --disable-werror --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32,m64,mx32 --enable-multilib --with-tune=generic --enable-offload-targets=nvptx-none --without-cuda-driver --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu]
+  ignore line: [Thread model: posix]
+  ignore line: [gcc version 7.4.0 (Ubuntu 7.4.0-1ubuntu1~18.04) ]
+  ignore line: [COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/]
+  ignore line: [LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../:/lib/:/usr/lib/]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_13e38' '-mtune=generic' '-march=x86-64']
+  link line: [ /usr/lib/gcc/x86_64-linux-gnu/7/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/7/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/7/lto-wrapper -plugin-opt=-fresolution=/tmp/cc2jvvej.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --sysroot=/ --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -z relro -o cmTC_13e38 /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/7/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/7 -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/7/../../.. CMakeFiles/cmTC_13e38.dir/CMakeCCompilerABI.c.o -lgcc --push-state --as-needed -lgcc_s --pop-state -lc -lgcc --push-state --as-needed -lgcc_s --pop-state /usr/lib/gcc/x86_64-linux-gnu/7/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crtn.o]
+    arg [/usr/lib/gcc/x86_64-linux-gnu/7/collect2] ==> ignore
+    arg [-plugin] ==> ignore
+    arg [/usr/lib/gcc/x86_64-linux-gnu/7/liblto_plugin.so] ==> ignore
+    arg [-plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/7/lto-wrapper] ==> ignore
+    arg [-plugin-opt=-fresolution=/tmp/cc2jvvej.res] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
+    arg [-plugin-opt=-pass-through=-lc] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
+    arg [--sysroot=/] ==> ignore
+    arg [--build-id] ==> ignore
+    arg [--eh-frame-hdr] ==> ignore
+    arg [-m] ==> ignore
+    arg [elf_x86_64] ==> ignore
+    arg [--hash-style=gnu] ==> ignore
+    arg [--as-needed] ==> ignore
+    arg [-dynamic-linker] ==> ignore
+    arg [/lib64/ld-linux-x86-64.so.2] ==> ignore
+    arg [-pie] ==> ignore
+    arg [-znow] ==> ignore
+    arg [-zrelro] ==> ignore
+    arg [-o] ==> ignore
+    arg [cmTC_13e38] ==> ignore
+    arg [/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/Scrt1.o] ==> ignore
+    arg [/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crti.o] ==> ignore
+    arg [/usr/lib/gcc/x86_64-linux-gnu/7/crtbeginS.o] ==> ignore
+    arg [-L/usr/lib/gcc/x86_64-linux-gnu/7] ==> dir [/usr/lib/gcc/x86_64-linux-gnu/7]
+    arg [-L/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu] ==> dir [/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu]
+    arg [-L/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib] ==> dir [/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib]
+    arg [-L/lib/x86_64-linux-gnu] ==> dir [/lib/x86_64-linux-gnu]
+    arg [-L/lib/../lib] ==> dir [/lib/../lib]
+    arg [-L/usr/lib/x86_64-linux-gnu] ==> dir [/usr/lib/x86_64-linux-gnu]
+    arg [-L/usr/lib/../lib] ==> dir [/usr/lib/../lib]
+    arg [-L/usr/lib/gcc/x86_64-linux-gnu/7/../../..] ==> dir [/usr/lib/gcc/x86_64-linux-gnu/7/../../..]
+    arg [CMakeFiles/cmTC_13e38.dir/CMakeCCompilerABI.c.o] ==> ignore
+    arg [-lgcc] ==> lib [gcc]
+    arg [--push-state] ==> ignore
+    arg [--as-needed] ==> ignore
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [--pop-state] ==> ignore
+    arg [-lc] ==> lib [c]
+    arg [-lgcc] ==> lib [gcc]
+    arg [--push-state] ==> ignore
+    arg [--as-needed] ==> ignore
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [--pop-state] ==> ignore
+    arg [/usr/lib/gcc/x86_64-linux-gnu/7/crtendS.o] ==> ignore
+    arg [/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crtn.o] ==> ignore
+  collapse library dir [/usr/lib/gcc/x86_64-linux-gnu/7] ==> [/usr/lib/gcc/x86_64-linux-gnu/7]
+  collapse library dir [/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu] ==> [/usr/lib/x86_64-linux-gnu]
+  collapse library dir [/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib] ==> [/usr/lib]
+  collapse library dir [/lib/x86_64-linux-gnu] ==> [/lib/x86_64-linux-gnu]
+  collapse library dir [/lib/../lib] ==> [/lib]
+  collapse library dir [/usr/lib/x86_64-linux-gnu] ==> [/usr/lib/x86_64-linux-gnu]
+  collapse library dir [/usr/lib/../lib] ==> [/usr/lib]
+  collapse library dir [/usr/lib/gcc/x86_64-linux-gnu/7/../../..] ==> [/usr/lib]
+  implicit libs: [gcc;gcc_s;c;gcc;gcc_s]
+  implicit dirs: [/usr/lib/gcc/x86_64-linux-gnu/7;/usr/lib/x86_64-linux-gnu;/usr/lib;/lib/x86_64-linux-gnu;/lib]
+  implicit fwks: []
+
+
+
+
+Detecting C [-std=c11] compiler features compiled with the following output:
+Change Dir: /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_0b716/fast"
+/usr/bin/make -f CMakeFiles/cmTC_0b716.dir/build.make CMakeFiles/cmTC_0b716.dir/build
+make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird betreten
+Building C object CMakeFiles/cmTC_0b716.dir/feature_tests.c.o
+/usr/bin/cc   -std=c11 -o CMakeFiles/cmTC_0b716.dir/feature_tests.c.o   -c /home/jens/Development/MinHashContainment/build/CMakeFiles/feature_tests.c
+Linking C executable cmTC_0b716
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_0b716.dir/link.txt --verbose=1
+/usr/bin/cc      CMakeFiles/cmTC_0b716.dir/feature_tests.c.o  -o cmTC_0b716 
+make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird verlassen
+
+
+    Feature record: C_FEATURE:1c_function_prototypes
+    Feature record: C_FEATURE:1c_restrict
+    Feature record: C_FEATURE:1c_static_assert
+    Feature record: C_FEATURE:1c_variadic_macros
+
+
+Detecting C [-std=c99] compiler features compiled with the following output:
+Change Dir: /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_2c285/fast"
+/usr/bin/make -f CMakeFiles/cmTC_2c285.dir/build.make CMakeFiles/cmTC_2c285.dir/build
+make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird betreten
+Building C object CMakeFiles/cmTC_2c285.dir/feature_tests.c.o
+/usr/bin/cc   -std=c99 -o CMakeFiles/cmTC_2c285.dir/feature_tests.c.o   -c /home/jens/Development/MinHashContainment/build/CMakeFiles/feature_tests.c
+Linking C executable cmTC_2c285
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_2c285.dir/link.txt --verbose=1
+/usr/bin/cc      CMakeFiles/cmTC_2c285.dir/feature_tests.c.o  -o cmTC_2c285 
+make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird verlassen
+
+
+    Feature record: C_FEATURE:1c_function_prototypes
+    Feature record: C_FEATURE:1c_restrict
+    Feature record: C_FEATURE:0c_static_assert
+    Feature record: C_FEATURE:1c_variadic_macros
+
+
+Detecting C [-std=c90] compiler features compiled with the following output:
+Change Dir: /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_9973e/fast"
+/usr/bin/make -f CMakeFiles/cmTC_9973e.dir/build.make CMakeFiles/cmTC_9973e.dir/build
+make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird betreten
+Building C object CMakeFiles/cmTC_9973e.dir/feature_tests.c.o
+/usr/bin/cc   -std=c90 -o CMakeFiles/cmTC_9973e.dir/feature_tests.c.o   -c /home/jens/Development/MinHashContainment/build/CMakeFiles/feature_tests.c
+Linking C executable cmTC_9973e
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_9973e.dir/link.txt --verbose=1
+/usr/bin/cc      CMakeFiles/cmTC_9973e.dir/feature_tests.c.o  -o cmTC_9973e 
+make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird verlassen
+
+
+    Feature record: C_FEATURE:1c_function_prototypes
+    Feature record: C_FEATURE:0c_restrict
+    Feature record: C_FEATURE:0c_static_assert
+    Feature record: C_FEATURE:0c_variadic_macros
 Determining if the CXX compiler works passed with the following output:
 Change Dir: /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_957cd/fast"
-/usr/bin/make -f CMakeFiles/cmTC_957cd.dir/build.make CMakeFiles/cmTC_957cd.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_8b93f/fast"
+/usr/bin/make -f CMakeFiles/cmTC_8b93f.dir/build.make CMakeFiles/cmTC_8b93f.dir/build
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird betreten
-Building CXX object CMakeFiles/cmTC_957cd.dir/testCXXCompiler.cxx.o
-/usr/bin/c++     -o CMakeFiles/cmTC_957cd.dir/testCXXCompiler.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/testCXXCompiler.cxx
-Linking CXX executable cmTC_957cd
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_957cd.dir/link.txt --verbose=1
-/usr/bin/c++       CMakeFiles/cmTC_957cd.dir/testCXXCompiler.cxx.o  -o cmTC_957cd 
+Building CXX object CMakeFiles/cmTC_8b93f.dir/testCXXCompiler.cxx.o
+/usr/bin/c++     -o CMakeFiles/cmTC_8b93f.dir/testCXXCompiler.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/testCXXCompiler.cxx
+Linking CXX executable cmTC_8b93f
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_8b93f.dir/link.txt --verbose=1
+/usr/bin/c++       CMakeFiles/cmTC_8b93f.dir/testCXXCompiler.cxx.o  -o cmTC_8b93f 
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird verlassen
 
 
 Detecting CXX compiler ABI info compiled with the following output:
 Change Dir: /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_33577/fast"
-/usr/bin/make -f CMakeFiles/cmTC_33577.dir/build.make CMakeFiles/cmTC_33577.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_a3e8f/fast"
+/usr/bin/make -f CMakeFiles/cmTC_a3e8f.dir/build.make CMakeFiles/cmTC_a3e8f.dir/build
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird betreten
-Building CXX object CMakeFiles/cmTC_33577.dir/CMakeCXXCompilerABI.cpp.o
-/usr/bin/c++     -o CMakeFiles/cmTC_33577.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake-3.10/Modules/CMakeCXXCompilerABI.cpp
-Linking CXX executable cmTC_33577
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_33577.dir/link.txt --verbose=1
-/usr/bin/c++      -v CMakeFiles/cmTC_33577.dir/CMakeCXXCompilerABI.cpp.o  -o cmTC_33577 
+Building CXX object CMakeFiles/cmTC_a3e8f.dir/CMakeCXXCompilerABI.cpp.o
+/usr/bin/c++     -o CMakeFiles/cmTC_a3e8f.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake-3.10/Modules/CMakeCXXCompilerABI.cpp
+Linking CXX executable cmTC_a3e8f
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_a3e8f.dir/link.txt --verbose=1
+/usr/bin/c++      -v CMakeFiles/cmTC_a3e8f.dir/CMakeCXXCompilerABI.cpp.o  -o cmTC_a3e8f 
 Using built-in specs.
 COLLECT_GCC=/usr/bin/c++
 COLLECT_LTO_WRAPPER=/usr/lib/gcc/x86_64-linux-gnu/7/lto-wrapper
@@ -48,9 +250,9 @@ Thread model: posix
 gcc version 7.4.0 (Ubuntu 7.4.0-1ubuntu1~18.04) 
 COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/
 LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../:/lib/:/usr/lib/
-COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_33577' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
- /usr/lib/gcc/x86_64-linux-gnu/7/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/7/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/7/lto-wrapper -plugin-opt=-fresolution=/tmp/ccYQHdGd.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --sysroot=/ --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -z relro -o cmTC_33577 /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/7/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/7 -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/7/../../.. CMakeFiles/cmTC_33577.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-linux-gnu/7/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crtn.o
-COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_33577' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
+COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_a3e8f' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
+ /usr/lib/gcc/x86_64-linux-gnu/7/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/7/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/7/lto-wrapper -plugin-opt=-fresolution=/tmp/ccfRJnjX.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --sysroot=/ --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -z relro -o cmTC_a3e8f /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/7/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/7 -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/7/../../.. CMakeFiles/cmTC_a3e8f.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-linux-gnu/7/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crtn.o
+COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_a3e8f' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird verlassen
 
 
@@ -58,14 +260,14 @@ Parsed CXX implicit link information from above output:
   link line regex: [^( *|.*[/\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
   ignore line: [Change Dir: /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp]
   ignore line: []
-  ignore line: [Run Build Command:"/usr/bin/make" "cmTC_33577/fast"]
-  ignore line: [/usr/bin/make -f CMakeFiles/cmTC_33577.dir/build.make CMakeFiles/cmTC_33577.dir/build]
+  ignore line: [Run Build Command:"/usr/bin/make" "cmTC_a3e8f/fast"]
+  ignore line: [/usr/bin/make -f CMakeFiles/cmTC_a3e8f.dir/build.make CMakeFiles/cmTC_a3e8f.dir/build]
   ignore line: [make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird betreten]
-  ignore line: [Building CXX object CMakeFiles/cmTC_33577.dir/CMakeCXXCompilerABI.cpp.o]
-  ignore line: [/usr/bin/c++     -o CMakeFiles/cmTC_33577.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake-3.10/Modules/CMakeCXXCompilerABI.cpp]
-  ignore line: [Linking CXX executable cmTC_33577]
-  ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_33577.dir/link.txt --verbose=1]
-  ignore line: [/usr/bin/c++      -v CMakeFiles/cmTC_33577.dir/CMakeCXXCompilerABI.cpp.o  -o cmTC_33577 ]
+  ignore line: [Building CXX object CMakeFiles/cmTC_a3e8f.dir/CMakeCXXCompilerABI.cpp.o]
+  ignore line: [/usr/bin/c++     -o CMakeFiles/cmTC_a3e8f.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake-3.10/Modules/CMakeCXXCompilerABI.cpp]
+  ignore line: [Linking CXX executable cmTC_a3e8f]
+  ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_a3e8f.dir/link.txt --verbose=1]
+  ignore line: [/usr/bin/c++      -v CMakeFiles/cmTC_a3e8f.dir/CMakeCXXCompilerABI.cpp.o  -o cmTC_a3e8f ]
   ignore line: [Using built-in specs.]
   ignore line: [COLLECT_GCC=/usr/bin/c++]
   ignore line: [COLLECT_LTO_WRAPPER=/usr/lib/gcc/x86_64-linux-gnu/7/lto-wrapper]
@@ -77,13 +279,13 @@ Parsed CXX implicit link information from above output:
   ignore line: [gcc version 7.4.0 (Ubuntu 7.4.0-1ubuntu1~18.04) ]
   ignore line: [COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/]
   ignore line: [LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../:/lib/:/usr/lib/]
-  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_33577' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
-  link line: [ /usr/lib/gcc/x86_64-linux-gnu/7/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/7/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/7/lto-wrapper -plugin-opt=-fresolution=/tmp/ccYQHdGd.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --sysroot=/ --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -z relro -o cmTC_33577 /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/7/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/7 -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/7/../../.. CMakeFiles/cmTC_33577.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-linux-gnu/7/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crtn.o]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_a3e8f' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
+  link line: [ /usr/lib/gcc/x86_64-linux-gnu/7/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/7/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/7/lto-wrapper -plugin-opt=-fresolution=/tmp/ccfRJnjX.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --sysroot=/ --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -z relro -o cmTC_a3e8f /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/7/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/7 -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/7/../../.. CMakeFiles/cmTC_a3e8f.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-linux-gnu/7/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crtn.o]
     arg [/usr/lib/gcc/x86_64-linux-gnu/7/collect2] ==> ignore
     arg [-plugin] ==> ignore
     arg [/usr/lib/gcc/x86_64-linux-gnu/7/liblto_plugin.so] ==> ignore
     arg [-plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/7/lto-wrapper] ==> ignore
-    arg [-plugin-opt=-fresolution=/tmp/ccYQHdGd.res] ==> ignore
+    arg [-plugin-opt=-fresolution=/tmp/ccfRJnjX.res] ==> ignore
     arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
     arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
     arg [-plugin-opt=-pass-through=-lc] ==> ignore
@@ -102,7 +304,7 @@ Parsed CXX implicit link information from above output:
     arg [-znow] ==> ignore
     arg [-zrelro] ==> ignore
     arg [-o] ==> ignore
-    arg [cmTC_33577] ==> ignore
+    arg [cmTC_a3e8f] ==> ignore
     arg [/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/Scrt1.o] ==> ignore
     arg [/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crti.o] ==> ignore
     arg [/usr/lib/gcc/x86_64-linux-gnu/7/crtbeginS.o] ==> ignore
@@ -114,7 +316,7 @@ Parsed CXX implicit link information from above output:
     arg [-L/usr/lib/x86_64-linux-gnu] ==> dir [/usr/lib/x86_64-linux-gnu]
     arg [-L/usr/lib/../lib] ==> dir [/usr/lib/../lib]
     arg [-L/usr/lib/gcc/x86_64-linux-gnu/7/../../..] ==> dir [/usr/lib/gcc/x86_64-linux-gnu/7/../../..]
-    arg [CMakeFiles/cmTC_33577.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
+    arg [CMakeFiles/cmTC_a3e8f.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
     arg [-lstdc++] ==> lib [stdc++]
     arg [-lm] ==> lib [m]
     arg [-lgcc_s] ==> lib [gcc_s]
@@ -142,14 +344,14 @@ Parsed CXX implicit link information from above output:
 Detecting CXX [-std=c++1z] compiler features compiled with the following output:
 Change Dir: /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_fed4c/fast"
-/usr/bin/make -f CMakeFiles/cmTC_fed4c.dir/build.make CMakeFiles/cmTC_fed4c.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_f7892/fast"
+/usr/bin/make -f CMakeFiles/cmTC_f7892.dir/build.make CMakeFiles/cmTC_f7892.dir/build
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird betreten
-Building CXX object CMakeFiles/cmTC_fed4c.dir/feature_tests.cxx.o
-/usr/bin/c++    -std=c++1z -o CMakeFiles/cmTC_fed4c.dir/feature_tests.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/feature_tests.cxx
-Linking CXX executable cmTC_fed4c
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_fed4c.dir/link.txt --verbose=1
-/usr/bin/c++       CMakeFiles/cmTC_fed4c.dir/feature_tests.cxx.o  -o cmTC_fed4c 
+Building CXX object CMakeFiles/cmTC_f7892.dir/feature_tests.cxx.o
+/usr/bin/c++    -std=c++1z -o CMakeFiles/cmTC_f7892.dir/feature_tests.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/feature_tests.cxx
+Linking CXX executable cmTC_f7892
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_f7892.dir/link.txt --verbose=1
+/usr/bin/c++       CMakeFiles/cmTC_f7892.dir/feature_tests.cxx.o  -o cmTC_f7892 
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird verlassen
 
 
@@ -215,14 +417,14 @@ make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFil
 Detecting CXX [-std=c++14] compiler features compiled with the following output:
 Change Dir: /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_dfc7a/fast"
-/usr/bin/make -f CMakeFiles/cmTC_dfc7a.dir/build.make CMakeFiles/cmTC_dfc7a.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_54a62/fast"
+/usr/bin/make -f CMakeFiles/cmTC_54a62.dir/build.make CMakeFiles/cmTC_54a62.dir/build
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird betreten
-Building CXX object CMakeFiles/cmTC_dfc7a.dir/feature_tests.cxx.o
-/usr/bin/c++    -std=c++14 -o CMakeFiles/cmTC_dfc7a.dir/feature_tests.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/feature_tests.cxx
-Linking CXX executable cmTC_dfc7a
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_dfc7a.dir/link.txt --verbose=1
-/usr/bin/c++       CMakeFiles/cmTC_dfc7a.dir/feature_tests.cxx.o  -o cmTC_dfc7a 
+Building CXX object CMakeFiles/cmTC_54a62.dir/feature_tests.cxx.o
+/usr/bin/c++    -std=c++14 -o CMakeFiles/cmTC_54a62.dir/feature_tests.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/feature_tests.cxx
+Linking CXX executable cmTC_54a62
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_54a62.dir/link.txt --verbose=1
+/usr/bin/c++       CMakeFiles/cmTC_54a62.dir/feature_tests.cxx.o  -o cmTC_54a62 
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird verlassen
 
 
@@ -288,14 +490,14 @@ make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFil
 Detecting CXX [-std=c++11] compiler features compiled with the following output:
 Change Dir: /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_ca432/fast"
-/usr/bin/make -f CMakeFiles/cmTC_ca432.dir/build.make CMakeFiles/cmTC_ca432.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_32c5b/fast"
+/usr/bin/make -f CMakeFiles/cmTC_32c5b.dir/build.make CMakeFiles/cmTC_32c5b.dir/build
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird betreten
-Building CXX object CMakeFiles/cmTC_ca432.dir/feature_tests.cxx.o
-/usr/bin/c++    -std=c++11 -o CMakeFiles/cmTC_ca432.dir/feature_tests.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/feature_tests.cxx
-Linking CXX executable cmTC_ca432
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_ca432.dir/link.txt --verbose=1
-/usr/bin/c++       CMakeFiles/cmTC_ca432.dir/feature_tests.cxx.o  -o cmTC_ca432 
+Building CXX object CMakeFiles/cmTC_32c5b.dir/feature_tests.cxx.o
+/usr/bin/c++    -std=c++11 -o CMakeFiles/cmTC_32c5b.dir/feature_tests.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/feature_tests.cxx
+Linking CXX executable cmTC_32c5b
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_32c5b.dir/link.txt --verbose=1
+/usr/bin/c++       CMakeFiles/cmTC_32c5b.dir/feature_tests.cxx.o  -o cmTC_32c5b 
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird verlassen
 
 
@@ -361,14 +563,14 @@ make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFil
 Detecting CXX [-std=c++98] compiler features compiled with the following output:
 Change Dir: /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_927a3/fast"
-/usr/bin/make -f CMakeFiles/cmTC_927a3.dir/build.make CMakeFiles/cmTC_927a3.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_1d0ad/fast"
+/usr/bin/make -f CMakeFiles/cmTC_1d0ad.dir/build.make CMakeFiles/cmTC_1d0ad.dir/build
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird betreten
-Building CXX object CMakeFiles/cmTC_927a3.dir/feature_tests.cxx.o
-/usr/bin/c++    -std=c++98 -o CMakeFiles/cmTC_927a3.dir/feature_tests.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/feature_tests.cxx
-Linking CXX executable cmTC_927a3
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_927a3.dir/link.txt --verbose=1
-/usr/bin/c++       CMakeFiles/cmTC_927a3.dir/feature_tests.cxx.o  -o cmTC_927a3 
+Building CXX object CMakeFiles/cmTC_1d0ad.dir/feature_tests.cxx.o
+/usr/bin/c++    -std=c++98 -o CMakeFiles/cmTC_1d0ad.dir/feature_tests.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/feature_tests.cxx
+Linking CXX executable cmTC_1d0ad
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_1d0ad.dir/link.txt --verbose=1
+/usr/bin/c++       CMakeFiles/cmTC_1d0ad.dir/feature_tests.cxx.o  -o cmTC_1d0ad 
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird verlassen
 
 
@@ -432,14 +634,14 @@ make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFil
 Performing C++ SOURCE FILE Test CXX17_FLAG succeeded with the following output:
 Change Dir: /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_0ada5/fast"
-/usr/bin/make -f CMakeFiles/cmTC_0ada5.dir/build.make CMakeFiles/cmTC_0ada5.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_0636b/fast"
+/usr/bin/make -f CMakeFiles/cmTC_0636b.dir/build.make CMakeFiles/cmTC_0636b.dir/build
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird betreten
-Building CXX object CMakeFiles/cmTC_0ada5.dir/src.cxx.o
-/usr/bin/c++   -I/home/jens/Development/seqan3/include -I/home/jens/Development/seqan3/submodules/sdsl-lite/include -I/home/jens/Development/seqan3/submodules/range-v3/include -I/home/jens/Development/seqan3/submodules/lemon/include -I/home/jens/Development/seqan3/submodules/cereal/include  -DCXX17_FLAG  -std=c++17   -o CMakeFiles/cmTC_0ada5.dir/src.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/src.cxx
-Linking CXX executable cmTC_0ada5
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_0ada5.dir/link.txt --verbose=1
-/usr/bin/c++   -DCXX17_FLAG  -std=c++17    -rdynamic CMakeFiles/cmTC_0ada5.dir/src.cxx.o  -o cmTC_0ada5 
+Building CXX object CMakeFiles/cmTC_0636b.dir/src.cxx.o
+/usr/bin/c++   -I/home/jens/Development/seqan3/include -I/home/jens/Development/seqan3/submodules/sdsl-lite/include -I/home/jens/Development/seqan3/submodules/range-v3/include -I/home/jens/Development/seqan3/submodules/lemon/include -I/home/jens/Development/seqan3/submodules/cereal/include  -DCXX17_FLAG  -std=c++17   -o CMakeFiles/cmTC_0636b.dir/src.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_0636b
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_0636b.dir/link.txt --verbose=1
+/usr/bin/c++   -DCXX17_FLAG  -std=c++17    -rdynamic CMakeFiles/cmTC_0636b.dir/src.cxx.o  -o cmTC_0636b 
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird verlassen
 
 Source file was:
@@ -450,15 +652,15 @@ Source file was:
 Performing C++ SOURCE FILE Test CONCEPTS_FLAG-fconcepts succeeded with the following output:
 Change Dir: /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_c15b4/fast"
-/usr/bin/make -f CMakeFiles/cmTC_c15b4.dir/build.make CMakeFiles/cmTC_c15b4.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_f0376/fast"
+/usr/bin/make -f CMakeFiles/cmTC_f0376.dir/build.make CMakeFiles/cmTC_f0376.dir/build
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird betreten
-Building CXX object CMakeFiles/cmTC_c15b4.dir/src.cxx.o
-/usr/bin/c++   -I/home/jens/Development/seqan3/include -I/home/jens/Development/seqan3/submodules/sdsl-lite/include -I/home/jens/Development/seqan3/submodules/range-v3/include -I/home/jens/Development/seqan3/submodules/lemon/include -I/home/jens/Development/seqan3/submodules/cereal/include  -DCONCEPTS_FLAG-fconcepts  -std=c++17 -fconcepts   -o CMakeFiles/cmTC_c15b4.dir/src.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/src.cxx
+Building CXX object CMakeFiles/cmTC_f0376.dir/src.cxx.o
+/usr/bin/c++   -I/home/jens/Development/seqan3/include -I/home/jens/Development/seqan3/submodules/sdsl-lite/include -I/home/jens/Development/seqan3/submodules/range-v3/include -I/home/jens/Development/seqan3/submodules/lemon/include -I/home/jens/Development/seqan3/submodules/cereal/include  -DCONCEPTS_FLAG-fconcepts  -std=c++17 -fconcepts   -o CMakeFiles/cmTC_f0376.dir/src.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/src.cxx
 <command-line>:0:14: warning: ISO C++11 requires whitespace after the macro name
-Linking CXX executable cmTC_c15b4
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_c15b4.dir/link.txt --verbose=1
-/usr/bin/c++   -DCONCEPTS_FLAG-fconcepts  -std=c++17 -fconcepts    -rdynamic CMakeFiles/cmTC_c15b4.dir/src.cxx.o  -o cmTC_c15b4 
+Linking CXX executable cmTC_f0376
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_f0376.dir/link.txt --verbose=1
+/usr/bin/c++   -DCONCEPTS_FLAG-fconcepts  -std=c++17 -fconcepts    -rdynamic CMakeFiles/cmTC_f0376.dir/src.cxx.o  -o cmTC_f0376 
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird verlassen
 
 Source file was:
@@ -467,29 +669,29 @@ static_assert (__cpp_concepts >= 201507);
 Determining if the include file experimental/filesystem exists passed with the following output:
 Change Dir: /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_9bea0/fast"
-/usr/bin/make -f CMakeFiles/cmTC_9bea0.dir/build.make CMakeFiles/cmTC_9bea0.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_0fba3/fast"
+/usr/bin/make -f CMakeFiles/cmTC_0fba3.dir/build.make CMakeFiles/cmTC_0fba3.dir/build
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird betreten
-Building CXX object CMakeFiles/cmTC_9bea0.dir/CheckIncludeFile.cxx.o
-/usr/bin/c++   -I/home/jens/Development/seqan3/include -I/home/jens/Development/seqan3/submodules/sdsl-lite/include -I/home/jens/Development/seqan3/submodules/range-v3/include -I/home/jens/Development/seqan3/submodules/lemon/include -I/home/jens/Development/seqan3/submodules/cereal/include  -std=c++17 -fconcepts   -o CMakeFiles/cmTC_9bea0.dir/CheckIncludeFile.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/CheckIncludeFile.cxx
-Linking CXX executable cmTC_9bea0
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_9bea0.dir/link.txt --verbose=1
-/usr/bin/c++    -std=c++17 -fconcepts    -rdynamic CMakeFiles/cmTC_9bea0.dir/CheckIncludeFile.cxx.o  -o cmTC_9bea0 
+Building CXX object CMakeFiles/cmTC_0fba3.dir/CheckIncludeFile.cxx.o
+/usr/bin/c++   -I/home/jens/Development/seqan3/include -I/home/jens/Development/seqan3/submodules/sdsl-lite/include -I/home/jens/Development/seqan3/submodules/range-v3/include -I/home/jens/Development/seqan3/submodules/lemon/include -I/home/jens/Development/seqan3/submodules/cereal/include  -std=c++17 -fconcepts   -o CMakeFiles/cmTC_0fba3.dir/CheckIncludeFile.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/CheckIncludeFile.cxx
+Linking CXX executable cmTC_0fba3
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_0fba3.dir/link.txt --verbose=1
+/usr/bin/c++    -std=c++17 -fconcepts    -rdynamic CMakeFiles/cmTC_0fba3.dir/CheckIncludeFile.cxx.o  -o cmTC_0fba3 
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird verlassen
 
 
 Performing C++ SOURCE FILE Test C++17FS_LIB-lstdc++fs succeeded with the following output:
 Change Dir: /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_898dc/fast"
-/usr/bin/make -f CMakeFiles/cmTC_898dc.dir/build.make CMakeFiles/cmTC_898dc.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_d2081/fast"
+/usr/bin/make -f CMakeFiles/cmTC_d2081.dir/build.make CMakeFiles/cmTC_d2081.dir/build
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird betreten
-Building CXX object CMakeFiles/cmTC_898dc.dir/src.cxx.o
-/usr/bin/c++   -I/home/jens/Development/seqan3/include -I/home/jens/Development/seqan3/submodules/sdsl-lite/include -I/home/jens/Development/seqan3/submodules/range-v3/include -I/home/jens/Development/seqan3/submodules/lemon/include -I/home/jens/Development/seqan3/submodules/cereal/include  -DC++17FS_LIB-lstdc++fs  -std=c++17 -fconcepts   -o CMakeFiles/cmTC_898dc.dir/src.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/src.cxx
+Building CXX object CMakeFiles/cmTC_d2081.dir/src.cxx.o
+/usr/bin/c++   -I/home/jens/Development/seqan3/include -I/home/jens/Development/seqan3/submodules/sdsl-lite/include -I/home/jens/Development/seqan3/submodules/range-v3/include -I/home/jens/Development/seqan3/submodules/lemon/include -I/home/jens/Development/seqan3/submodules/cereal/include  -DC++17FS_LIB-lstdc++fs  -std=c++17 -fconcepts   -o CMakeFiles/cmTC_d2081.dir/src.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/src.cxx
 <command-line>:0:2: warning: ISO C++11 requires whitespace after the macro name
-Linking CXX executable cmTC_898dc
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_898dc.dir/link.txt --verbose=1
-/usr/bin/c++   -DC++17FS_LIB-lstdc++fs  -std=c++17 -fconcepts    -rdynamic CMakeFiles/cmTC_898dc.dir/src.cxx.o  -o cmTC_898dc -lstdc++fs 
+Linking CXX executable cmTC_d2081
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_d2081.dir/link.txt --verbose=1
+/usr/bin/c++   -DC++17FS_LIB-lstdc++fs  -std=c++17 -fconcepts    -rdynamic CMakeFiles/cmTC_d2081.dir/src.cxx.o  -o cmTC_d2081 -lstdc++fs 
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird verlassen
 
 Source file was:
@@ -497,77 +699,80 @@ Source file was:
         int main()
         {
             std::experimental::filesystem::path p{"/tmp/"};
+            throw std::experimental::filesystem::filesystem_error("Empty file name!", std::make_error_code(std::errc::invalid_argument));
         }
 Determining if the include file range/v3/version.hpp exists passed with the following output:
 Change Dir: /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_d484b/fast"
-/usr/bin/make -f CMakeFiles/cmTC_d484b.dir/build.make CMakeFiles/cmTC_d484b.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_beba3/fast"
+/usr/bin/make -f CMakeFiles/cmTC_beba3.dir/build.make CMakeFiles/cmTC_beba3.dir/build
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird betreten
-Building CXX object CMakeFiles/cmTC_d484b.dir/CheckIncludeFile.cxx.o
-/usr/bin/c++   -I/home/jens/Development/seqan3/include -I/home/jens/Development/seqan3/submodules/sdsl-lite/include -I/home/jens/Development/seqan3/submodules/range-v3/include -I/home/jens/Development/seqan3/submodules/lemon/include -I/home/jens/Development/seqan3/submodules/cereal/include  -std=c++17 -fconcepts   -o CMakeFiles/cmTC_d484b.dir/CheckIncludeFile.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/CheckIncludeFile.cxx
-Linking CXX executable cmTC_d484b
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_d484b.dir/link.txt --verbose=1
-/usr/bin/c++    -std=c++17 -fconcepts    -rdynamic CMakeFiles/cmTC_d484b.dir/CheckIncludeFile.cxx.o  -o cmTC_d484b 
+Building CXX object CMakeFiles/cmTC_beba3.dir/CheckIncludeFile.cxx.o
+/usr/bin/c++   -I/home/jens/Development/seqan3/include -I/home/jens/Development/seqan3/submodules/sdsl-lite/include -I/home/jens/Development/seqan3/submodules/range-v3/include -I/home/jens/Development/seqan3/submodules/lemon/include -I/home/jens/Development/seqan3/submodules/cereal/include  -std=c++17 -fconcepts   -o CMakeFiles/cmTC_beba3.dir/CheckIncludeFile.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/CheckIncludeFile.cxx
+Linking CXX executable cmTC_beba3
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_beba3.dir/link.txt --verbose=1
+/usr/bin/c++    -std=c++17 -fconcepts    -rdynamic CMakeFiles/cmTC_beba3.dir/CheckIncludeFile.cxx.o  -o cmTC_beba3 
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird verlassen
 
 
 Determining if the include file sdsl/version.hpp exists passed with the following output:
 Change Dir: /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_0c6f2/fast"
-/usr/bin/make -f CMakeFiles/cmTC_0c6f2.dir/build.make CMakeFiles/cmTC_0c6f2.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_06d2d/fast"
+/usr/bin/make -f CMakeFiles/cmTC_06d2d.dir/build.make CMakeFiles/cmTC_06d2d.dir/build
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird betreten
-Building CXX object CMakeFiles/cmTC_0c6f2.dir/CheckIncludeFile.cxx.o
-/usr/bin/c++   -I/home/jens/Development/seqan3/include -I/home/jens/Development/seqan3/submodules/sdsl-lite/include -I/home/jens/Development/seqan3/submodules/range-v3/include -I/home/jens/Development/seqan3/submodules/lemon/include -I/home/jens/Development/seqan3/submodules/cereal/include  -std=c++17 -fconcepts   -o CMakeFiles/cmTC_0c6f2.dir/CheckIncludeFile.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/CheckIncludeFile.cxx
-Linking CXX executable cmTC_0c6f2
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_0c6f2.dir/link.txt --verbose=1
-/usr/bin/c++    -std=c++17 -fconcepts    -rdynamic CMakeFiles/cmTC_0c6f2.dir/CheckIncludeFile.cxx.o  -o cmTC_0c6f2 
+Building CXX object CMakeFiles/cmTC_06d2d.dir/CheckIncludeFile.cxx.o
+/usr/bin/c++   -I/home/jens/Development/seqan3/include -I/home/jens/Development/seqan3/submodules/sdsl-lite/include -I/home/jens/Development/seqan3/submodules/range-v3/include -I/home/jens/Development/seqan3/submodules/lemon/include -I/home/jens/Development/seqan3/submodules/cereal/include  -std=c++17 -fconcepts   -o CMakeFiles/cmTC_06d2d.dir/CheckIncludeFile.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/CheckIncludeFile.cxx
+Linking CXX executable cmTC_06d2d
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_06d2d.dir/link.txt --verbose=1
+/usr/bin/c++    -std=c++17 -fconcepts    -rdynamic CMakeFiles/cmTC_06d2d.dir/CheckIncludeFile.cxx.o  -o cmTC_06d2d 
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird verlassen
 
 
 Determining if the include file cereal/cereal.hpp exists passed with the following output:
 Change Dir: /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_20ad1/fast"
-/usr/bin/make -f CMakeFiles/cmTC_20ad1.dir/build.make CMakeFiles/cmTC_20ad1.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_a1935/fast"
+/usr/bin/make -f CMakeFiles/cmTC_a1935.dir/build.make CMakeFiles/cmTC_a1935.dir/build
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird betreten
-Building CXX object CMakeFiles/cmTC_20ad1.dir/CheckIncludeFile.cxx.o
-/usr/bin/c++   -I/home/jens/Development/seqan3/include -I/home/jens/Development/seqan3/submodules/sdsl-lite/include -I/home/jens/Development/seqan3/submodules/range-v3/include -I/home/jens/Development/seqan3/submodules/lemon/include -I/home/jens/Development/seqan3/submodules/cereal/include  -std=c++17 -fconcepts   -o CMakeFiles/cmTC_20ad1.dir/CheckIncludeFile.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/CheckIncludeFile.cxx
-Linking CXX executable cmTC_20ad1
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_20ad1.dir/link.txt --verbose=1
-/usr/bin/c++    -std=c++17 -fconcepts    -rdynamic CMakeFiles/cmTC_20ad1.dir/CheckIncludeFile.cxx.o  -o cmTC_20ad1 
+Building CXX object CMakeFiles/cmTC_a1935.dir/CheckIncludeFile.cxx.o
+/usr/bin/c++   -I/home/jens/Development/seqan3/include -I/home/jens/Development/seqan3/submodules/sdsl-lite/include -I/home/jens/Development/seqan3/submodules/range-v3/include -I/home/jens/Development/seqan3/submodules/lemon/include -I/home/jens/Development/seqan3/submodules/cereal/include  -std=c++17 -fconcepts   -o CMakeFiles/cmTC_a1935.dir/CheckIncludeFile.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/CheckIncludeFile.cxx
+Linking CXX executable cmTC_a1935
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_a1935.dir/link.txt --verbose=1
+/usr/bin/c++    -std=c++17 -fconcepts    -rdynamic CMakeFiles/cmTC_a1935.dir/CheckIncludeFile.cxx.o  -o cmTC_a1935 
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird verlassen
 
 
 Determining if the include file lemon/config.h exists passed with the following output:
 Change Dir: /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_f43ed/fast"
-/usr/bin/make -f CMakeFiles/cmTC_f43ed.dir/build.make CMakeFiles/cmTC_f43ed.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_454f3/fast"
+/usr/bin/make -f CMakeFiles/cmTC_454f3.dir/build.make CMakeFiles/cmTC_454f3.dir/build
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird betreten
-Building CXX object CMakeFiles/cmTC_f43ed.dir/CheckIncludeFile.cxx.o
-/usr/bin/c++   -I/home/jens/Development/seqan3/include -I/home/jens/Development/seqan3/submodules/sdsl-lite/include -I/home/jens/Development/seqan3/submodules/range-v3/include -I/home/jens/Development/seqan3/submodules/lemon/include -I/home/jens/Development/seqan3/submodules/cereal/include  -std=c++17 -fconcepts   -o CMakeFiles/cmTC_f43ed.dir/CheckIncludeFile.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/CheckIncludeFile.cxx
-Linking CXX executable cmTC_f43ed
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_f43ed.dir/link.txt --verbose=1
-/usr/bin/c++    -std=c++17 -fconcepts    -rdynamic CMakeFiles/cmTC_f43ed.dir/CheckIncludeFile.cxx.o  -o cmTC_f43ed 
+Building CXX object CMakeFiles/cmTC_454f3.dir/CheckIncludeFile.cxx.o
+/usr/bin/c++   -I/home/jens/Development/seqan3/include -I/home/jens/Development/seqan3/submodules/sdsl-lite/include -I/home/jens/Development/seqan3/submodules/range-v3/include -I/home/jens/Development/seqan3/submodules/lemon/include -I/home/jens/Development/seqan3/submodules/cereal/include  -std=c++17 -fconcepts   -o CMakeFiles/cmTC_454f3.dir/CheckIncludeFile.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/CheckIncludeFile.cxx
+Linking CXX executable cmTC_454f3
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_454f3.dir/link.txt --verbose=1
+/usr/bin/c++    -std=c++17 -fconcepts    -rdynamic CMakeFiles/cmTC_454f3.dir/CheckIncludeFile.cxx.o  -o cmTC_454f3 
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird verlassen
 
 
 Determining if the BZ2_bzCompressInit exist passed with the following output:
 Change Dir: /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_123ea/fast"
-/usr/bin/make -f CMakeFiles/cmTC_123ea.dir/build.make CMakeFiles/cmTC_123ea.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_61d9d/fast"
+/usr/bin/make -f CMakeFiles/cmTC_61d9d.dir/build.make CMakeFiles/cmTC_61d9d.dir/build
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird betreten
-Building CXX object CMakeFiles/cmTC_123ea.dir/CheckSymbolExists.cxx.o
-/usr/bin/c++    -std=c++17 -fconcepts   -o CMakeFiles/cmTC_123ea.dir/CheckSymbolExists.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx
-Linking CXX executable cmTC_123ea
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_123ea.dir/link.txt --verbose=1
-/usr/bin/c++    -std=c++17 -fconcepts    -rdynamic CMakeFiles/cmTC_123ea.dir/CheckSymbolExists.cxx.o  -o cmTC_123ea /usr/lib/x86_64-linux-gnu/libbz2.so 
+Building C object CMakeFiles/cmTC_61d9d.dir/CheckSymbolExists.c.o
+/usr/bin/cc   -std=c++17 -fconcepts   -o CMakeFiles/cmTC_61d9d.dir/CheckSymbolExists.c.o   -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+cc1: warning: command line option ‘-std=c++1z’ is valid for C++/ObjC++ but not for C
+cc1: warning: command line option ‘-fconcepts’ is valid for C++/ObjC++ but not for C
+Linking C executable cmTC_61d9d
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_61d9d.dir/link.txt --verbose=1
+/usr/bin/cc   -std=c++17 -fconcepts    -rdynamic CMakeFiles/cmTC_61d9d.dir/CheckSymbolExists.c.o  -o cmTC_61d9d /usr/lib/x86_64-linux-gnu/libbz2.so 
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird verlassen
 
-File /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx:
+File /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
 /* */
 #include <bzlib.h>
 
@@ -585,14 +790,14 @@ int main(int argc, char** argv)
 Determining if the include file execinfo.h exists passed with the following output:
 Change Dir: /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_13fd4/fast"
-/usr/bin/make -f CMakeFiles/cmTC_13fd4.dir/build.make CMakeFiles/cmTC_13fd4.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_2c44b/fast"
+/usr/bin/make -f CMakeFiles/cmTC_2c44b.dir/build.make CMakeFiles/cmTC_2c44b.dir/build
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird betreten
-Building CXX object CMakeFiles/cmTC_13fd4.dir/CheckIncludeFile.cxx.o
-/usr/bin/c++   -I/home/jens/Development/seqan3/include -I/home/jens/Development/seqan3/submodules/sdsl-lite/include -I/home/jens/Development/seqan3/submodules/range-v3/include -I/home/jens/Development/seqan3/submodules/lemon/include -I/home/jens/Development/seqan3/submodules/cereal/include  -std=c++17 -fconcepts   -o CMakeFiles/cmTC_13fd4.dir/CheckIncludeFile.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/CheckIncludeFile.cxx
-Linking CXX executable cmTC_13fd4
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_13fd4.dir/link.txt --verbose=1
-/usr/bin/c++    -std=c++17 -fconcepts    -rdynamic CMakeFiles/cmTC_13fd4.dir/CheckIncludeFile.cxx.o  -o cmTC_13fd4 
+Building CXX object CMakeFiles/cmTC_2c44b.dir/CheckIncludeFile.cxx.o
+/usr/bin/c++   -I/home/jens/Development/seqan3/include -I/home/jens/Development/seqan3/submodules/sdsl-lite/include -I/home/jens/Development/seqan3/submodules/range-v3/include -I/home/jens/Development/seqan3/submodules/lemon/include -I/home/jens/Development/seqan3/submodules/cereal/include  -std=c++17 -fconcepts   -o CMakeFiles/cmTC_2c44b.dir/CheckIncludeFile.cxx.o -c /home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp/CheckIncludeFile.cxx
+Linking CXX executable cmTC_2c44b
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_2c44b.dir/link.txt --verbose=1
+/usr/bin/c++    -std=c++17 -fconcepts    -rdynamic CMakeFiles/cmTC_2c44b.dir/CheckIncludeFile.cxx.o  -o cmTC_2c44b 
 make[1]: Verzeichnis „/home/jens/Development/MinHashContainment/build/CMakeFiles/CMakeTmp“ wird verlassen
 
 
