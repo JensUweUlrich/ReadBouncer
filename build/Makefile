@@ -195,6 +195,71 @@ ReadUntil/fast:
 	$(MAKE) -f main/CMakeFiles/ReadUntil.dir/build.make main/CMakeFiles/ReadUntil.dir/build
 .PHONY : ReadUntil/fast
 
+#=============================================================================
+# Target rules for targets named gmock_main
+
+# Build rule for target.
+gmock_main: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 gmock_main
+.PHONY : gmock_main
+
+# fast build rule for target.
+gmock_main/fast:
+	$(MAKE) -f test/googletest-build/googlemock/CMakeFiles/gmock_main.dir/build.make test/googletest-build/googlemock/CMakeFiles/gmock_main.dir/build
+.PHONY : gmock_main/fast
+
+#=============================================================================
+# Target rules for targets named gmock
+
+# Build rule for target.
+gmock: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 gmock
+.PHONY : gmock
+
+# fast build rule for target.
+gmock/fast:
+	$(MAKE) -f test/googletest-build/googlemock/CMakeFiles/gmock.dir/build.make test/googletest-build/googlemock/CMakeFiles/gmock.dir/build
+.PHONY : gmock/fast
+
+#=============================================================================
+# Target rules for targets named gtest_main
+
+# Build rule for target.
+gtest_main: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 gtest_main
+.PHONY : gtest_main
+
+# fast build rule for target.
+gtest_main/fast:
+	$(MAKE) -f test/googletest-build/googletest/CMakeFiles/gtest_main.dir/build.make test/googletest-build/googletest/CMakeFiles/gtest_main.dir/build
+.PHONY : gtest_main/fast
+
+#=============================================================================
+# Target rules for targets named gtest
+
+# Build rule for target.
+gtest: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 gtest
+.PHONY : gtest
+
+# fast build rule for target.
+gtest/fast:
+	$(MAKE) -f test/googletest-build/googletest/CMakeFiles/gtest.dir/build.make test/googletest-build/googletest/CMakeFiles/gtest.dir/build
+.PHONY : gtest/fast
+
+#=============================================================================
+# Target rules for targets named BloomFilterTest
+
+# Build rule for target.
+BloomFilterTest: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 BloomFilterTest
+.PHONY : BloomFilterTest
+
+# fast build rule for target.
+BloomFilterTest/fast:
+	$(MAKE) -f test/libBloomFilterTests/CMakeFiles/BloomFilterTest.dir/build.make test/libBloomFilterTests/CMakeFiles/BloomFilterTest.dir/build
+.PHONY : BloomFilterTest/fast
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -210,6 +275,11 @@ help:
 	@echo "... Minimizer"
 	@echo "... BloomFilter"
 	@echo "... ReadUntil"
+	@echo "... gmock_main"
+	@echo "... gmock"
+	@echo "... gtest_main"
+	@echo "... gtest"
+	@echo "... BloomFilterTest"
 .PHONY : help
 
 

@@ -42,6 +42,7 @@ if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   include("/home/jens/Development/MinHashContainment/build/libMinimizer/cmake_install.cmake")
   include("/home/jens/Development/MinHashContainment/build/libBloomFilter/cmake_install.cmake")
   include("/home/jens/Development/MinHashContainment/build/main/cmake_install.cmake")
+  include("/home/jens/Development/MinHashContainment/build/test/cmake_install.cmake")
 
 endif()
 
