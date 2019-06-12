@@ -1,7 +1,9 @@
 
 cmake_minimum_required (VERSION 3.4)
 
-project (ReadUntil)
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+
+project (ReadUntil CXX)
 
 # Seqan specifics
 set(SeqAn3_DIR "/home/jens/Development/seqan3/build_system")

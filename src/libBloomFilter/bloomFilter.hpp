@@ -16,15 +16,15 @@ class BloomFilter
 	// class variables
 	private:
 
-		void initialize_bloom_filter(const float p, const uint64_t minimizer_number);
-		void initialize_hash_functions(const uint64_t func_number);
+		virtual void initialize_bloom_filter(const float p, const uint64_t minimizer_number);
+		virtual void initialize_hash_functions(const uint64_t func_number);
 
-		inline uint64_t calculate_bloom_filter_size(const float p, const uint64_t minimizer_number)
+		virtual inline uint64_t calculate_bloom_filter_size(const float p, const uint64_t minimizer_number)
 		{
 			return ceil((-1) * (minimizer_number * log(p)) / (pow(log(2.0), 2)));
 		}
 
-		inline uint64_t calculate_hash_function_number(const uint64_t filter_size, uint64_t minimizer_number)
+		virtual inline uint64_t calculate_hash_function_number(const uint64_t filter_size, uint64_t minimizer_number)
 		{
 			return ceil(filter_size / minimizer_number * log(2.0));
 		}
@@ -33,6 +33,9 @@ class BloomFilter
 	BloomFilter();
 	BloomFilter(const uint64_t size, const uint8_t numHashes);
 	BloomFilter(const float error_rate, const uint64_t minimizer_number, const uint16_t newKmerSize);
+
+	// Destructor
+	~BloomFilter();
 
 	public:
 
@@ -44,7 +47,7 @@ class BloomFilter
 		 * adds a k-mer to the Bloom Filter
 		 * @param value : hash value of the k-mer
 		 */
-		inline void addHashValue(const uint64_t value)
+		virtual inline void addHashValue(const uint64_t value)
 		{
 			bits[value % bits.size()] = true;
 			for (uint16_t f : hashes)
@@ -57,7 +60,7 @@ class BloomFilter
 		 * check if a k-mer is contained in the Bloom Filter
 		 * @param value : hash value of the k-mer
 		 */
-		inline bool possiblyContains(const uint64_t value) const
+		virtual inline bool possiblyContains(const uint64_t value)
 		{
 			bool result = bits[value % bits.size()];
 			for (uint16_t f : hashes)
@@ -68,8 +71,8 @@ class BloomFilter
 
 		}
 
-		void writeToFile(const std::experimental::filesystem::path file);
+		virtual void writeToFile(const std::experimental::filesystem::path file);
 
-		void readFromFile(const std::experimental::filesystem::path file);
+		virtual bool readFromFile(const std::experimental::filesystem::path file);
 
 };

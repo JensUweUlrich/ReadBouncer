@@ -155,31 +155,6 @@ void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::
 	}
 
 	bf.writeToFile(output);
-
-	BloomFilter bf2
-	{ };
-	bf2.readFromFile(output);
-
-	for (int i = 0; i < bf.hashes.size(); ++i)
-	{
-		if (bf.hashes.at(i) != bf2.hashes.at(i))
-		{
-			debug_stream << "hash functions unequal at position " << i << "\n";
-		}
-	}
-
-	for (int i = 0; i < bf.bits.size(); ++i)
-	{
-		if (bf.bits.at(i) != bf2.bits.at(i))
-		{
-			debug_stream << "bitvectors unequal at position " << i << "\n";
-		}
-	}
-
-	debug_stream << "number of hash functions: " << bf2.hashes.size() << "\n";
-	debug_stream << bf2.hashes << "\n";
-	debug_stream << bf.hashes << "\n";
-
 }
 
 void load_query_reads(std::filesystem::path &input, std::vector<dna5_vector> &queries)

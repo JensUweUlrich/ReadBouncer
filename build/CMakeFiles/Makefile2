@@ -477,6 +477,7 @@ test/libBloomFilterTests/preinstall:
 # Target rules for target test/libBloomFilterTests/CMakeFiles/BloomFilterTest.dir
 
 # All Build rule for target.
+test/libBloomFilterTests/CMakeFiles/BloomFilterTest.dir/all: libBloomFilter/CMakeFiles/BloomFilter.dir/all
 test/libBloomFilterTests/CMakeFiles/BloomFilterTest.dir/all: test/googletest-build/googlemock/CMakeFiles/gmock_main.dir/all
 test/libBloomFilterTests/CMakeFiles/BloomFilterTest.dir/all: test/googletest-build/googlemock/CMakeFiles/gmock.dir/all
 test/libBloomFilterTests/CMakeFiles/BloomFilterTest.dir/all: test/googletest-build/googletest/CMakeFiles/gtest.dir/all
@@ -492,7 +493,7 @@ all: test/libBloomFilterTests/CMakeFiles/BloomFilterTest.dir/all
 
 # Build rule for subdir invocation for target.
 test/libBloomFilterTests/CMakeFiles/BloomFilterTest.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/jens/Development/MinHashContainment/build/CMakeFiles 8
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/jens/Development/MinHashContainment/build/CMakeFiles 10
 	$(MAKE) -f CMakeFiles/Makefile2 test/libBloomFilterTests/CMakeFiles/BloomFilterTest.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/jens/Development/MinHashContainment/build/CMakeFiles 0
 .PHONY : test/libBloomFilterTests/CMakeFiles/BloomFilterTest.dir/rule

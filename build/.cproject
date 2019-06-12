@@ -22,7 +22,7 @@
 				<pathentry kind="src" path="[Source directory]"/>
 				<pathentry excluding="[Source directory]/|**/CMakeFiles/" kind="out" path=""/>
 				<pathentry kind="mac" name="__STDC__" path="" value="1"/>
-				<pathentry kind="mac" name="__STDC_VERSION__" path="" value="201112L"/>
+				<pathentry kind="mac" name="__cplusplus" path="" value="201402L"/>
 				<pathentry kind="mac" name="__STDC_UTF_16__" path="" value="1"/>
 				<pathentry kind="mac" name="__STDC_UTF_32__" path="" value="1"/>
 				<pathentry kind="mac" name="__STDC_HOSTED__" path="" value="1"/>
@@ -59,6 +59,7 @@
 				<pathentry kind="mac" name="__BYTE_ORDER__" path="" value="__ORDER_LITTLE_ENDIAN__"/>
 				<pathentry kind="mac" name="__FLOAT_WORD_ORDER__" path="" value="__ORDER_LITTLE_ENDIAN__"/>
 				<pathentry kind="mac" name="__SIZEOF_POINTER__" path="" value="8"/>
+				<pathentry kind="mac" name="__GNUG__" path="" value="7"/>
 				<pathentry kind="mac" name="__SIZE_TYPE__" path="" value="long unsigned int"/>
 				<pathentry kind="mac" name="__PTRDIFF_TYPE__" path="" value="long int"/>
 				<pathentry kind="mac" name="__WCHAR_TYPE__" path="" value="int"/>
@@ -96,6 +97,44 @@
 				<pathentry kind="mac" name="__UINTPTR_TYPE__" path="" value="long unsigned int"/>
 				<pathentry kind="mac" name="__has_include(STR)" path="" value="__has_include__(STR)"/>
 				<pathentry kind="mac" name="__has_include_next(STR)" path="" value="__has_include_next__(STR)"/>
+				<pathentry kind="mac" name="__GXX_WEAK__" path="" value="1"/>
+				<pathentry kind="mac" name="__DEPRECATED" path="" value="1"/>
+				<pathentry kind="mac" name="__GXX_RTTI" path="" value="1"/>
+				<pathentry kind="mac" name="__cpp_rtti" path="" value="199711"/>
+				<pathentry kind="mac" name="__GXX_EXPERIMENTAL_CXX0X__" path="" value="1"/>
+				<pathentry kind="mac" name="__cpp_binary_literals" path="" value="201304"/>
+				<pathentry kind="mac" name="__cpp_hex_float" path="" value="201603"/>
+				<pathentry kind="mac" name="__cpp_runtime_arrays" path="" value="198712"/>
+				<pathentry kind="mac" name="__cpp_unicode_characters" path="" value="200704"/>
+				<pathentry kind="mac" name="__cpp_raw_strings" path="" value="200710"/>
+				<pathentry kind="mac" name="__cpp_unicode_literals" path="" value="200710"/>
+				<pathentry kind="mac" name="__cpp_user_defined_literals" path="" value="200809"/>
+				<pathentry kind="mac" name="__cpp_lambdas" path="" value="200907"/>
+				<pathentry kind="mac" name="__cpp_range_based_for" path="" value="200907"/>
+				<pathentry kind="mac" name="__cpp_static_assert" path="" value="200410"/>
+				<pathentry kind="mac" name="__cpp_decltype" path="" value="200707"/>
+				<pathentry kind="mac" name="__cpp_attributes" path="" value="200809"/>
+				<pathentry kind="mac" name="__cpp_rvalue_reference" path="" value="200610"/>
+				<pathentry kind="mac" name="__cpp_rvalue_references" path="" value="200610"/>
+				<pathentry kind="mac" name="__cpp_variadic_templates" path="" value="200704"/>
+				<pathentry kind="mac" name="__cpp_initializer_lists" path="" value="200806"/>
+				<pathentry kind="mac" name="__cpp_delegating_constructors" path="" value="200604"/>
+				<pathentry kind="mac" name="__cpp_nsdmi" path="" value="200809"/>
+				<pathentry kind="mac" name="__cpp_inheriting_constructors" path="" value="201511"/>
+				<pathentry kind="mac" name="__cpp_ref_qualifiers" path="" value="200710"/>
+				<pathentry kind="mac" name="__cpp_alias_templates" path="" value="200704"/>
+				<pathentry kind="mac" name="__cpp_return_type_deduction" path="" value="201304"/>
+				<pathentry kind="mac" name="__cpp_init_captures" path="" value="201304"/>
+				<pathentry kind="mac" name="__cpp_generic_lambdas" path="" value="201304"/>
+				<pathentry kind="mac" name="__cpp_constexpr" path="" value="201304"/>
+				<pathentry kind="mac" name="__cpp_decltype_auto" path="" value="201304"/>
+				<pathentry kind="mac" name="__cpp_aggregate_nsdmi" path="" value="201304"/>
+				<pathentry kind="mac" name="__cpp_variable_templates" path="" value="201304"/>
+				<pathentry kind="mac" name="__cpp_digit_separators" path="" value="201309"/>
+				<pathentry kind="mac" name="__cpp_sized_deallocation" path="" value="201309"/>
+				<pathentry kind="mac" name="__cpp_threadsafe_static_init" path="" value="200806"/>
+				<pathentry kind="mac" name="__EXCEPTIONS" path="" value="1"/>
+				<pathentry kind="mac" name="__cpp_exceptions" path="" value="199711"/>
 				<pathentry kind="mac" name="__GXX_ABI_VERSION" path="" value="1011"/>
 				<pathentry kind="mac" name="__SCHAR_MAX__" path="" value="0x7f"/>
 				<pathentry kind="mac" name="__SHRT_MAX__" path="" value="0x7fff"/>
@@ -117,6 +156,8 @@
 				<pathentry kind="mac" name="__WINT_WIDTH__" path="" value="32"/>
 				<pathentry kind="mac" name="__PTRDIFF_WIDTH__" path="" value="64"/>
 				<pathentry kind="mac" name="__SIZE_WIDTH__" path="" value="64"/>
+				<pathentry kind="mac" name="__GLIBCXX_TYPE_INT_N_0" path="" value="__int128"/>
+				<pathentry kind="mac" name="__GLIBCXX_BITSIZE_INT_N_0" path="" value="128"/>
 				<pathentry kind="mac" name="__INTMAX_MAX__" path="" value="0x7fffffffffffffffL"/>
 				<pathentry kind="mac" name="__INTMAX_C(c)" path="" value="c ## L"/>
 				<pathentry kind="mac" name="__UINTMAX_MAX__" path="" value="0xffffffffffffffffUL"/>
@@ -195,10 +236,10 @@
 				<pathentry kind="mac" name="__DBL_MAX_EXP__" path="" value="1024"/>
 				<pathentry kind="mac" name="__DBL_MAX_10_EXP__" path="" value="308"/>
 				<pathentry kind="mac" name="__DBL_DECIMAL_DIG__" path="" value="17"/>
-				<pathentry kind="mac" name="__DBL_MAX__" path="" value="((double)1.79769313486231570814527423731704357e+308L)"/>
-				<pathentry kind="mac" name="__DBL_MIN__" path="" value="((double)2.22507385850720138309023271733240406e-308L)"/>
-				<pathentry kind="mac" name="__DBL_EPSILON__" path="" value="((double)2.22044604925031308084726333618164062e-16L)"/>
-				<pathentry kind="mac" name="__DBL_DENORM_MIN__" path="" value="((double)4.94065645841246544176568792868221372e-324L)"/>
+				<pathentry kind="mac" name="__DBL_MAX__" path="" value="double(1.79769313486231570814527423731704357e+308L)"/>
+				<pathentry kind="mac" name="__DBL_MIN__" path="" value="double(2.22507385850720138309023271733240406e-308L)"/>
+				<pathentry kind="mac" name="__DBL_EPSILON__" path="" value="double(2.22044604925031308084726333618164062e-16L)"/>
+				<pathentry kind="mac" name="__DBL_DENORM_MIN__" path="" value="double(4.94065645841246544176568792868221372e-324L)"/>
 				<pathentry kind="mac" name="__DBL_HAS_DENORM__" path="" value="1"/>
 				<pathentry kind="mac" name="__DBL_HAS_INFINITY__" path="" value="1"/>
 				<pathentry kind="mac" name="__DBL_HAS_QUIET_NAN__" path="" value="1"/>
@@ -363,73 +404,30 @@
 				<pathentry kind="mac" name="unix" path="" value="1"/>
 				<pathentry kind="mac" name="__ELF__" path="" value="1"/>
 				<pathentry kind="mac" name="__DECIMAL_BID_FORMAT__" path="" value="1"/>
+				<pathentry kind="mac" name="_GNU_SOURCE" path="" value="1"/>
 				<pathentry kind="mac" name="_STDC_PREDEF_H" path="" value="1"/>
 				<pathentry kind="mac" name="__STDC_IEC_559__" path="" value="1"/>
 				<pathentry kind="mac" name="__STDC_IEC_559_COMPLEX__" path="" value="1"/>
 				<pathentry kind="mac" name="__STDC_ISO_10646__" path="" value="201706L"/>
 				<pathentry kind="mac" name="__STDC_NO_THREADS__" path="" value="1"/>
-				<pathentry kind="mac" name="__cplusplus" path="" value="201402L"/>
-				<pathentry kind="mac" name="__GNUG__" path="" value="7"/>
-				<pathentry kind="mac" name="__GXX_WEAK__" path="" value="1"/>
-				<pathentry kind="mac" name="__DEPRECATED" path="" value="1"/>
-				<pathentry kind="mac" name="__GXX_RTTI" path="" value="1"/>
-				<pathentry kind="mac" name="__cpp_rtti" path="" value="199711"/>
-				<pathentry kind="mac" name="__GXX_EXPERIMENTAL_CXX0X__" path="" value="1"/>
-				<pathentry kind="mac" name="__cpp_binary_literals" path="" value="201304"/>
-				<pathentry kind="mac" name="__cpp_hex_float" path="" value="201603"/>
-				<pathentry kind="mac" name="__cpp_runtime_arrays" path="" value="198712"/>
-				<pathentry kind="mac" name="__cpp_unicode_characters" path="" value="200704"/>
-				<pathentry kind="mac" name="__cpp_raw_strings" path="" value="200710"/>
-				<pathentry kind="mac" name="__cpp_unicode_literals" path="" value="200710"/>
-				<pathentry kind="mac" name="__cpp_user_defined_literals" path="" value="200809"/>
-				<pathentry kind="mac" name="__cpp_lambdas" path="" value="200907"/>
-				<pathentry kind="mac" name="__cpp_range_based_for" path="" value="200907"/>
-				<pathentry kind="mac" name="__cpp_static_assert" path="" value="200410"/>
-				<pathentry kind="mac" name="__cpp_decltype" path="" value="200707"/>
-				<pathentry kind="mac" name="__cpp_attributes" path="" value="200809"/>
-				<pathentry kind="mac" name="__cpp_rvalue_reference" path="" value="200610"/>
-				<pathentry kind="mac" name="__cpp_rvalue_references" path="" value="200610"/>
-				<pathentry kind="mac" name="__cpp_variadic_templates" path="" value="200704"/>
-				<pathentry kind="mac" name="__cpp_initializer_lists" path="" value="200806"/>
-				<pathentry kind="mac" name="__cpp_delegating_constructors" path="" value="200604"/>
-				<pathentry kind="mac" name="__cpp_nsdmi" path="" value="200809"/>
-				<pathentry kind="mac" name="__cpp_inheriting_constructors" path="" value="201511"/>
-				<pathentry kind="mac" name="__cpp_ref_qualifiers" path="" value="200710"/>
-				<pathentry kind="mac" name="__cpp_alias_templates" path="" value="200704"/>
-				<pathentry kind="mac" name="__cpp_return_type_deduction" path="" value="201304"/>
-				<pathentry kind="mac" name="__cpp_init_captures" path="" value="201304"/>
-				<pathentry kind="mac" name="__cpp_generic_lambdas" path="" value="201304"/>
-				<pathentry kind="mac" name="__cpp_constexpr" path="" value="201304"/>
-				<pathentry kind="mac" name="__cpp_decltype_auto" path="" value="201304"/>
-				<pathentry kind="mac" name="__cpp_aggregate_nsdmi" path="" value="201304"/>
-				<pathentry kind="mac" name="__cpp_variable_templates" path="" value="201304"/>
-				<pathentry kind="mac" name="__cpp_digit_separators" path="" value="201309"/>
-				<pathentry kind="mac" name="__cpp_sized_deallocation" path="" value="201309"/>
-				<pathentry kind="mac" name="__cpp_threadsafe_static_init" path="" value="200806"/>
-				<pathentry kind="mac" name="__EXCEPTIONS" path="" value="1"/>
-				<pathentry kind="mac" name="__cpp_exceptions" path="" value="199711"/>
-				<pathentry kind="mac" name="__GLIBCXX_TYPE_INT_N_0" path="" value="__int128"/>
-				<pathentry kind="mac" name="__GLIBCXX_BITSIZE_INT_N_0" path="" value="128"/>
-				<pathentry kind="mac" name="_GNU_SOURCE" path="" value="1"/>
 				<pathentry include="/home/jens/Development/MinHashContainment/src/libMinimizer" kind="inc" path="" system="true"/>
 				<pathentry include="/home/jens/Development/seqan3/include" kind="inc" path="" system="true"/>
 				<pathentry include="/home/jens/Development/seqan3/submodules/sdsl-lite/include" kind="inc" path="" system="true"/>
 				<pathentry include="/home/jens/Development/seqan3/submodules/range-v3/include" kind="inc" path="" system="true"/>
-				<pathentry include="/home/jens/Development/seqan3/submodules/lemon/include" kind="inc" path="" system="true"/>
 				<pathentry include="/home/jens/Development/seqan3/submodules/cereal/include" kind="inc" path="" system="true"/>
 				<pathentry include="/home/jens/Development/MinHashContainment/src/libBloomFilter" kind="inc" path="" system="true"/>
 				<pathentry include="/home/jens/Development/MinHashContainment/build/test/googletest-src/googlemock/include" kind="inc" path="" system="true"/>
 				<pathentry include="/home/jens/Development/MinHashContainment/build/test/googletest-src/googlemock" kind="inc" path="" system="true"/>
 				<pathentry include="/home/jens/Development/MinHashContainment/build/test/googletest-src/googletest/include" kind="inc" path="" system="true"/>
 				<pathentry include="/home/jens/Development/MinHashContainment/build/test/googletest-src/googletest" kind="inc" path="" system="true"/>
+				<pathentry include="/usr/include/c++/7" kind="inc" path="" system="true"/>
+				<pathentry include="/usr/include/x86_64-linux-gnu/c++/7" kind="inc" path="" system="true"/>
+				<pathentry include="/usr/include/c++/7/backward" kind="inc" path="" system="true"/>
 				<pathentry include="/usr/lib/gcc/x86_64-linux-gnu/7/include" kind="inc" path="" system="true"/>
 				<pathentry include="/usr/local/include" kind="inc" path="" system="true"/>
 				<pathentry include="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed" kind="inc" path="" system="true"/>
 				<pathentry include="/usr/include/x86_64-linux-gnu" kind="inc" path="" system="true"/>
 				<pathentry include="/usr/include" kind="inc" path="" system="true"/>
-				<pathentry include="/usr/include/c++/7" kind="inc" path="" system="true"/>
-				<pathentry include="/usr/include/x86_64-linux-gnu/c++/7" kind="inc" path="" system="true"/>
-				<pathentry include="/usr/include/c++/7/backward" kind="inc" path="" system="true"/>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets">
 				<buildTargets>
