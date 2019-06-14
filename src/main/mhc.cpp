@@ -4,6 +4,7 @@
 #include <chrono>
 
 #include "bloomFilter.hpp"
+#include "bloomFilterException.hpp"
 #include "minimizer3.hpp"
 //#include "bloomFilter.hpp"
 //#include "minimizer3.hpp"
@@ -154,7 +155,14 @@ void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::
 		build_ref_bloom_filter(sketch, bf);
 	}
 
-	bf.writeToFile(output);
+	try
+	{
+		bf.writeToFile(output);
+	}
+	catch (BloomFilterException& ex)
+	{
+		std::cerr << ex.what() << ::std::endl;
+	}
 }
 
 void load_query_reads(std::filesystem::path &input, std::vector<dna5_vector> &queries)

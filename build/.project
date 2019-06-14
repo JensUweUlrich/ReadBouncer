@@ -439,6 +439,11 @@
 			<location>/home/jens/Development/MinHashContainment/src/libBloomFilter/bloomFilter.hpp</location>
 		</link>
 		<link>
+			<name>[Targets]/[lib] BloomFilter/Header Files/bloomFilterException.hpp</name>
+			<type>1</type>
+			<location>/home/jens/Development/MinHashContainment/src/libBloomFilter/bloomFilterException.hpp</location>
+		</link>
+		<link>
 			<name>[Targets]/[lib] BloomFilter/Source Files/bloomFilter.cpp</name>
 			<type>1</type>
 			<location>/home/jens/Development/MinHashContainment/src/libBloomFilter/bloomFilter.cpp</location>

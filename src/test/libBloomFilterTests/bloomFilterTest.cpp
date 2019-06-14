@@ -5,6 +5,9 @@
 
 namespace fs = std::experimental::filesystem;
 
+/**
+ * Test fixture class used to set up some ressources required for all tests
+ */
 class BloomFilterTest: public ::testing::Test
 {
 	protected:
@@ -23,6 +26,10 @@ class BloomFilterTest: public ::testing::Test
 		void TearDown() override
 		{
 			delete bf1;
+			if (std::experimental::filesystem::exists(bf_tmp_file))
+			{
+				fs::remove(bf_tmp_file);
+			}
 		}
 
 };
@@ -30,21 +37,34 @@ class BloomFilterTest: public ::testing::Test
 /**
  * Tests
  */
+
+/**
+ * Test for correct computation of optimal Bloom Filter size
+ */
 TEST_F(BloomFilterTest, TestBloomFilterSize)
 {
 	EXPECT_EQ(3742, bf1->bits.size());
 }
 
+/**
+ * Test for correct computation of optimal hash function number
+ */
 TEST_F(BloomFilterTest, TestHashFunctionNumber)
 {
 	EXPECT_EQ(5, bf1->hashes.size());
 }
 
+/**
+ * Test for correctly setting Kmer size in Bloom Filter object
+ */
 TEST_F(BloomFilterTest, TestKmerSize)
 {
 	EXPECT_EQ(19, bf1->kMerSize);
 }
 
+/**
+ * Test writing and reading Bloom Filter to a binary output file
+ */
 TEST_F(BloomFilterTest, TestWriteBloomFilterToFile)
 {
 	bf1->writeToFile(bf_tmp_file);

@@ -1,4 +1,5 @@
 #include "bloomFilter.hpp"
+#include "bloomFilterException.hpp"
 
 // default constructor
 BloomFilter::BloomFilter()
@@ -52,33 +53,64 @@ BloomFilter::~BloomFilter()
  */
 void BloomFilter::writeToFile(const std::experimental::filesystem::path file)
 {
-	std::ofstream fout(file, std::ofstream::out);
+	::std::ofstream fout;
+	fout.exceptions(std::ofstream::failbit | std::ofstream::badbit);
+
+	try
+	{
+		fout.open(file, std::ofstream::out);
+	}
+	catch (std::ofstream::failure &e)
+	{
+		throw BloomFilterException("Could not open " + file.u8string());
+	}
 
 	// store KmerSize in file
-	fout.write((const char*) &kMerSize, sizeof(uint16_t));
+	try
+	{
+		fout.write((const char*) &kMerSize, sizeof(uint16_t));
+	}
+	catch (std::ofstream::failure &e)
+	{
+		throw BloomFilterException("Could not write Kmer size to output file!");
+	}
 
 	// first get number of hash functions/values to store to file
-	std::vector<uint16_t>::size_type m = hashes.size();
-	fout.write((const char*) &m, sizeof(std::vector<bool>::size_type));
-
-	// then convert hash functions to char and save in file
-	for (uint16_t v : hashes)
+	try
 	{
-		fout.write((const char*) &v, sizeof(uint16_t));
+		std::vector<uint16_t>::size_type m = hashes.size();
+		fout.write((const char*) &m, sizeof(std::vector<bool>::size_type));
+
+		// then convert hash functions to char and save in file
+		for (uint16_t v : hashes)
+		{
+			fout.write((const char*) &v, sizeof(uint16_t));
+		}
+	}
+	catch (std::ofstream::failure &e)
+	{
+		throw BloomFilterException("Could not write hash function values to output file!");
 	}
 
 	// first get number of bits in bloom filter and write it to file
-	std::vector<bool>::size_type n = bits.size();
-	fout.write((const char*) &n, sizeof(std::vector<bool>::size_type));
-
-	// then convert every bit to a char and write it to file
-	for (std::vector<bool>::size_type i = 0; i < n;)
+	try
 	{
-		unsigned char aggr = 0;
-		for (unsigned char mask = 1; mask > 0 && i < n; ++i, mask <<= 1)
-			if (bits.at(i))
-				aggr |= mask;
-		fout.write((const char*) &aggr, sizeof(unsigned char));
+		std::vector<bool>::size_type n = bits.size();
+		fout.write((const char*) &n, sizeof(std::vector<bool>::size_type));
+
+		// then convert every bit to a char and write it to file
+		for (std::vector<bool>::size_type i = 0; i < n;)
+		{
+			unsigned char aggr = 0;
+			for (unsigned char mask = 1; mask > 0 && i < n; ++i, mask <<= 1)
+				if (bits.at(i))
+					aggr |= mask;
+			fout.write((const char*) &aggr, sizeof(unsigned char));
+		}
+	}
+	catch (std::ofstream::failure &e)
+	{
+		throw BloomFilterException("Could not write bloom filter bit vector to output file!");
 	}
 
 	fout.close();
