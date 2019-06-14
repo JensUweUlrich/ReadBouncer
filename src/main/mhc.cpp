@@ -107,12 +107,42 @@ void build_ref_bloom_filter(std::vector<uint64_t> &sketch, BloomFilter &bf)
 }
 
 /**
+ * check write access for given filepath
+ * @param file : file path to write/create
+ * return true if file could be created, false otherwise
+ */
+bool checkWriteAccessRights(std::filesystem::path &file)
+{
+	::std::ofstream fout;
+	fout.exceptions(std::ofstream::failbit | std::ofstream::badbit);
+	try
+	{
+		fout.open(file, std::ofstream::out);
+		fout.write("t", sizeof(unsigned char));
+		fout.close();
+		std::filesystem::remove(file);
+	}
+	catch (std::ofstream::failure &e)
+	{
+		return false;
+	}
+
+	return true;
+}
+
+/**
  * create a bloom filter from a set of reference sequences
  * @param refFilePaths : vector of file paths
  * @param output : bloom filter output file
  */
 void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::filesystem::path &output, const float error_rate, uint16_t kMerSize)
 {
+	if (!checkWriteAccessRights(output))
+	{
+		std::cerr << "ERROR: No access right to create or write to " << output.u8string() << std::endl;
+		return;
+	}
+
 	// parse all provided reference files
 	std::vector<std::vector<dna5>> ref_store
 	{ };
@@ -183,8 +213,9 @@ void bottom_up_sketching(dna5_vector &read, BloomFilter &bf)
 	{ };
 	minimizer.setKmerSize(bf.kMerSize);
 	std::vector<uint64_t> sketch = minimizer.getMinimizer(read);
-	int num_containments{0};
-	debug_stream << sketch.size() <<"\n";
+	int num_containments
+	{ 0 };
+	debug_stream << sketch.size() << "\n";
 	for (uint64_t minimizer : sketch)
 	{
 		if (bf.possiblyContains(minimizer))
@@ -213,12 +244,20 @@ void run_program(cmd_arguments &args)
 	{
 		BloomFilter bf
 		{ };
-		bf.readFromFile(args.bloom_filter_output_path);
+		try
+		{
+			bf.readFromFile(args.bloom_filter_output_path);
+		}
+		catch (BloomFilterException &ex)
+		{
+			std::cerr << "ERROR: Failed to read Bloom Filter from " + args.bloom_filter_output_path.u8string() << std::endl;
+			return;
+		}
 
 		// TODO Exchange this method when implementing client architecture for pulling reads from the event sampler
 		// method only used for debugging with provided sequence file
 		std::vector<dna5_vector> queries
-		{};
+		{ };
 		load_query_reads(args.query_read_file, queries);
 		// TODO compute bottom up minhash sketch for every read provided
 		for (std::vector<dna5> query : queries)

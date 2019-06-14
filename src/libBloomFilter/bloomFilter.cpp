@@ -125,12 +125,31 @@ void BloomFilter::writeToFile(const std::experimental::filesystem::path file)
  */
 bool BloomFilter::readFromFile(const std::experimental::filesystem::path file)
 {
-	std::ifstream fin(file, std::ifstream::in);
+	std::ifstream fin;
+	fin.exceptions(std::ofstream::failbit | std::ofstream::badbit);
+
+	try
+	{
+		fin.open(file, std::ifstream::in);
+	}
+	catch(std::ifstream::failure &e)
+	{
+		throw BloomFilterException("Could not open " + file.u8string());
+	}
 
 	// read K-mer size used for minimizer computation
-	fin.read((char*) &kMerSize, sizeof(uint16_t));
+	try
+	{
+		fin.read((char*) &kMerSize, sizeof(uint16_t));
+	}
+	catch (std::ifstream::failure &e)
+	{
+		throw BloomFilterException("Could not read Kmer size from "  + file.u8string());
+	}
 
 	// read number of hash functions and resize array to store hash functions
+	try
+	{
 	std::vector<uint16_t>::size_type m;
 	fin.read((char*) &m, sizeof(std::vector<uint16_t>::size_type));
 	hashes.resize(m);
@@ -140,8 +159,15 @@ bool BloomFilter::readFromFile(const std::experimental::filesystem::path file)
 	{
 		fin.read((char*) &hashes.at(i), sizeof(uint16_t));
 	}
+	}
+	catch (std::ifstream::failure &e)
+	{
+		throw BloomFilterException("Could not read hash function values from " + file.u8string());
+	}
 
 	// read bloom filter bitwise from file
+	try
+	{
 	std::vector<bool>::size_type n;
 	fin.read((char*) &n, sizeof(std::vector<bool>::size_type));
 	bits.resize(n);
@@ -151,6 +177,11 @@ bool BloomFilter::readFromFile(const std::experimental::filesystem::path file)
 		fin.read((char*) &aggr, sizeof(unsigned char));
 		for (unsigned char mask = 1; mask > 0 && i < n; ++i, mask <<= 1)
 			bits.at(i) = aggr & mask;
+	}
+	}
+	catch (std::ifstream::failure &e)
+	{
+		throw BloomFilterException("Could not read bit vector from " + file.u8string());
 	}
 	fin.close();
 
