@@ -1,0 +1,16 @@
+cmake_minimum_required(VERSION 3.4)
+
+project(seqan3-download)
+
+include(ExternalProject)
+ExternalProject_Add(seqan3
+  GIT_REPOSITORY    https://github.com/seqan/seqan3.git
+  GIT_TAG           master
+  SOURCE_DIR        "${CMAKE_CURRENT_BINARY_DIR}/seqan3/seqan3-src"
+  CMAKE_ARGS		"-DCMAKE_PREFIX_PATH=<SOURCE_DIR>/build_system"
+  CONFIGURE_COMMAND	""
+  BUILD_COMMAND		""
+  INSTALL_COMMAND	""
+)
+
+

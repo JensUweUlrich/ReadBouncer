@@ -1,1 +1,0 @@
-cmake -G "Eclipse CDT4 - Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_ECLIPSE_VERSION=4.8 -DCMAKE_CXX_STANDARD=17 -DCMAKE_PREFIX_PATH=/home/jens/Development/seqan3/build_system ../src
