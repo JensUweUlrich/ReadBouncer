@@ -1,0 +1,1 @@
+/usr/bin/c++  -g   CMakeFiles/ReadUntil.dir/mhc.cpp.o  -o ReadUntil -lpthread ../libMinimizer/libMinimizer.a ../libBloomFilter/libBloomFilter.a -lstdc++fs -pthread /usr/lib/x86_64-linux-gnu/libz.so /usr/lib/x86_64-linux-gnu/libbz2.so -lrt 

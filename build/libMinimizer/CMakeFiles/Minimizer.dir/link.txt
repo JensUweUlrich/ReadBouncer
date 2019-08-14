@@ -1,0 +1,2 @@
+/usr/bin/ar qc libMinimizer.a  CMakeFiles/Minimizer.dir/minimizer3.cpp.o
+/usr/bin/ranlib libMinimizer.a
