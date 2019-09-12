@@ -14,8 +14,6 @@
 #include <seqan3/argument_parser/argument_parser.hpp>
 #include <seqan3/argument_parser/validators.hpp>
 
-#include <seqan3/range/view/kmer_hash.hpp>
-
 #include <seqan3/io/record.hpp>
 #include <seqan3/io/sequence_file/format_fasta.hpp>
 #include <seqan3/io/sequence_file/input.hpp>

@@ -9,7 +9,7 @@ std::vector<uint64_t> Minimizer::getMinimizer(dna5_vector & text)
 		{ };
 
 	// Reverse complement without copying/modifying the original string
-	dna5_vector revComp = text | std::view::reverse | view::complement;
+	dna5_vector revComp = text | std::views::reverse | views::complement;
 
 	uint64_t possible = text.size() > w ? text.size() - w + 1 : 1; 	// number of all possible windows in text
 	uint32_t windowKmers = w - k + 1;								// number of kmers in a window
@@ -23,8 +23,8 @@ std::vector<uint64_t> Minimizer::getMinimizer(dna5_vector & text)
 	// Stores hash, begin and end for all k-mers in the window
 	std::deque<uint64_t> windowValues;
 
-	std::vector<uint64_t> kmerHashIt = text | view::kmer_hash(seqan3::shape{seqan3::ungapped{k}});
-	std::vector<uint64_t> revcHashIt = revComp | view::kmer_hash(seqan3::shape{seqan3::ungapped{k}});
+	std::vector<uint64_t> kmerHashIt = text | views::kmer_hash(seqan3::shape{seqan3::ungapped{k}});
+	std::vector<uint64_t> revcHashIt = revComp | views::kmer_hash(seqan3::shape{seqan3::ungapped{k}});
 
 	// Initialisation. We need to compute all hashes for the first window.
 	for (uint32_t i = 0; i < windowKmers; ++i)
