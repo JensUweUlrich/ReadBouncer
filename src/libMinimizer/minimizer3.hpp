@@ -16,7 +16,7 @@ class Minimizer
 		uint64_t seed
 		{ 0x8F3F73B5CF1C9ADE };
 		// k-mer size
-		uint16_t k
+		uint8_t k
 		{ 19 };
 		// window size != w in minimizer paper
 		uint32_t w

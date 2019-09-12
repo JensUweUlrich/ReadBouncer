@@ -23,8 +23,8 @@ std::vector<uint64_t> Minimizer::getMinimizer(dna5_vector & text)
 	// Stores hash, begin and end for all k-mers in the window
 	std::deque<uint64_t> windowValues;
 
-	std::vector<uint64_t> kmerHashIt = text | view::kmer_hash(k);
-	std::vector<uint64_t> revcHashIt = revComp | view::kmer_hash(k);
+	std::vector<uint64_t> kmerHashIt = text | view::kmer_hash(seqan3::shape{seqan3::ungapped{k}});
+	std::vector<uint64_t> revcHashIt = revComp | view::kmer_hash(seqan3::shape{seqan3::ungapped{k}});
 
 	// Initialisation. We need to compute all hashes for the first window.
 	for (uint32_t i = 0; i < windowKmers; ++i)

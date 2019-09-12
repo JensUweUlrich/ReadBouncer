@@ -147,18 +147,20 @@ bool BloomFilter::readFromFile(const std::experimental::filesystem::path file)
 		throw BloomFilterException("Could not read Kmer size from "  + file.u8string());
 	}
 
+	std::cout << kMerSize << std::endl;
 	// read number of hash functions and resize array to store hash functions
 	try
 	{
-	std::vector<uint16_t>::size_type m;
-	fin.read((char*) &m, sizeof(std::vector<uint16_t>::size_type));
-	hashes.resize(m);
+		std::vector<uint16_t>::size_type m;
+		fin.read((char*) &m, sizeof(std::vector<uint16_t>::size_type));
+		std::cout << m << std::endl;
+		hashes.resize(m);
 
-	// read hash functions from file
-	for (int i = 0; i < m; ++i)
-	{
-		fin.read((char*) &hashes.at(i), sizeof(uint16_t));
-	}
+		// read hash functions from file
+		for (int i = 0; i < m; ++i)
+		{
+			fin.read((char*) &hashes.at(i), sizeof(uint16_t));
+		}
 	}
 	catch (std::ifstream::failure &e)
 	{

@@ -143,40 +143,31 @@ void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::
 		return;
 	}
 
+	Minimizer minimizer { };
+	minimizer.setKmerSize(kMerSize);
+
+	uint64_t minimizer_number = 0;
+	std::vector<std::vector<uint64_t>> sketch_vector { };
+
 	// parse all provided reference files
-	std::vector<std::vector<dna5>> ref_store
-	{ };
+
 	debug_stream << "start loading references ....\n";
 	for (std::filesystem::path file : refFilePaths)
 	{
-		// parse all sequences from file
+		// load ref sequences and compute minimizer one after another
 		sequence_file_input fin
 		{ file };
 		for (auto & record : fin)
 		{
-			ref_store.push_back(get<field::SEQ>(record));
-			debug_stream << get<field::ID>(record) << " ... loaded" << "\n";
+			debug_stream << "compute minimizer for " << get<field::ID>(record) << "\n";
+			std::vector<uint64_t> sketch = minimizer.getMinimizer(get<field::SEQ>(record));
+			minimizer_number += sketch.size();
+			sketch_vector.push_back(sketch);
 		}
 	}
 
 	// compute minimizer for all reference sequences
-	Minimizer minimizer
-	{ };
-	minimizer.setKmerSize(kMerSize);
 
-	int i = 1;
-	uint64_t minimizer_number = 0;
-	std::vector<std::vector<uint64_t>> sketch_vector
-	{ };
-	for (std::vector<dna5> ref : ref_store)
-	{
-		debug_stream << "compute minimizer for sequence " << i << "/" << ref_store.size() << "\n";
-
-		std::vector<uint64_t> sketch = minimizer.getMinimizer(ref);
-		minimizer_number += sketch.size();
-		sketch_vector.push_back(sketch);
-		++i;
-	}
 
 	BloomFilter bf(error_rate, minimizer_number, kMerSize);
 
@@ -195,17 +186,7 @@ void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::
 	}
 }
 
-void load_query_reads(std::filesystem::path &input, std::vector<dna5_vector> &queries)
-{
-	sequence_file_input fin
-	{ input };
-	for (auto & record : fin)
-	{
-		queries.push_back(get<field::SEQ>(record));
-	}
-}
-
-void bottom_up_sketching(dna5_vector &read, BloomFilter &bf)
+bool bottom_up_sketching(dna5_vector &read, BloomFilter &bf)
 {
 	std::chrono::high_resolution_clock::time_point begin, end;
 	begin = std::chrono::high_resolution_clock::now();
@@ -227,7 +208,7 @@ void bottom_up_sketching(dna5_vector &read, BloomFilter &bf)
 	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
 	debug_stream << "used time: " << duration << "\n";
 	debug_stream << "Number of minimizer Containments: " << num_containments << "\n";
-
+	return num_containments == sketch.size();
 }
 
 /**
@@ -242,6 +223,7 @@ void run_program(cmd_arguments &args)
 	}
 	else if (std::string("read-until").compare(args.mode) == 0)
 	{
+		debug_stream << "run program" << std::endl;
 		BloomFilter bf
 		{ };
 		try
@@ -253,19 +235,26 @@ void run_program(cmd_arguments &args)
 			std::cerr << "ERROR: Failed to read Bloom Filter from " + args.bloom_filter_output_path.u8string() << std::endl;
 			return;
 		}
-
+		debug_stream << "bloom filter read" << std::endl;
 		// TODO Exchange this method when implementing client architecture for pulling reads from the event sampler
 		// method only used for debugging with provided sequence file
-		std::vector<dna5_vector> queries
-		{ };
-		load_query_reads(args.query_read_file, queries);
+
 		// TODO compute bottom up minhash sketch for every read provided
-		for (std::vector<dna5> query : queries)
+		int num_contained_reads {0};
+		int num_query_reads {0};
+		sequence_file_input fin	{ args.query_read_file };
+		for (auto & record : fin)
 		{
-			std::vector<dna5> read(query.begin(), query.begin() + 500);
-			bottom_up_sketching(read, bf);
+			num_query_reads++;
+			dna5_vector query {get<field::SEQ>(record)};
+			std::vector<dna5> read(query.begin() + 100, query.begin() + 600);
+			if (bottom_up_sketching(read, bf))
+			{
+				num_contained_reads++;
+			}
 
 		}
+		debug_stream << "Number of contained reads: " << num_contained_reads << "/" << num_query_reads << std::endl;
 		// TODO calculate containment of sketches in reference bloom filter
 	}
 }
@@ -279,7 +268,7 @@ int main(int argc, char const ** argv)
 	if (std::string(argv[1]).compare("bloom") == 0)
 	{
 		args.mode = "bloom";
-		argument_parser bloom_parser("mhc bloom", --argc, argv + 1);
+		argument_parser bloom_parser("bloom", --argc, argv + 1);
 		initialize_bloom_argument_parser(bloom_parser, args);
 
 		try
@@ -295,7 +284,7 @@ int main(int argc, char const ** argv)
 	else if (std::string(argv[1]).compare("read-until") == 0)
 	{
 		args.mode = "read-until";
-		argument_parser read_until_parser("mhc read-until", --argc, argv + 1);
+		argument_parser read_until_parser("read-until", --argc, argv + 1);
 		initialize_read_until_argument_parser(read_until_parser, args);
 
 		try
