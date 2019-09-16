@@ -159,6 +159,7 @@ void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::
 		{
 			debug_stream << "compute minimizer for " << get<field::ID>(record) << "\n";
 			std::vector<uint64_t> sketch = minimizer.getMinimizer(get<field::SEQ>(record));
+			debug_stream << "number of minimizers: " << sketch.size() << std::endl;
 			minimizer_number += sketch.size();
 			sketch_vector.push_back(sketch);
 		}

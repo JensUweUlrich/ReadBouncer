@@ -202,7 +202,9 @@ void BloomFilter::initialize_bloom_filter(const float p, const uint64_t minimize
 {
 	// initialize optimal bloom filter size
 	uint64_t size = calculate_bloom_filter_size(p, minimizer_number);
+	debug_stream << "Number of all minimizers: " << minimizer_number << std::endl;
 	bits.resize(size);
+	debug_stream << "Bloom Filter size in bits: " << bits.size() << std::endl;
 
 	// initialize optimal number of hash functions
 	uint64_t hash_func = calculate_hash_function_number(size, minimizer_number);

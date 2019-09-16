@@ -21,12 +21,12 @@ class BloomFilter
 
 		virtual inline uint64_t calculate_bloom_filter_size(const float p, const uint64_t minimizer_number)
 		{
-			return ceil((-1) * (minimizer_number * log(p)) / (pow(log(2.0), 2)));
+			return ceil(minimizer_number * (log(1/p)) / (pow(log(2.0), 2)));
 		}
 
 		virtual inline uint64_t calculate_hash_function_number(const uint64_t filter_size, uint64_t minimizer_number)
 		{
-			return ceil(filter_size / minimizer_number * log(2.0));
+			return ceil(filter_size * log(2.0)/ minimizer_number);
 		}
 
 	// Constructor
