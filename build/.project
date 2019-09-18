@@ -227,6 +227,11 @@
 			<location>/home/jens/Development/MinHashContainment/src/libBloomFilter/bloomFilterException.hpp</location>
 		</link>
 		<link>
+			<name>[Targets]/[lib] BloomFilter/Header Files/bloom_filter.hpp</name>
+			<type>1</type>
+			<location>/home/jens/Development/MinHashContainment/src/libBloomFilter/bloom_filter.hpp</location>
+		</link>
+		<link>
 			<name>[Targets]/[lib] BloomFilter/CMake Rules</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
