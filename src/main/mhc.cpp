@@ -168,21 +168,24 @@ void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::
 	// compute minimizer for all reference sequences
 
 
+
 	BloomFilter bf(error_rate, minimizer_number, kMerSize);
 
-	for (std::vector<uint64_t> sketch : sketch_vector)
-	{
-		build_ref_bloom_filter(sketch, bf);
-	}
+	bf.createOpenBloomFilter(sketch_vector, error_rate, minimizer_number);
 
-	try
-	{
-		bf.writeToFile(output);
-	}
-	catch (BloomFilterException& ex)
-	{
-		std::cerr << ex.what() << ::std::endl;
-	}
+//	for (std::vector<uint64_t> sketch : sketch_vector)
+//	{
+//		build_ref_bloom_filter(sketch, bf);
+//	}
+//
+//	try
+//	{
+//		bf.writeToFile(output);
+//	}
+//	catch (BloomFilterException& ex)
+//	{
+//		std::cerr << ex.what() << ::std::endl;
+//	}
 }
 
 bool bottom_up_sketching(dna5_vector &read, BloomFilter &bf)

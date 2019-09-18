@@ -1,4 +1,5 @@
 #include "bloomFilter.hpp"
+#include "bloom_filter.hpp"
 #include "bloomFilterException.hpp"
 
 
@@ -225,6 +226,39 @@ void BloomFilter::initialize_hash_functions(const uint64_t func_number)
 	{
 		uint64_t randNr = (uint64_t) rand();
 		hashes.push_back(randNr);
+	}
+}
+
+void BloomFilter::createOpenBloomFilter(const std::vector<std::vector<uint64_t>>& sketch_vector, const float& error_rate, const uint64_t& members)
+{
+	bloom_parameters parameters;
+
+	// How many elements roughly do we expect to insert?
+	parameters.projected_element_count = members;
+
+	// Maximum tolerable false positive probability? (0,1)
+	parameters.false_positive_probability = error_rate; // 1 in 10000
+
+	// Simple randomizer (optional)
+	parameters.random_seed = 0xA5A5A5A5;
+
+	if (!parameters)
+	{
+		std::cout << "Error - Invalid set of bloom filter parameters!" << std::endl;
+		return;
+	}
+
+	parameters.compute_optimal_parameters();
+
+
+	//Instantiate Bloom Filter
+	bloom_filter filter(parameters);
+	std::cout << "Open Bloom Filter size in bits: " << filter.size() << std::endl;
+	std::cout << "Opem Bloom Filter hash number: " << filter.hash_count() << std::endl;
+
+	for (std::vector<uint64_t> sketch : sketch_vector)
+	{
+		filter.insert(sketch.begin(), sketch.end());
 	}
 }
 

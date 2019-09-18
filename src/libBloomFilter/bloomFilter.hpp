@@ -75,4 +75,6 @@ class BloomFilter
 
 		virtual bool readFromFile(const std::experimental::filesystem::path file);
 
+		virtual void createOpenBloomFilter(const std::vector<std::vector<uint64_t>>& sketch_vector, const float& error_rate, const uint64_t& members);
+
 };
