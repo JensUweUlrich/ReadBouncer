@@ -1,4 +1,4 @@
-set(BLOOMSOURCES "bloomFilter.cpp" "bloomFilter.hpp" "bloomFilterException.hpp" "bloom_filter.hpp")
+set(BLOOMSOURCES "customBloomFilter.cpp" "customBloomFilter.hpp" "bloomFilterException.hpp" "bloom_filter.hpp")
 
 add_library (BloomFilter STATIC ${BLOOMSOURCES})
 

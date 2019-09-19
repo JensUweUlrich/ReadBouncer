@@ -1,10 +1,9 @@
-#include "bloomFilter.hpp"
-#include "bloom_filter.hpp"
+#include "customBloomFilter.hpp"
 #include "bloomFilterException.hpp"
 
 
 // default constructor
-BloomFilter::BloomFilter()
+CustomBloomFilter::CustomBloomFilter()
 {
 	// do nothing
 }
@@ -17,7 +16,7 @@ BloomFilter::BloomFilter()
  * @param minimizer_number : number of minimizers to be stored in bloom filter
  * @param k : k-mer size
  */
-BloomFilter::BloomFilter(const float error_rate, const uint64_t minimizer_number, const uint16_t k)
+CustomBloomFilter::CustomBloomFilter(const float error_rate, const uint64_t minimizer_number, const uint16_t k)
 {
 	kMerSize = k;
 	initialize_bloom_filter(error_rate, minimizer_number);
@@ -30,13 +29,19 @@ BloomFilter::BloomFilter(const float error_rate, const uint64_t minimizer_number
  * @param size : default bloom filter size
  * @param numHashes : number of hash functions
  */
-BloomFilter::BloomFilter(uint64_t size, uint8_t numHashes)
+CustomBloomFilter::CustomBloomFilter(uint64_t size, uint8_t numHashes)
 {
 	bits.resize(size);
 	initialize_hash_functions(numHashes);
 }
 
-BloomFilter::~BloomFilter()
+CustomBloomFilter::CustomBloomFilter(const bloom_parameters& parameters, const uint16_t& newKmerSize) : bloom_filter(parameters)
+{
+	// just call base class constructor and set k-mer size
+	kMerSize = newKmerSize;
+}
+
+CustomBloomFilter::~CustomBloomFilter()
 {
 	// do nothing
 }
@@ -53,7 +58,7 @@ BloomFilter::~BloomFilter()
  * @param file : filesystem path to the output file
  *
  */
-void BloomFilter::writeToFile(const std::experimental::filesystem::path file)
+void CustomBloomFilter::writeToFile(const std::experimental::filesystem::path file)
 {
 	::std::ofstream fout;
 	fout.exceptions(std::ofstream::failbit | std::ofstream::badbit);
@@ -119,13 +124,165 @@ void BloomFilter::writeToFile(const std::experimental::filesystem::path file)
 
 }
 
+
+void CustomBloomFilter::writeToFile2(const std::experimental::filesystem::path& file)
+{
+	::std::ofstream fout;
+	fout.exceptions(std::ofstream::failbit | std::ofstream::badbit);
+
+	try
+	{
+		fout.open(file, std::ofstream::out);
+	}
+	catch (std::ofstream::failure &e)
+	{
+		throw BloomFilterException("Could not open " + file.u8string());
+	}
+
+	// store KmerSize in file
+	try
+	{
+		fout.write((const char*) &kMerSize, sizeof(uint16_t));
+	}
+	catch (std::ofstream::failure &e)
+	{
+		throw BloomFilterException("Could not write Kmer size to output file!");
+	}
+
+
+	// store computed hash seeds
+	try
+	{
+		// first get number of hash seeds to store to file
+		std::size_t s = hash_count();
+		fout.write((const char*) &s, sizeof(s));
+
+		// then convert hash seeds to char and save in file
+		for (bloom_type v : salt_)
+		{
+			std::cout << v << std::endl;
+			fout.write((const char*) &v, sizeof(bloom_type));
+		}
+	}
+	catch (std::ofstream::failure &e)
+	{
+		throw BloomFilterException("Could not write hash function values to output file!");
+	}
+
+	// first get number of bits in bloom filter and write it to file
+	try
+	{
+		unsigned long long int n = size();
+		fout.write((const char*) &n, sizeof(unsigned long long int));
+		
+		// then convert every bit to a char and write it to file
+		int i = 0;
+		for (unsigned char aggr : bit_table_)
+		{
+			if (i < 10 && int(aggr) != 0)
+			{
+				std::cout << int(aggr) << std::endl;
+				++i;
+			}
+			fout.write((const char*) &aggr, sizeof(unsigned char));
+		}
+	}
+	catch (std::ofstream::failure &e)
+	{
+		throw BloomFilterException("Could not write bloom filter bit vector to output file!");
+	}
+
+	fout.close();
+
+}
+
+bool CustomBloomFilter::readFromFile2(const std::experimental::filesystem::path& file)
+{
+	std::ifstream fin;
+	fin.exceptions(std::ofstream::failbit | std::ofstream::badbit);
+
+	try
+	{
+		fin.open(file, std::ifstream::in);
+	}
+	catch(std::ifstream::failure &e)
+	{
+		throw BloomFilterException("Could not open " + file.u8string());
+	}
+
+	// read K-mer size used for minimizer computation
+	try
+	{
+		fin.read((char*) &kMerSize, sizeof(uint16_t));
+	}
+	catch (std::ifstream::failure &e)
+	{
+		throw BloomFilterException("Could not read Kmer size from "  + file.u8string());
+	}
+
+	std::cout << "K-mer size set to : " << kMerSize << std::endl;
+	// read number of hash functions and resize array to store hash functions
+	try
+	{
+		std::size_t m;
+		fin.read((char*) &m, sizeof(size_t));
+		std::cout << "Number of hash functions set to : " << m << std::endl;
+		salt_count_ = m;
+		salt_.resize(salt_count_);
+
+		// read hash functions from file
+		for (int i = 0; i < salt_count_; ++i)
+		{
+			fin.read((char*) &salt_.at(i), sizeof(bloom_type));
+		}
+		
+		for (bloom_type seed : salt_)
+		{
+			std::cout << seed << std::endl;
+		}
+	}
+	catch (std::ifstream::failure &e)
+	{
+		throw BloomFilterException("Could not read hash function values from " + file.u8string());
+	}
+	
+	// read bloom filter from file
+	try
+	{
+		unsigned long long int n;
+		fin.read((char*) &n, sizeof(unsigned long long int));
+		std::cout << "Bloom filter size : " << n << std::endl;
+		table_size_ = n;
+		bit_table_.resize(table_size_ / bits_per_char, static_cast<unsigned char>(0x00));
+		
+		int k = 0;
+		for (unsigned long long int i = 0; i < bit_table_.size(); ++i)
+		{
+			fin.read((char*) &bit_table_.at(i), sizeof(unsigned char));
+			
+			if (k < 10 && int(bit_table_.at(i)) != 0)
+			{
+				std::cout << int(bit_table_.at(i)) << std::endl;
+				++k;
+			}
+		}
+	}
+	catch (std::ifstream::failure &e)
+	{
+		throw BloomFilterException("Could not read bit vector from " + file.u8string());
+	}
+	fin.close();
+
+	return true;
+}
+
 /**
  * parse bloom filter from an input binary file
  *
  * @param file : filesystem path to bloom filter input file
  *
  */
-bool BloomFilter::readFromFile(const std::experimental::filesystem::path file)
+bool CustomBloomFilter::readFromFile(const std::experimental::filesystem::path file)
 {
 	std::ifstream fin;
 	fin.exceptions(std::ofstream::failbit | std::ofstream::badbit);
@@ -200,7 +357,7 @@ bool BloomFilter::readFromFile(const std::experimental::filesystem::path file)
  * @param p : maximum false positive rate
  * @param minimizer number : number of minimizers to be stored in the bloom filter
  */
-void BloomFilter::initialize_bloom_filter(const float p, const uint64_t minimizer_number)
+void CustomBloomFilter::initialize_bloom_filter(const float p, const uint64_t minimizer_number)
 {
 	// initialize optimal bloom filter size
 	uint64_t size = calculate_bloom_filter_size(p, minimizer_number);
@@ -218,7 +375,7 @@ void BloomFilter::initialize_bloom_filter(const float p, const uint64_t minimize
  *
  * @param func_number : number of hash function values to initialize
  */
-void BloomFilter::initialize_hash_functions(const uint64_t func_number)
+void CustomBloomFilter::initialize_hash_functions(const uint64_t func_number)
 {
 	srand(time(NULL));
 	// initialize vector with random numbers to XOR given hash value
@@ -229,7 +386,7 @@ void BloomFilter::initialize_hash_functions(const uint64_t func_number)
 	}
 }
 
-void BloomFilter::createOpenBloomFilter(const std::vector<std::vector<uint64_t>>& sketch_vector, const float& error_rate, const uint64_t& members)
+void CustomBloomFilter::createBloomFilter(const std::vector<std::vector<uint64_t>>& sketch_vector, const float& error_rate, const uint64_t& members)
 {
 	bloom_parameters parameters;
 

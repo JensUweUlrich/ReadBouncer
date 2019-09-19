@@ -1,6 +1,6 @@
 //#include "mockBloomFilter.hpp"
 //#include "gmock/gmock.h"
-#include "bloomFilter.hpp"
+#include "customBloomFilter.hpp"
 #include "gtest/gtest.h"
 
 namespace fs = std::experimental::filesystem;
@@ -12,12 +12,12 @@ class BloomFilterTest: public ::testing::Test
 {
 	protected:
 
-		BloomFilter * bf1;
+		CustomBloomFilter * bf1;
 		fs::path bf_tmp_file;
 
 		void SetUp() override
 		{
-			bf1 = new BloomFilter(0.05, 600, 19);
+			bf1 = new CustomBloomFilter(0.05, 600, 19);
 			fs::path tmp_dir = fs::temp_directory_path();
 			fs::path f ("tmp_bloom_filter.temp");
 			bf_tmp_file = tmp_dir / f;
@@ -71,7 +71,7 @@ TEST_F(BloomFilterTest, TestWriteBloomFilterToFile)
 	// fatal failure if file does not exist
 	ASSERT_TRUE(std::experimental::filesystem::exists(bf_tmp_file));
 
-	BloomFilter bf2
+	CustomBloomFilter bf2
 	{ };
 	// fatal failure if read from file failed
 	ASSERT_TRUE(bf2.readFromFile(bf_tmp_file));

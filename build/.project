@@ -42,11 +42,11 @@
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.build.arguments</key>
-					<value></value>
+					<value>-j128</value>
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.buildLocation</key>
-					<value>/home/jens/Development/MinHashContainment/build</value>
+					<value>/home/ulrichj/tools/ReadUntil/build</value>
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.useDefaultBuildCmd</key>
@@ -82,7 +82,7 @@
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.build.location</key>
-					<value>/home/jens/Development/MinHashContainment/build</value>
+					<value>/home/ulrichj/tools/ReadUntil/build</value>
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.autoBuildTarget</key>
@@ -109,7 +109,7 @@
 		<link>
 			<name>[Source directory]</name>
 			<type>2</type>
-			<location>/home/jens/Development/MinHashContainment/src</location>
+			<location>/home/ulrichj/tools/ReadUntil/src</location>
 		</link>
 		<link>
 			<name>[Subprojects]</name>
@@ -119,22 +119,22 @@
 		<link>
 			<name>[Subprojects]/ReadUntil</name>
 			<type>2</type>
-			<location>/home/jens/Development/MinHashContainment/src</location>
+			<location>/home/ulrichj/tools/ReadUntil/src</location>
 		</link>
 		<link>
 			<name>[Subprojects]/gmock</name>
 			<type>2</type>
-			<location>/home/jens/Development/MinHashContainment/build/test/googletest-src/googlemock</location>
+			<location>/home/ulrichj/tools/ReadUntil/build/test/googletest-src/googlemock</location>
 		</link>
 		<link>
 			<name>[Subprojects]/googletest-distribution</name>
 			<type>2</type>
-			<location>/home/jens/Development/MinHashContainment/build/test/googletest-src</location>
+			<location>/home/ulrichj/tools/ReadUntil/build/test/googletest-src</location>
 		</link>
 		<link>
 			<name>[Subprojects]/gtest</name>
 			<type>2</type>
-			<location>/home/jens/Development/MinHashContainment/build/test/googletest-src/googletest</location>
+			<location>/home/ulrichj/tools/ReadUntil/build/test/googletest-src/googletest</location>
 		</link>
 		<link>
 			<name>[Targets]</name>
@@ -159,7 +159,7 @@
 		<link>
 			<name>[Targets]/[lib] Minimizer/Source Files/minimizer3.cpp</name>
 			<type>1</type>
-			<location>/home/jens/Development/MinHashContainment/src/libMinimizer/minimizer3.cpp</location>
+			<location>/home/ulrichj/tools/ReadUntil/src/libMinimizer/minimizer3.cpp</location>
 		</link>
 		<link>
 			<name>[Targets]/[lib] Minimizer/Header Files</name>
@@ -169,7 +169,7 @@
 		<link>
 			<name>[Targets]/[lib] Minimizer/Header Files/minimizer3.hpp</name>
 			<type>1</type>
-			<location>/home/jens/Development/MinHashContainment/src/libMinimizer/minimizer3.hpp</location>
+			<location>/home/ulrichj/tools/ReadUntil/src/libMinimizer/minimizer3.hpp</location>
 		</link>
 		<link>
 			<name>[Targets]/[lib] Minimizer/CMake Rules</name>
@@ -207,9 +207,9 @@
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Targets]/[lib] BloomFilter/Source Files/bloomFilter.cpp</name>
+			<name>[Targets]/[lib] BloomFilter/Source Files/customBloomFilter.cpp</name>
 			<type>1</type>
-			<location>/home/jens/Development/MinHashContainment/src/libBloomFilter/bloomFilter.cpp</location>
+			<location>/home/ulrichj/tools/ReadUntil/src/libBloomFilter/customBloomFilter.cpp</location>
 		</link>
 		<link>
 			<name>[Targets]/[lib] BloomFilter/Header Files</name>
@@ -217,19 +217,19 @@
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Targets]/[lib] BloomFilter/Header Files/bloomFilter.hpp</name>
+			<name>[Targets]/[lib] BloomFilter/Header Files/customBloomFilter.hpp</name>
 			<type>1</type>
-			<location>/home/jens/Development/MinHashContainment/src/libBloomFilter/bloomFilter.hpp</location>
+			<location>/home/ulrichj/tools/ReadUntil/src/libBloomFilter/customBloomFilter.hpp</location>
 		</link>
 		<link>
 			<name>[Targets]/[lib] BloomFilter/Header Files/bloomFilterException.hpp</name>
 			<type>1</type>
-			<location>/home/jens/Development/MinHashContainment/src/libBloomFilter/bloomFilterException.hpp</location>
+			<location>/home/ulrichj/tools/ReadUntil/src/libBloomFilter/bloomFilterException.hpp</location>
 		</link>
 		<link>
 			<name>[Targets]/[lib] BloomFilter/Header Files/bloom_filter.hpp</name>
 			<type>1</type>
-			<location>/home/jens/Development/MinHashContainment/src/libBloomFilter/bloom_filter.hpp</location>
+			<location>/home/ulrichj/tools/ReadUntil/src/libBloomFilter/bloom_filter.hpp</location>
 		</link>
 		<link>
 			<name>[Targets]/[lib] BloomFilter/CMake Rules</name>
@@ -269,7 +269,7 @@
 		<link>
 			<name>[Targets]/[exe] ReadUntil/Source Files/mhc.cpp</name>
 			<type>1</type>
-			<location>/home/jens/Development/MinHashContainment/src/main/mhc.cpp</location>
+			<location>/home/ulrichj/tools/ReadUntil/src/main/mhc.cpp</location>
 		</link>
 		<link>
 			<name>[Targets]/[exe] ReadUntil/Header Files</name>
@@ -314,7 +314,7 @@
 		<link>
 			<name>[Targets]/[lib] gmock_main/Source Files/gmock_main.cc</name>
 			<type>1</type>
-			<location>/home/jens/Development/MinHashContainment/build/test/googletest-src/googlemock/src/gmock_main.cc</location>
+			<location>/home/ulrichj/tools/ReadUntil/build/test/googletest-src/googlemock/src/gmock_main.cc</location>
 		</link>
 		<link>
 			<name>[Targets]/[lib] gmock_main/Header Files</name>
@@ -359,7 +359,7 @@
 		<link>
 			<name>[Targets]/[lib] gmock/Source Files/gmock-all.cc</name>
 			<type>1</type>
-			<location>/home/jens/Development/MinHashContainment/build/test/googletest-src/googlemock/src/gmock-all.cc</location>
+			<location>/home/ulrichj/tools/ReadUntil/build/test/googletest-src/googlemock/src/gmock-all.cc</location>
 		</link>
 		<link>
 			<name>[Targets]/[lib] gmock/Header Files</name>
@@ -404,7 +404,7 @@
 		<link>
 			<name>[Targets]/[lib] gtest_main/Source Files/gtest_main.cc</name>
 			<type>1</type>
-			<location>/home/jens/Development/MinHashContainment/build/test/googletest-src/googletest/src/gtest_main.cc</location>
+			<location>/home/ulrichj/tools/ReadUntil/build/test/googletest-src/googletest/src/gtest_main.cc</location>
 		</link>
 		<link>
 			<name>[Targets]/[lib] gtest_main/Header Files</name>
@@ -449,7 +449,7 @@
 		<link>
 			<name>[Targets]/[lib] gtest/Source Files/gtest-all.cc</name>
 			<type>1</type>
-			<location>/home/jens/Development/MinHashContainment/build/test/googletest-src/googletest/src/gtest-all.cc</location>
+			<location>/home/ulrichj/tools/ReadUntil/build/test/googletest-src/googletest/src/gtest-all.cc</location>
 		</link>
 		<link>
 			<name>[Targets]/[lib] gtest/Header Files</name>
@@ -494,7 +494,7 @@
 		<link>
 			<name>[Targets]/[exe] BloomFilterTest/Source Files/bloomFilterTest.cpp</name>
 			<type>1</type>
-			<location>/home/jens/Development/MinHashContainment/src/test/libBloomFilterTests/bloomFilterTest.cpp</location>
+			<location>/home/ulrichj/tools/ReadUntil/src/test/libBloomFilterTests/bloomFilterTest.cpp</location>
 		</link>
 		<link>
 			<name>[Targets]/[exe] BloomFilterTest/Header Files</name>

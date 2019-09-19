@@ -27,10 +27,10 @@
 				<pathentry kind="mac" name="__STDC_UTF_32__" path="" value="1"/>
 				<pathentry kind="mac" name="__STDC_HOSTED__" path="" value="1"/>
 				<pathentry kind="mac" name="__GNUC__" path="" value="7"/>
-				<pathentry kind="mac" name="__GNUC_MINOR__" path="" value="4"/>
-				<pathentry kind="mac" name="__GNUC_PATCHLEVEL__" path="" value=" "/>
-				<pathentry kind="mac" name="__VERSION__" path="" value="&quot;7.4.0&quot;"/>
-				<pathentry kind="mac" name="__ATOMIC_RELAXED" path="" value=" "/>
+				<pathentry kind="mac" name="__GNUC_MINOR__" path="" value="3"/>
+				<pathentry kind="mac" name="__GNUC_PATCHLEVEL__" path="" value="0"/>
+				<pathentry kind="mac" name="__VERSION__" path="" value="&quot;7.3.0&quot;"/>
+				<pathentry kind="mac" name="__ATOMIC_RELAXED" path="" value="0"/>
 				<pathentry kind="mac" name="__ATOMIC_SEQ_CST" path="" value="5"/>
 				<pathentry kind="mac" name="__ATOMIC_ACQUIRE" path="" value="2"/>
 				<pathentry kind="mac" name="__ATOMIC_RELEASE" path="" value="3"/>
@@ -40,7 +40,7 @@
 				<pathentry kind="mac" name="__PIC__" path="" value="2"/>
 				<pathentry kind="mac" name="__pie__" path="" value="2"/>
 				<pathentry kind="mac" name="__PIE__" path="" value="2"/>
-				<pathentry kind="mac" name="__FINITE_MATH_ONLY__" path="" value=" "/>
+				<pathentry kind="mac" name="__FINITE_MATH_ONLY__" path="" value="0"/>
 				<pathentry kind="mac" name="_LP64" path="" value="1"/>
 				<pathentry kind="mac" name="__LP64__" path="" value="1"/>
 				<pathentry kind="mac" name="__SIZEOF_INT__" path="" value="4"/>
@@ -211,8 +211,8 @@
 				<pathentry kind="mac" name="__UINTPTR_MAX__" path="" value="0xffffffffffffffffUL"/>
 				<pathentry kind="mac" name="__GCC_IEC_559" path="" value="2"/>
 				<pathentry kind="mac" name="__GCC_IEC_559_COMPLEX" path="" value="2"/>
-				<pathentry kind="mac" name="__FLT_EVAL_METHOD__" path="" value=" "/>
-				<pathentry kind="mac" name="__FLT_EVAL_METHOD_TS_18661_3__" path="" value=" "/>
+				<pathentry kind="mac" name="__FLT_EVAL_METHOD__" path="" value="0"/>
+				<pathentry kind="mac" name="__FLT_EVAL_METHOD_TS_18661_3__" path="" value="0"/>
 				<pathentry kind="mac" name="__DEC_EVAL_METHOD__" path="" value="2"/>
 				<pathentry kind="mac" name="__FLT_RADIX__" path="" value="2"/>
 				<pathentry kind="mac" name="__FLT_MANT_DIG__" path="" value="24"/>
@@ -370,7 +370,6 @@
 				<pathentry kind="mac" name="__GCC_ATOMIC_POINTER_LOCK_FREE" path="" value="2"/>
 				<pathentry kind="mac" name="__GCC_HAVE_DWARF2_CFI_ASM" path="" value="1"/>
 				<pathentry kind="mac" name="__PRAGMA_REDEFINE_EXTNAME" path="" value="1"/>
-				<pathentry kind="mac" name="__SSP_STRONG__" path="" value="3"/>
 				<pathentry kind="mac" name="__SIZEOF_INT128__" path="" value="16"/>
 				<pathentry kind="mac" name="__SIZEOF_WCHAR_T__" path="" value="4"/>
 				<pathentry kind="mac" name="__SIZEOF_WINT_T__" path="" value="4"/>
@@ -405,434 +404,428 @@
 				<pathentry kind="mac" name="__ELF__" path="" value="1"/>
 				<pathentry kind="mac" name="__DECIMAL_BID_FORMAT__" path="" value="1"/>
 				<pathentry kind="mac" name="_GNU_SOURCE" path="" value="1"/>
-				<pathentry kind="mac" name="_STDC_PREDEF_H" path="" value="1"/>
-				<pathentry kind="mac" name="__STDC_IEC_559__" path="" value="1"/>
-				<pathentry kind="mac" name="__STDC_IEC_559_COMPLEX__" path="" value="1"/>
-				<pathentry kind="mac" name="__STDC_ISO_10646__" path="" value="201706L"/>
-				<pathentry kind="mac" name="__STDC_NO_THREADS__" path="" value="1"/>
-				<pathentry include="/home/jens/Development/MinHashContainment/src/libMinimizer" kind="inc" path="" system="true"/>
-				<pathentry include="/home/jens/Development/MinHashContainment/build/seqan/seqan3/seqan3-src/include" kind="inc" path="" system="true"/>
-				<pathentry include="/home/jens/Development/MinHashContainment/build/seqan/seqan3/seqan3-src/submodules/sdsl-lite/include" kind="inc" path="" system="true"/>
-				<pathentry include="/home/jens/Development/MinHashContainment/build/seqan/seqan3/seqan3-src/submodules/range-v3/include" kind="inc" path="" system="true"/>
-				<pathentry include="/home/jens/Development/MinHashContainment/build/seqan/seqan3/seqan3-src/submodules/cereal/include" kind="inc" path="" system="true"/>
-				<pathentry include="/home/jens/Development/MinHashContainment/src/libBloomFilter" kind="inc" path="" system="true"/>
-				<pathentry include="/home/jens/Development/MinHashContainment/build/test/googletest-src/googlemock/include" kind="inc" path="" system="true"/>
-				<pathentry include="/home/jens/Development/MinHashContainment/build/test/googletest-src/googlemock" kind="inc" path="" system="true"/>
-				<pathentry include="/home/jens/Development/MinHashContainment/build/test/googletest-src/googletest/include" kind="inc" path="" system="true"/>
-				<pathentry include="/home/jens/Development/MinHashContainment/build/test/googletest-src/googletest" kind="inc" path="" system="true"/>
-				<pathentry include="/usr/include/c++/7" kind="inc" path="" system="true"/>
-				<pathentry include="/usr/include/x86_64-linux-gnu/c++/7" kind="inc" path="" system="true"/>
-				<pathentry include="/usr/include/c++/7/backward" kind="inc" path="" system="true"/>
-				<pathentry include="/usr/lib/gcc/x86_64-linux-gnu/7/include" kind="inc" path="" system="true"/>
-				<pathentry include="/usr/local/include" kind="inc" path="" system="true"/>
-				<pathentry include="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed" kind="inc" path="" system="true"/>
-				<pathentry include="/usr/include/x86_64-linux-gnu" kind="inc" path="" system="true"/>
-				<pathentry include="/usr/include" kind="inc" path="" system="true"/>
+				<pathentry include="/home/ulrichj/tools/ReadUntil/src/libMinimizer" kind="inc" path="" system="true"/>
+				<pathentry include="/home/ulrichj/tools/ReadUntil/build/seqan/seqan3/seqan3-src/include" kind="inc" path="" system="true"/>
+				<pathentry include="/home/ulrichj/tools/ReadUntil/build/seqan/seqan3/seqan3-src/submodules/sdsl-lite/include" kind="inc" path="" system="true"/>
+				<pathentry include="/home/ulrichj/tools/ReadUntil/build/seqan/seqan3/seqan3-src/submodules/range-v3/include" kind="inc" path="" system="true"/>
+				<pathentry include="/home/ulrichj/tools/ReadUntil/build/seqan/seqan3/seqan3-src/submodules/cereal/include" kind="inc" path="" system="true"/>
+				<pathentry include="/home/ulrichj/tools/ReadUntil/src/libBloomFilter" kind="inc" path="" system="true"/>
+				<pathentry include="/home/ulrichj/tools/ReadUntil/build/test/googletest-src/googlemock/include" kind="inc" path="" system="true"/>
+				<pathentry include="/home/ulrichj/tools/ReadUntil/build/test/googletest-src/googlemock" kind="inc" path="" system="true"/>
+				<pathentry include="/home/ulrichj/tools/ReadUntil/build/test/googletest-src/googletest/include" kind="inc" path="" system="true"/>
+				<pathentry include="/home/ulrichj/tools/ReadUntil/build/test/googletest-src/googletest" kind="inc" path="" system="true"/>
+				<pathentry include="/mnt/biolibs/conda/ulrichj/.conda/envs/readuntil/x86_64-conda_cos6-linux-gnu/include/c++/7.3.0" kind="inc" path="" system="true"/>
+				<pathentry include="/mnt/biolibs/conda/ulrichj/.conda/envs/readuntil/x86_64-conda_cos6-linux-gnu/include/c++/7.3.0/x86_64-conda_cos6-linux-gnu" kind="inc" path="" system="true"/>
+				<pathentry include="/mnt/biolibs/conda/ulrichj/.conda/envs/readuntil/x86_64-conda_cos6-linux-gnu/include/c++/7.3.0/backward" kind="inc" path="" system="true"/>
+				<pathentry include="/mnt/biolibs/conda/ulrichj/.conda/envs/readuntil/lib/gcc/x86_64-conda_cos6-linux-gnu/7.3.0/include" kind="inc" path="" system="true"/>
+				<pathentry include="/mnt/biolibs/conda/ulrichj/.conda/envs/readuntil/lib/gcc/x86_64-conda_cos6-linux-gnu/7.3.0/include-fixed" kind="inc" path="" system="true"/>
+				<pathentry include="/mnt/biolibs/conda/ulrichj/.conda/envs/readuntil/x86_64-conda_cos6-linux-gnu/include" kind="inc" path="" system="true"/>
+				<pathentry include="/mnt/biolibs/conda/ulrichj/.conda/envs/readuntil/x86_64-conda_cos6-linux-gnu/sysroot/usr/include" kind="inc" path="" system="true"/>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets">
 				<buildTargets>
 					<target name=": install/strip" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>install/strip</buildTarget>
-						<stopOnError>true</stopOnError>
-						<useDefaultCommand>false</useDefaultCommand>
-					</target>
-					<target name=": install" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
-						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
-						<buildTarget>install</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name=": install/local" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>install/local</buildTarget>
-						<stopOnError>true</stopOnError>
-						<useDefaultCommand>false</useDefaultCommand>
-					</target>
-					<target name=": list_install_components" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
-						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
-						<buildTarget>list_install_components</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name=": edit_cache" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>edit_cache</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name=": rebuild_cache" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>rebuild_cache</buildTarget>
+						<stopOnError>true</stopOnError>
+						<useDefaultCommand>false</useDefaultCommand>
+					</target>
+					<target name=": list_install_components" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+						<buildCommand>/usr/bin/make</buildCommand>
+						<buildArguments>-j128</buildArguments>
+						<buildTarget>list_install_components</buildTarget>
+						<stopOnError>true</stopOnError>
+						<useDefaultCommand>false</useDefaultCommand>
+					</target>
+					<target name=": install" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+						<buildCommand>/usr/bin/make</buildCommand>
+						<buildArguments>-j128</buildArguments>
+						<buildTarget>install</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name=": all" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>all</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name=": clean" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>clean</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name=": all" path="seqan" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>all</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name=": clean" path="seqan" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>clean</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name="[lib] Minimizer" path="libMinimizer" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>Minimizer</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name="[lib] Minimizer/fast" path="libMinimizer" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>Minimizer/fast</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name="Build" path="[Targets]/[lib] Minimizer" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments>-C "/home/jens/Development/MinHashContainment/build" </buildArguments>
+						<buildArguments>-C "/home/ulrichj/tools/ReadUntil/build" -j128</buildArguments>
 						<buildTarget>Minimizer</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name="Clean" path="[Targets]/[lib] Minimizer" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/cmake</buildCommand>
-						<buildArguments>-E chdir "/home/jens/Development/MinHashContainment/build/libMinimizer" "/usr/bin/cmake" -P "CMakeFiles/Minimizer.dir/cmake_clean.cmake"</buildArguments>
+						<buildArguments>-E chdir "/home/ulrichj/tools/ReadUntil/build/libMinimizer" "/usr/bin/cmake" -P "CMakeFiles/Minimizer.dir/cmake_clean.cmake"</buildArguments>
 						<buildTarget></buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name=": all" path="libMinimizer" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>all</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name=": clean" path="libMinimizer" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>clean</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name="[lib] BloomFilter" path="libBloomFilter" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>BloomFilter</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name="[lib] BloomFilter/fast" path="libBloomFilter" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>BloomFilter/fast</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name="Build" path="[Targets]/[lib] BloomFilter" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments>-C "/home/jens/Development/MinHashContainment/build" </buildArguments>
+						<buildArguments>-C "/home/ulrichj/tools/ReadUntil/build" -j128</buildArguments>
 						<buildTarget>BloomFilter</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name="Clean" path="[Targets]/[lib] BloomFilter" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/cmake</buildCommand>
-						<buildArguments>-E chdir "/home/jens/Development/MinHashContainment/build/libBloomFilter" "/usr/bin/cmake" -P "CMakeFiles/BloomFilter.dir/cmake_clean.cmake"</buildArguments>
+						<buildArguments>-E chdir "/home/ulrichj/tools/ReadUntil/build/libBloomFilter" "/usr/bin/cmake" -P "CMakeFiles/BloomFilter.dir/cmake_clean.cmake"</buildArguments>
 						<buildTarget></buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name=": all" path="libBloomFilter" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>all</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name=": clean" path="libBloomFilter" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>clean</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name="[exe] ReadUntil" path="main" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>ReadUntil</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name="[exe] ReadUntil/fast" path="main" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>ReadUntil/fast</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name="Build" path="[Targets]/[exe] ReadUntil" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments>-C "/home/jens/Development/MinHashContainment/build" </buildArguments>
+						<buildArguments>-C "/home/ulrichj/tools/ReadUntil/build" -j128</buildArguments>
 						<buildTarget>ReadUntil</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name="Clean" path="[Targets]/[exe] ReadUntil" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/cmake</buildCommand>
-						<buildArguments>-E chdir "/home/jens/Development/MinHashContainment/build/main" "/usr/bin/cmake" -P "CMakeFiles/ReadUntil.dir/cmake_clean.cmake"</buildArguments>
+						<buildArguments>-E chdir "/home/ulrichj/tools/ReadUntil/build/main" "/usr/bin/cmake" -P "CMakeFiles/ReadUntil.dir/cmake_clean.cmake"</buildArguments>
 						<buildTarget></buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name=": all" path="main" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>all</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name=": clean" path="main" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>clean</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name=": all" path="test" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>all</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name=": clean" path="test" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>clean</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name=": all" path="test/googletest-build" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>all</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name=": clean" path="test/googletest-build" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>clean</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name="[lib] gmock_main" path="test/googletest-build/googlemock" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>gmock_main</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name="[lib] gmock_main/fast" path="test/googletest-build/googlemock" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>gmock_main/fast</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name="Build" path="[Targets]/[lib] gmock_main" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments>-C "/home/jens/Development/MinHashContainment/build" </buildArguments>
+						<buildArguments>-C "/home/ulrichj/tools/ReadUntil/build" -j128</buildArguments>
 						<buildTarget>gmock_main</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name="Clean" path="[Targets]/[lib] gmock_main" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/cmake</buildCommand>
-						<buildArguments>-E chdir "/home/jens/Development/MinHashContainment/build/test/googletest-build/googlemock" "/usr/bin/cmake" -P "CMakeFiles/gmock_main.dir/cmake_clean.cmake"</buildArguments>
+						<buildArguments>-E chdir "/home/ulrichj/tools/ReadUntil/build/test/googletest-build/googlemock" "/usr/bin/cmake" -P "CMakeFiles/gmock_main.dir/cmake_clean.cmake"</buildArguments>
 						<buildTarget></buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name="[lib] gmock" path="test/googletest-build/googlemock" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>gmock</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name="[lib] gmock/fast" path="test/googletest-build/googlemock" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>gmock/fast</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name="Build" path="[Targets]/[lib] gmock" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments>-C "/home/jens/Development/MinHashContainment/build" </buildArguments>
+						<buildArguments>-C "/home/ulrichj/tools/ReadUntil/build" -j128</buildArguments>
 						<buildTarget>gmock</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name="Clean" path="[Targets]/[lib] gmock" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/cmake</buildCommand>
-						<buildArguments>-E chdir "/home/jens/Development/MinHashContainment/build/test/googletest-build/googlemock" "/usr/bin/cmake" -P "CMakeFiles/gmock.dir/cmake_clean.cmake"</buildArguments>
+						<buildArguments>-E chdir "/home/ulrichj/tools/ReadUntil/build/test/googletest-build/googlemock" "/usr/bin/cmake" -P "CMakeFiles/gmock.dir/cmake_clean.cmake"</buildArguments>
 						<buildTarget></buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name=": all" path="test/googletest-build/googlemock" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>all</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name=": clean" path="test/googletest-build/googlemock" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>clean</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name="[lib] gtest_main" path="test/googletest-build/googletest" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>gtest_main</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name="[lib] gtest_main/fast" path="test/googletest-build/googletest" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>gtest_main/fast</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name="Build" path="[Targets]/[lib] gtest_main" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments>-C "/home/jens/Development/MinHashContainment/build" </buildArguments>
+						<buildArguments>-C "/home/ulrichj/tools/ReadUntil/build" -j128</buildArguments>
 						<buildTarget>gtest_main</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name="Clean" path="[Targets]/[lib] gtest_main" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/cmake</buildCommand>
-						<buildArguments>-E chdir "/home/jens/Development/MinHashContainment/build/test/googletest-build/googletest" "/usr/bin/cmake" -P "CMakeFiles/gtest_main.dir/cmake_clean.cmake"</buildArguments>
+						<buildArguments>-E chdir "/home/ulrichj/tools/ReadUntil/build/test/googletest-build/googletest" "/usr/bin/cmake" -P "CMakeFiles/gtest_main.dir/cmake_clean.cmake"</buildArguments>
 						<buildTarget></buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name="[lib] gtest" path="test/googletest-build/googletest" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>gtest</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name="[lib] gtest/fast" path="test/googletest-build/googletest" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>gtest/fast</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name="Build" path="[Targets]/[lib] gtest" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments>-C "/home/jens/Development/MinHashContainment/build" </buildArguments>
+						<buildArguments>-C "/home/ulrichj/tools/ReadUntil/build" -j128</buildArguments>
 						<buildTarget>gtest</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name="Clean" path="[Targets]/[lib] gtest" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/cmake</buildCommand>
-						<buildArguments>-E chdir "/home/jens/Development/MinHashContainment/build/test/googletest-build/googletest" "/usr/bin/cmake" -P "CMakeFiles/gtest.dir/cmake_clean.cmake"</buildArguments>
+						<buildArguments>-E chdir "/home/ulrichj/tools/ReadUntil/build/test/googletest-build/googletest" "/usr/bin/cmake" -P "CMakeFiles/gtest.dir/cmake_clean.cmake"</buildArguments>
 						<buildTarget></buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name=": all" path="test/googletest-build/googletest" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>all</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name=": clean" path="test/googletest-build/googletest" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>clean</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name="[exe] BloomFilterTest" path="test/libBloomFilterTests" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>BloomFilterTest</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name="[exe] BloomFilterTest/fast" path="test/libBloomFilterTests" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>BloomFilterTest/fast</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name="Build" path="[Targets]/[exe] BloomFilterTest" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments>-C "/home/jens/Development/MinHashContainment/build" </buildArguments>
+						<buildArguments>-C "/home/ulrichj/tools/ReadUntil/build" -j128</buildArguments>
 						<buildTarget>BloomFilterTest</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name="Clean" path="[Targets]/[exe] BloomFilterTest" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/cmake</buildCommand>
-						<buildArguments>-E chdir "/home/jens/Development/MinHashContainment/build/test/libBloomFilterTests" "/usr/bin/cmake" -P "CMakeFiles/BloomFilterTest.dir/cmake_clean.cmake"</buildArguments>
+						<buildArguments>-E chdir "/home/ulrichj/tools/ReadUntil/build/test/libBloomFilterTests" "/usr/bin/cmake" -P "CMakeFiles/BloomFilterTest.dir/cmake_clean.cmake"</buildArguments>
 						<buildTarget></buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name=": all" path="test/libBloomFilterTests" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>all</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 					</target>
 					<target name=": clean" path="test/libBloomFilterTests" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 						<buildCommand>/usr/bin/make</buildCommand>
-						<buildArguments></buildArguments>
+						<buildArguments>-j128</buildArguments>
 						<buildTarget>clean</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
@@ -847,7 +840,7 @@
 						<parser enabled="true"/>
 					</buildOutputProvider>
 					<scannerInfoProvider id="specsFile">
-						<runAction arguments="-E -P -v -dD ${plugin_state_location}/${specs_file}" command="/usr/bin/cc" useDefault="true"/>
+						<runAction arguments="-E -P -v -dD ${plugin_state_location}/${specs_file}" command="/home/ulrichj/.conda/envs/readuntil/bin/x86_64-conda_cos6-linux-gnu-cc" useDefault="true"/>
 						<parser enabled="true"/>
 					</scannerInfoProvider>
 				</profile>

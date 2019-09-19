@@ -8,13 +8,17 @@
 #include <cstdlib>
 #include <math.h>
 
+#include "bloom_filter.hpp"
+
 #include <seqan3/core/debug_stream.hpp>
 
 // Bloom Filter class
-class BloomFilter
+class CustomBloomFilter : public bloom_filter
 {
 	// class variables
 	private:
+	
+		
 
 		virtual void initialize_bloom_filter(const float p, const uint64_t minimizer_number);
 		virtual void initialize_hash_functions(const uint64_t func_number);
@@ -30,12 +34,13 @@ class BloomFilter
 		}
 
 	// Constructor
-	BloomFilter();
-	BloomFilter(const uint64_t size, const uint8_t numHashes);
-	BloomFilter(const float error_rate, const uint64_t minimizer_number, const uint16_t newKmerSize);
+	CustomBloomFilter();
+	CustomBloomFilter(const uint64_t size, const uint8_t numHashes);
+	CustomBloomFilter(const float error_rate, const uint64_t minimizer_number, const uint16_t newKmerSize);
+	CustomBloomFilter(const bloom_parameters& parameters, const uint16_t& newKmerSize);
 
 	// Destructor
-	~BloomFilter();
+	~CustomBloomFilter();
 
 	public:
 
@@ -72,9 +77,13 @@ class BloomFilter
 		}
 
 		virtual void writeToFile(const std::experimental::filesystem::path file);
+		
+		virtual void writeToFile2(const std::experimental::filesystem::path& file);
 
 		virtual bool readFromFile(const std::experimental::filesystem::path file);
+		
+		virtual bool readFromFile2(const std::experimental::filesystem::path& file);
 
-		virtual void createOpenBloomFilter(const std::vector<std::vector<uint64_t>>& sketch_vector, const float& error_rate, const uint64_t& members);
+		virtual void createBloomFilter(const std::vector<std::vector<uint64_t>>& sketch_vector, const float& error_rate, const uint64_t& members);
 
 };

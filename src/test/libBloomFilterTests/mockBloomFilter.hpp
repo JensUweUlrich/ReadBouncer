@@ -1,4 +1,4 @@
-#include "bloomFilter.hpp"
+#include "customBloomFilter.hpp"
 #include "gmock/gmock.h"
 
 class MockBloomFilter : public BloomFilter

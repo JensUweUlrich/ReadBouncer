@@ -20,7 +20,7 @@ class Minimizer
 		{ 19 };
 		// window size != w in minimizer paper
 		uint32_t w
-		{ 25 };
+		{ 50 };
 		// start positions of minimizers
 		std::vector<uint64_t> minBegin;
 		// end positions of minimizers

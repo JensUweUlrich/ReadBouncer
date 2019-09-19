@@ -456,15 +456,6 @@ public:
       return salt_.size();
    }
 
-   inline std::vector<bloom_type> getHashSeeds()
-   {
-	   return salt_;
-   }
-
-   inline void setHashSeeds(const std::vector<bloom_type> & seeds)
-   {
-	   salt_ = seeds;
-   }
 
 protected:
 

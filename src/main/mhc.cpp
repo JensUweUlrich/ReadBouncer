@@ -3,11 +3,10 @@
 #include <math.h>
 #include <chrono>
 
-#include "bloomFilter.hpp"
+#include "customBloomFilter.hpp"
+#include "bloom_filter.hpp"
 #include "bloomFilterException.hpp"
 #include "minimizer3.hpp"
-//#include "bloomFilter.hpp"
-//#include "minimizer3.hpp"
 
 #include <seqan3/alphabet/nucleotide/dna5.hpp>
 
@@ -95,7 +94,7 @@ void initialize_read_until_argument_parser(argument_parser &parser, cmd_argument
 
 }
 
-void build_ref_bloom_filter(std::vector<uint64_t> &sketch, BloomFilter &bf)
+void build_ref_bloom_filter(std::vector<uint64_t> &sketch, CustomBloomFilter &bf)
 {
 	for (uint64_t value : sketch)
 	{
@@ -169,26 +168,95 @@ void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::
 
 
 
-	BloomFilter bf(error_rate, minimizer_number, kMerSize);
+	CustomBloomFilter bf(error_rate, minimizer_number, kMerSize);
 
-	bf.createOpenBloomFilter(sketch_vector, error_rate, minimizer_number);
+	for (std::vector<uint64_t> sketch : sketch_vector)
+	{
+		build_ref_bloom_filter(sketch, bf);
+	}
 
-//	for (std::vector<uint64_t> sketch : sketch_vector)
-//	{
-//		build_ref_bloom_filter(sketch, bf);
-//	}
-//
-//	try
-//	{
-//		bf.writeToFile(output);
-//	}
-//	catch (BloomFilterException& ex)
-//	{
-//		std::cerr << ex.what() << ::std::endl;
-//	}
+	try
+	{
+		bf.writeToFile(output);
+	}
+	catch (BloomFilterException& ex)
+	{
+		std::cerr << ex.what() << ::std::endl;
+	}
 }
 
-bool bottom_up_sketching(dna5_vector &read, BloomFilter &bf)
+/**
+** 
+**/
+uint64_t computeMinimizer(const std::vector<std::filesystem::path>& refFilePaths, const uint16_t& kMerSize, std::vector<std::vector<uint64_t>>& sketch_vector)
+{
+	Minimizer minimizer { };
+	minimizer.setKmerSize(kMerSize);
+	uint64_t minimizer_number = 0;
+	debug_stream << "start loading references ....\n";
+	for (std::filesystem::path file : refFilePaths)
+	{
+		// load ref sequences and compute minimizer one after another
+		sequence_file_input fin
+		{ file };
+		for (auto & record : fin)
+		{
+			debug_stream << "compute minimizer for " << get<field::ID>(record) << "\n";
+			std::vector<uint64_t> sketch = minimizer.getMinimizer(get<field::SEQ>(record));
+			debug_stream << "number of minimizers: " << sketch.size() << std::endl;
+			minimizer_number += sketch.size();
+			sketch_vector.push_back(sketch);
+		}
+	}
+	return minimizer_number;
+}
+
+void create_bloom_filter2(std::vector<std::filesystem::path> &refFilePaths, std::filesystem::path &output, const float error_rate, uint16_t kMerSize)
+{
+	if (!checkWriteAccessRights(output))
+	{
+		std::cerr << "ERROR: No access right to create or write to " << output.u8string() << std::endl;
+		return;
+	}
+	
+	std::vector<std::vector<uint64_t>> sketch_vector { };
+
+	// compute optimal parameters for the bloom filter creation
+
+	bloom_parameters parameters;
+
+	// How many elements roughly do we expect to insert?
+	parameters.projected_element_count = computeMinimizer(refFilePaths, kMerSize, sketch_vector);
+
+	// Maximum tolerable false positive probability? (0,1)
+	parameters.false_positive_probability = error_rate; // 1 in 10000
+
+	// Simple randomizer (optional)
+	parameters.random_seed = 0xA5A5A5A5;
+
+	if (!parameters)
+	{
+		throw BloomFilterException("Error - Invalid set of bloom filter parameters!");
+	}
+
+	parameters.compute_optimal_parameters();
+
+
+	//Instantiate Bloom Filter
+	CustomBloomFilter filter(parameters, kMerSize);
+	std::cout << "Open Bloom Filter size in bits: " << filter.size() << std::endl;
+	std::cout << "Open Bloom Filter hash number: " << filter.hash_count() << std::endl;
+
+	for (std::vector<uint64_t> sketch : sketch_vector)
+	{
+		filter.insert(sketch.begin(), sketch.end());
+	}
+
+	// store kmerSize, hash seeds and bloom filter in a file
+	filter.writeToFile2(output);
+}
+
+bool bottom_up_sketching(dna5_vector &read, CustomBloomFilter &bf)
 {
 	std::chrono::high_resolution_clock::time_point begin, end;
 	begin = std::chrono::high_resolution_clock::now();
@@ -201,11 +269,13 @@ bool bottom_up_sketching(dna5_vector &read, BloomFilter &bf)
 	debug_stream << sketch.size() << "\n";
 	for (uint64_t minimizer : sketch)
 	{
-		if (bf.possiblyContains(minimizer))
+		debug_stream << minimizer << " ";
+		if (bf.contains(minimizer))
 		{
 			++num_containments;
 		}
 	}
+	debug_stream << std::endl;
 	end = std::chrono::high_resolution_clock::now();
 	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
 	debug_stream << "used time: " << duration << "\n";
@@ -221,20 +291,22 @@ void run_program(cmd_arguments &args)
 {
 	if (std::string("bloom").compare(args.mode) == 0)
 	{
-		create_bloom_filter(args.sequence_files, args.bloom_filter_output_path, args.error_rate, args.size_k);
+		create_bloom_filter2(args.sequence_files, args.bloom_filter_output_path, args.error_rate, args.size_k);
+		//create_bloom_filter(args.sequence_files, args.bloom_filter_output_path, args.error_rate, args.size_k);
 	}
 	else if (std::string("read-until").compare(args.mode) == 0)
 	{
-		debug_stream << "run program" << std::endl;
-		BloomFilter bf
+		debug_stream << "run program..." << std::endl;
+		CustomBloomFilter bf
 		{ };
 		try
 		{
-			bf.readFromFile(args.bloom_filter_output_path);
+			bf.readFromFile2(args.bloom_filter_output_path);
 		}
 		catch (BloomFilterException &ex)
 		{
 			std::cerr << "ERROR: Failed to read Bloom Filter from " + args.bloom_filter_output_path.u8string() << std::endl;
+			std::cerr << ex.what() << std::endl;
 			return;
 		}
 		debug_stream << "bloom filter read" << std::endl;
@@ -245,6 +317,7 @@ void run_program(cmd_arguments &args)
 		int num_contained_reads {0};
 		int num_query_reads {0};
 		sequence_file_input fin	{ args.query_read_file };
+		int k = 0;
 		for (auto & record : fin)
 		{
 			num_query_reads++;
@@ -253,6 +326,10 @@ void run_program(cmd_arguments &args)
 			if (bottom_up_sketching(read, bf))
 			{
 				num_contained_reads++;
+			}
+			if (++k > 10)
+			{
+				break;
 			}
 
 		}
