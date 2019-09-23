@@ -94,15 +94,6 @@ void initialize_read_until_argument_parser(argument_parser &parser, cmd_argument
 
 }
 
-void build_ref_bloom_filter(std::vector<uint64_t> &sketch, CustomBloomFilter &bf)
-{
-	for (uint64_t value : sketch)
-	{
-		bf.addHashValue(value);
-	}
-
-}
-
 /**
  * check write access for given filepath
  * @param file : file path to write/create
@@ -125,64 +116,6 @@ bool checkWriteAccessRights(std::filesystem::path &file)
 	}
 
 	return true;
-}
-
-/**
- * create a bloom filter from a set of reference sequences
- * @param refFilePaths : vector of file paths
- * @param output : bloom filter output file
- */
-void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::filesystem::path &output, const float error_rate, uint16_t kMerSize)
-{
-	if (!checkWriteAccessRights(output))
-	{
-		std::cerr << "ERROR: No access right to create or write to " << output.u8string() << std::endl;
-		return;
-	}
-
-	Minimizer minimizer { };
-	minimizer.setKmerSize(kMerSize);
-
-	uint64_t minimizer_number = 0;
-	std::vector<std::vector<uint64_t>> sketch_vector { };
-
-	// parse all provided reference files
-
-	debug_stream << "start loading references ....\n";
-	for (std::filesystem::path file : refFilePaths)
-	{
-		// load ref sequences and compute minimizer one after another
-		sequence_file_input fin
-		{ file };
-		for (auto & record : fin)
-		{
-			debug_stream << "compute minimizer for " << get<field::ID>(record) << "\n";
-			std::vector<uint64_t> sketch = minimizer.getMinimizer(get<field::SEQ>(record));
-			debug_stream << "number of minimizers: " << sketch.size() << std::endl;
-			minimizer_number += sketch.size();
-			sketch_vector.push_back(sketch);
-		}
-	}
-
-	// compute minimizer for all reference sequences
-
-
-
-	CustomBloomFilter bf(error_rate, minimizer_number, kMerSize);
-
-	for (std::vector<uint64_t> sketch : sketch_vector)
-	{
-		build_ref_bloom_filter(sketch, bf);
-	}
-
-	try
-	{
-		bf.writeToFile(output);
-	}
-	catch (BloomFilterException& ex)
-	{
-		std::cerr << ex.what() << ::std::endl;
-	}
 }
 
 /**
@@ -211,7 +144,7 @@ uint64_t computeMinimizer(const std::vector<std::filesystem::path>& refFilePaths
 	return minimizer_number;
 }
 
-void create_bloom_filter2(std::vector<std::filesystem::path> &refFilePaths, std::filesystem::path &output, const float error_rate, uint16_t kMerSize)
+void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::filesystem::path &output, const float error_rate, uint16_t kMerSize)
 {
 	if (!checkWriteAccessRights(output))
 	{
@@ -253,7 +186,7 @@ void create_bloom_filter2(std::vector<std::filesystem::path> &refFilePaths, std:
 	}
 
 	// store kmerSize, hash seeds and bloom filter in a file
-	filter.writeToFile2(output);
+	filter.writeToFile(output);
 }
 
 bool bottom_up_sketching(dna5_vector &read, CustomBloomFilter &bf)
@@ -291,8 +224,7 @@ void run_program(cmd_arguments &args)
 {
 	if (std::string("bloom").compare(args.mode) == 0)
 	{
-		create_bloom_filter2(args.sequence_files, args.bloom_filter_output_path, args.error_rate, args.size_k);
-		//create_bloom_filter(args.sequence_files, args.bloom_filter_output_path, args.error_rate, args.size_k);
+		create_bloom_filter(args.sequence_files, args.bloom_filter_output_path, args.error_rate, args.size_k);
 	}
 	else if (std::string("read-until").compare(args.mode) == 0)
 	{
@@ -301,7 +233,7 @@ void run_program(cmd_arguments &args)
 		{ };
 		try
 		{
-			bf.readFromFile2(args.bloom_filter_output_path);
+			bf.readFromFile(args.bloom_filter_output_path);
 		}
 		catch (BloomFilterException &ex)
 		{

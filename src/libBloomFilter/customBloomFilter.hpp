@@ -17,26 +17,11 @@ class CustomBloomFilter : public bloom_filter
 {
 	// class variables
 	private:
-	
+		uint16_t kMerSize;
 		
-
-		virtual void initialize_bloom_filter(const float p, const uint64_t minimizer_number);
-		virtual void initialize_hash_functions(const uint64_t func_number);
-
-		virtual inline uint64_t calculate_bloom_filter_size(const float p, const uint64_t minimizer_number)
-		{
-			return ceil(minimizer_number * (log(1/p)) / (pow(log(2.0), 2)));
-		}
-
-		virtual inline uint64_t calculate_hash_function_number(const uint64_t filter_size, uint64_t minimizer_number)
-		{
-			return ceil(filter_size * log(2.0)/ minimizer_number);
-		}
 
 	// Constructor
 	CustomBloomFilter();
-	CustomBloomFilter(const uint64_t size, const uint8_t numHashes);
-	CustomBloomFilter(const float error_rate, const uint64_t minimizer_number, const uint16_t newKmerSize);
 	CustomBloomFilter(const bloom_parameters& parameters, const uint16_t& newKmerSize);
 
 	// Destructor
@@ -44,46 +29,25 @@ class CustomBloomFilter : public bloom_filter
 
 	public:
 
-		std::vector<uint16_t> hashes;
-		std::vector<bool> bits;
-		uint16_t kMerSize;
-
-		/**
-		 * adds a k-mer to the Bloom Filter
-		 * @param value : hash value of the k-mer
-		 */
-		virtual inline void addHashValue(const uint64_t value)
+		virtual inline uint16_t getKmerSize()
 		{
-			bits[value % bits.size()] = true;
-			for (uint16_t f : hashes)
-			{
-				bits[(value ^ f) % bits.size()] = true;
-			}
+			return kMerSize;
+		}
+		
+		virtual inline std::vector<bloom_type> getHashSeeds()
+		{
+			std::vector<bloom_type> f(salt_);
+			return f;
+		}
+		
+		virtual inline table_type getBitTable()
+		{
+			table_type b(bit_table_);
+			return b;
 		}
 
-		/**
-		 * check if a k-mer is contained in the Bloom Filter
-		 * @param value : hash value of the k-mer
-		 */
-		virtual inline bool possiblyContains(const uint64_t value)
-		{
-			bool result = bits[value % bits.size()];
-			for (uint16_t f : hashes)
-			{
-				result &= bits[(value ^ f) % bits.size()];
-			}
-			return result;
+		virtual void writeToFile(const std::experimental::filesystem::path& file);
 
-		}
-
-		virtual void writeToFile(const std::experimental::filesystem::path file);
-		
-		virtual void writeToFile2(const std::experimental::filesystem::path& file);
-
-		virtual bool readFromFile(const std::experimental::filesystem::path file);
-		
-		virtual bool readFromFile2(const std::experimental::filesystem::path& file);
-
-		virtual void createBloomFilter(const std::vector<std::vector<uint64_t>>& sketch_vector, const float& error_rate, const uint64_t& members);
+		virtual bool readFromFile(const std::experimental::filesystem::path& file);
 
 };
