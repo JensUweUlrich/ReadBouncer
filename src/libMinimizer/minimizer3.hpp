@@ -1,6 +1,9 @@
 #include <deque>
 
+#include <seqan3/core/debug_stream.hpp>
+
 #include <seqan3/alphabet/nucleotide/dna5.hpp>
+#include <seqan3/range/container/dynamic_bitset.hpp>
 #include <seqan3/range/views/all.hpp>
 #include <seqan3/range/views/kmer_hash.hpp>
 #include <seqan3/std/ranges>
@@ -15,12 +18,12 @@ class Minimizer
 		// Setting seed to 0, will lead to lexicographically smallest k-mer
 		uint64_t seed
 		{ 0x8F3F73B5CF1C9ADE };
-		// k-mer size
+		// k-mer size -> set default value to 31 according to kraken2 paper
 		uint8_t k
-		{ 19 };
-		// window size != w in minimizer paper
+		{ 31 };
+		// window size != w in minimizer paper -> set default value to 35 according to kraken2 paper
 		uint32_t w
-		{ 50 };
+		{ 35 };
 		// start positions of minimizers
 		std::vector<uint64_t> minBegin;
 		// end positions of minimizers
@@ -38,6 +41,28 @@ class Minimizer
 		inline void setKmerSize(uint16_t newKmerSize)
 		{
 			k = newKmerSize;
+		}
+		
+		inline seqan3::shape computeSpacedSeed()
+		{
+			// TODO: exchange with e.g. seqan3::shape s1{seqan3::bin_literal{0b101}}; // represents "101", i.e. gapped 3-mer
+			// give parameter for number of masked positions -> every other position beginning at rightmost position -> see kraken2 paper with default of 7 masked positions
+			std::string s{};
+			s.assign(k, '1');
+	
+			for (int i = 1 ; i <= 7; ++i)
+			{
+				s.replace(s.size() - 2*i, 1, "0");
+			}
+			seqan3::dynamic_bitset bs{"1111101010101010101"};
+			
+			debug_stream << s << ::std::endl;
+			debug_stream << bs << std::endl;
+			
+			seqan3::shape shape1{};
+			shape1.assign(bs.begin(), bs.end());
+			debug_stream << shape1 << std::endl;
+			return shape1;
 		}
 
 };
