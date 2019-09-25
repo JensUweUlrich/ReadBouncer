@@ -31,7 +31,7 @@ struct cmd_arguments
 		std::string mode
 		{ };
 		uint8_t size_k
-		{ 19 };
+		{ 31 };
 		float error_rate
 		{ 0.05 };
 };
@@ -74,7 +74,7 @@ void initialize_bloom_argument_parser(argument_parser &parser, cmd_arguments &ar
 	parser.add_option(args.bloom_filter_output_path, 'b', "bloom-output", "output file path to bloom filter", option_spec::REQUIRED);
 	parser.add_option(args.error_rate, 'p', "false-positive-rate", "target false positive rate for bloom filter construction [default: 0.05]");
 	parser.add_option(args.size_k, 'k', "kmer-size", "k-mer size used for bottom up sketching reads", option_spec::DEFAULT, arithmetic_range_validator
-	{ 1, 31 });
+	{ 1, 27 });
 	parser.add_positional_option(args.sequence_files, "reference file(s) to create bloom filter for");
 }
 
@@ -135,6 +135,8 @@ uint64_t computeMinimizer(const std::vector<std::filesystem::path>& refFilePaths
 		for (auto & record : fin)
 		{
 			debug_stream << "compute minimizer for " << get<field::ID>(record) << "\n";
+			// TODO: split references by stretches of N into many sequences
+			//		 use vector of dna4_vectors as parameters for getMinimizer
 			std::vector<uint64_t> sketch = minimizer.getMinimizer(get<field::SEQ>(record));
 			debug_stream << "number of minimizers: " << sketch.size() << std::endl;
 			minimizer_number += sketch.size();

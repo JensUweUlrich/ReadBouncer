@@ -24,6 +24,8 @@ class Minimizer
 		// window size != w in minimizer paper -> set default value to 35 according to kraken2 paper
 		uint32_t w
 		{ 35 };
+		// number of masked positions
+		uint8_t s {7};
 		// start positions of minimizers
 		std::vector<uint64_t> minBegin;
 		// end positions of minimizers
@@ -47,21 +49,16 @@ class Minimizer
 		{
 			// TODO: exchange with e.g. seqan3::shape s1{seqan3::bin_literal{0b101}}; // represents "101", i.e. gapped 3-mer
 			// give parameter for number of masked positions -> every other position beginning at rightmost position -> see kraken2 paper with default of 7 masked positions
-			std::string s{};
-			s.assign(k, '1');
+			seqan3::dynamic_bitset bs{};
+			bs.resize(k);
 	
-			for (int i = 1 ; i <= 7; ++i)
+			for (int i = 1 ; i <= s*2 && i < k; i+=2)
 			{
-				s.replace(s.size() - 2*i, 1, "0");
+				bs.flip(i);
 			}
-			seqan3::dynamic_bitset bs{"1111101010101010101"};
-			
-			debug_stream << s << ::std::endl;
-			debug_stream << bs << std::endl;
 			
 			seqan3::shape shape1{};
 			shape1.assign(bs.begin(), bs.end());
-			debug_stream << shape1 << std::endl;
 			return shape1;
 		}
 
