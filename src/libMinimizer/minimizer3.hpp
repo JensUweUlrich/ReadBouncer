@@ -2,10 +2,11 @@
 
 #include <seqan3/core/debug_stream.hpp>
 
-#include <seqan3/alphabet/nucleotide/dna5.hpp>
+#include <seqan3/alphabet/nucleotide/dna4.hpp>
 #include <seqan3/range/container/dynamic_bitset.hpp>
 #include <seqan3/range/views/all.hpp>
 #include <seqan3/range/views/kmer_hash.hpp>
+#include <seqan3/range/views/slice.hpp>
 #include <seqan3/std/ranges>
 using namespace seqan3;
 
@@ -25,13 +26,13 @@ class Minimizer
 		uint32_t w
 		{ 35 };
 		// number of masked positions
-		uint8_t s {7};
+		uint8_t s {3};
 		// start positions of minimizers
 		std::vector<uint64_t> minBegin;
 		// end positions of minimizers
 		std::vector<uint64_t> minEnd;
 
-		std::vector<uint64_t> getMinimizer(dna5_vector & text);
+		std::vector<dna4_vector> getMinimizer(dna4_vector & text, const bool ungapped);
 
 		inline void resize(uint16_t newKmerSize, uint32_t neww, uint64_t newSeed)
 		{

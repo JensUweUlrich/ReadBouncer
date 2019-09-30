@@ -8,6 +8,7 @@
 #include "bloomFilterException.hpp"
 #include "minimizer3.hpp"
 
+#include <seqan3/alphabet/nucleotide/dna4.hpp>
 #include <seqan3/alphabet/nucleotide/dna5.hpp>
 
 #include <seqan3/argument_parser/argument_parser.hpp>
@@ -16,7 +17,12 @@
 #include <seqan3/io/record.hpp>
 #include <seqan3/io/sequence_file/format_fasta.hpp>
 #include <seqan3/io/sequence_file/input.hpp>
+
 #include <seqan3/core/debug_stream.hpp>
+
+#include <seqan3/std/ranges>
+
+#include <seqan3/range/views/convert.hpp>
 
 using namespace seqan3;
 
@@ -121,7 +127,7 @@ bool checkWriteAccessRights(std::filesystem::path &file)
 /**
 ** 
 **/
-uint64_t computeMinimizer(const std::vector<std::filesystem::path>& refFilePaths, const uint16_t& kMerSize, std::vector<std::vector<uint64_t>>& sketch_vector)
+uint64_t computeMinimizer(const std::vector<std::filesystem::path>& refFilePaths, const uint16_t& kMerSize, std::vector<std::vector<dna4_vector>>& sketch_vector)
 {
 	Minimizer minimizer { };
 	minimizer.setKmerSize(kMerSize);
@@ -135,12 +141,23 @@ uint64_t computeMinimizer(const std::vector<std::filesystem::path>& refFilePaths
 		for (auto & record : fin)
 		{
 			debug_stream << "compute minimizer for " << get<field::ID>(record) << "\n";
-			// TODO: split references by stretches of N into many sequences
-			//		 use vector of dna4_vectors as parameters for getMinimizer
-			std::vector<uint64_t> sketch = minimizer.getMinimizer(get<field::SEQ>(record));
-			debug_stream << "number of minimizers: " << sketch.size() << std::endl;
-			minimizer_number += sketch.size();
-			sketch_vector.push_back(sketch);
+
+
+			dna5_vector seq = get<field::SEQ>(record);
+			// split references by stretches of N into many sequences
+			for (auto v : std::views::split(seq, 'N'_dna5))
+			{
+				dna4_vector sub = v | seqan3::views::convert<seqan3::dna4>;
+				if (sub.size() >= kMerSize)
+				{
+					// dna4_vector as parameters for getMinimizer
+					std::vector<dna4_vector> sketch = minimizer.getMinimizer(sub, true);
+					minimizer_number += sketch.size();
+					sketch_vector.push_back(sketch);
+				}
+			}
+			
+			
 		}
 	}
 	return minimizer_number;
@@ -154,7 +171,7 @@ void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::
 		return;
 	}
 	
-	std::vector<std::vector<uint64_t>> sketch_vector { };
+	std::vector<std::vector<dna4_vector>> sketch_vector { };
 
 	// compute optimal parameters for the bloom filter creation
 
@@ -182,7 +199,7 @@ void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::
 	std::cout << "Open Bloom Filter size in bits: " << filter.size() << std::endl;
 	std::cout << "Open Bloom Filter hash number: " << filter.hash_count() << std::endl;
 
-	for (std::vector<uint64_t> sketch : sketch_vector)
+	for (std::vector<dna4_vector> sketch : sketch_vector)
 	{
 		filter.insert(sketch.begin(), sketch.end());
 	}
@@ -191,18 +208,18 @@ void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::
 	filter.writeToFile(output);
 }
 
-bool bottom_up_sketching(dna5_vector &read, CustomBloomFilter &bf)
+bool bottom_up_sketching(dna4_vector &read, CustomBloomFilter &bf)
 {
 	std::chrono::high_resolution_clock::time_point begin, end;
 	begin = std::chrono::high_resolution_clock::now();
 	Minimizer minimizer
 	{ };
 	minimizer.setKmerSize(bf.kMerSize);
-	std::vector<uint64_t> sketch = minimizer.getMinimizer(read);
+	std::vector<dna4_vector> sketch = minimizer.getMinimizer(read, false);
 	int num_containments
 	{ 0 };
 	debug_stream << sketch.size() << "\n";
-	for (uint64_t minimizer : sketch)
+	for (dna4_vector minimizer : sketch)
 	{
 		debug_stream << minimizer << " ";
 		if (bf.contains(minimizer))
@@ -255,8 +272,8 @@ void run_program(cmd_arguments &args)
 		for (auto & record : fin)
 		{
 			num_query_reads++;
-			dna5_vector query {get<field::SEQ>(record)};
-			std::vector<dna5> read(query.begin() + 100, query.begin() + 600);
+			dna4_vector query = get<field::SEQ>(record) | seqan3::views::convert<seqan3::dna4>;
+			std::vector<dna4> read(query.begin() + 100, query.begin() + 600);
 			if (bottom_up_sketching(read, bf))
 			{
 				num_contained_reads++;
