@@ -2,75 +2,26 @@
 <projectDescription>
 	<name>ReadUntil-Debug@build</name>
 	<comment></comment>
-	<projects>
-	</projects>
+	<projects></projects>
 	<buildSpec>
 		<buildCommand>
 			<name>org.eclipse.cdt.make.core.makeBuilder</name>
 			<triggers>clean,full,incremental,</triggers>
 			<arguments>
 				<dictionary>
-					<key>org.eclipse.cdt.core.errorOutputParser</key>
-					<value>org.eclipse.cdt.core.GmakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GASErrorParser;org.eclipse.cdt.core.GLDErrorParser;</value>
-				</dictionary>
-				<dictionary>
-					<key>org.eclipse.cdt.make.core.append_environment</key>
-					<value>true</value>
-				</dictionary>
-				<dictionary>
-					<key>org.eclipse.cdt.make.core.autoBuildTarget</key>
-					<value>all</value>
-				</dictionary>
-				<dictionary>
-					<key>org.eclipse.cdt.make.core.build.arguments</key>
-					<value></value>
-				</dictionary>
-				<dictionary>
-					<key>org.eclipse.cdt.make.core.build.command</key>
-					<value>/usr/bin/make</value>
-				</dictionary>
-				<dictionary>
-					<key>org.eclipse.cdt.make.core.build.location</key>
-					<value>/home/jens/Development/MinHashContainment/build</value>
-				</dictionary>
-				<dictionary>
-					<key>org.eclipse.cdt.make.core.build.target.auto</key>
-					<value>all</value>
-				</dictionary>
-				<dictionary>
-					<key>org.eclipse.cdt.make.core.build.target.clean</key>
-					<value>clean</value>
-				</dictionary>
-				<dictionary>
-					<key>org.eclipse.cdt.make.core.build.target.inc</key>
-					<value>all</value>
-				</dictionary>
-				<dictionary>
-					<key>org.eclipse.cdt.make.core.buildArguments</key>
-					<value></value>
-				</dictionary>
-				<dictionary>
-					<key>org.eclipse.cdt.make.core.buildLocation</key>
-					<value>/home/jens/Development/MinHashContainment/build</value>
-				</dictionary>
-				<dictionary>
 					<key>org.eclipse.cdt.make.core.cleanBuildTarget</key>
 					<value>clean</value>
-				</dictionary>
-				<dictionary>
-					<key>org.eclipse.cdt.make.core.contents</key>
-					<value>org.eclipse.cdt.make.core.activeConfigSettings</value>
-				</dictionary>
-				<dictionary>
-					<key>org.eclipse.cdt.make.core.enableAutoBuild</key>
-					<value>false</value>
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.enableCleanBuild</key>
 					<value>true</value>
 				</dictionary>
 				<dictionary>
-					<key>org.eclipse.cdt.make.core.enableFullBuild</key>
+					<key>org.eclipse.cdt.make.core.append_environment</key>
+					<value>true</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.stopOnError</key>
 					<value>true</value>
 				</dictionary>
 				<dictionary>
@@ -78,27 +29,74 @@
 					<value>true</value>
 				</dictionary>
 				<dictionary>
+					<key>org.eclipse.cdt.make.core.build.command</key>
+					<value>/usr/bin/make</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.contents</key>
+					<value>org.eclipse.cdt.make.core.activeConfigSettings</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.build.target.inc</key>
+					<value>all</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.build.arguments</key>
+					<value>-j128</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.buildLocation</key>
+					<value>/home/ulrichj/tools/ReadUntil/build</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.useDefaultBuildCmd</key>
+					<value>false</value>
+				</dictionary>
+				<dictionary>
 					<key>org.eclipse.cdt.make.core.environment</key>
 					<value>VERBOSE=1|CMAKE_NO_VERBOSE=1|</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.enableFullBuild</key>
+					<value>true</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.build.target.auto</key>
+					<value>all</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.enableAutoBuild</key>
+					<value>false</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.build.target.clean</key>
+					<value>clean</value>
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.fullBuildTarget</key>
 					<value>all</value>
 				</dictionary>
 				<dictionary>
-					<key>org.eclipse.cdt.make.core.stopOnError</key>
-					<value>true</value>
+					<key>org.eclipse.cdt.make.core.buildArguments</key>
+					<value></value>
 				</dictionary>
 				<dictionary>
-					<key>org.eclipse.cdt.make.core.useDefaultBuildCmd</key>
-					<value>false</value>
+					<key>org.eclipse.cdt.make.core.build.location</key>
+					<value>/home/ulrichj/tools/ReadUntil/build</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.autoBuildTarget</key>
+					<value>all</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.core.errorOutputParser</key>
+					<value>org.eclipse.cdt.core.GmakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GASErrorParser;org.eclipse.cdt.core.GLDErrorParser;</value>
 				</dictionary>
 			</arguments>
 		</buildCommand>
 		<buildCommand>
 			<name>org.eclipse.cdt.make.core.ScannerConfigBuilder</name>
-			<arguments>
-			</arguments>
+			<arguments/>
 		</buildCommand>
 	</buildSpec>
 	<natures>
@@ -111,7 +109,7 @@
 		<link>
 			<name>[Source directory]</name>
 			<type>2</type>
-			<location>/home/jens/Development/MinHashContainment/src</location>
+			<location>/home/ulrichj/tools/ReadUntil/src</location>
 		</link>
 		<link>
 			<name>[Subprojects]</name>
@@ -119,42 +117,32 @@
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
+			<name>[Subprojects]/ReadUntil</name>
+			<type>2</type>
+			<location>/home/ulrichj/tools/ReadUntil/src</location>
+		</link>
+		<link>
+			<name>[Subprojects]/gmock</name>
+			<type>2</type>
+			<location>/home/ulrichj/tools/ReadUntil/build/test/googletest-src/googlemock</location>
+		</link>
+		<link>
+			<name>[Subprojects]/googletest-distribution</name>
+			<type>2</type>
+			<location>/home/ulrichj/tools/ReadUntil/build/test/googletest-src</location>
+		</link>
+		<link>
+			<name>[Subprojects]/gtest</name>
+			<type>2</type>
+			<location>/home/ulrichj/tools/ReadUntil/build/test/googletest-src/googletest</location>
+		</link>
+		<link>
 			<name>[Targets]</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Subprojects]/ReadUntil</name>
-			<type>2</type>
-			<location>/home/jens/Development/MinHashContainment/src</location>
-		</link>
-		<link>
-			<name>[Subprojects]/gmock</name>
-			<type>2</type>
-			<location>/home/jens/Development/MinHashContainment/build/test/googletest-src/googlemock</location>
-		</link>
-		<link>
-			<name>[Subprojects]/googletest-distribution</name>
-			<type>2</type>
-			<location>/home/jens/Development/MinHashContainment/build/test/googletest-src</location>
-		</link>
-		<link>
-			<name>[Subprojects]/gtest</name>
-			<type>2</type>
-			<location>/home/jens/Development/MinHashContainment/build/test/googletest-src/googletest</location>
-		</link>
-		<link>
-			<name>[Targets]/[exe] BloomFilterTest/</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
-		</link>
-		<link>
-			<name>[Targets]/[exe] ReadUntil/</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
-		</link>
-		<link>
-			<name>[Targets]/[lib] BloomFilter/</name>
+			<name>[Targets]/[lib] Minimizer</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
@@ -164,114 +152,34 @@
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Targets]/[lib] gmock/</name>
+			<name>[Targets]/[lib] Minimizer/Source Files</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Targets]/[lib] gmock_main/</name>
+			<name>[Targets]/[lib] Minimizer/Source Files/minimizer3.cpp</name>
+			<type>1</type>
+			<location>/home/ulrichj/tools/ReadUntil/src/libMinimizer/minimizer3.cpp</location>
+		</link>
+		<link>
+			<name>[Targets]/[lib] Minimizer/Source Files/MurmurHash3.cpp</name>
+			<type>1</type>
+			<location>/home/ulrichj/tools/ReadUntil/src/libMinimizer/MurmurHash3.cpp</location>
+		</link>
+		<link>
+			<name>[Targets]/[lib] Minimizer/Header Files</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Targets]/[lib] gtest/</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
+			<name>[Targets]/[lib] Minimizer/Header Files/minimizer3.hpp</name>
+			<type>1</type>
+			<location>/home/ulrichj/tools/ReadUntil/src/libMinimizer/minimizer3.hpp</location>
 		</link>
 		<link>
-			<name>[Targets]/[lib] gtest_main/</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
-		</link>
-		<link>
-			<name>[Targets]/[exe] BloomFilterTest/CMake Rules</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
-		</link>
-		<link>
-			<name>[Targets]/[exe] BloomFilterTest/Header Files</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
-		</link>
-		<link>
-			<name>[Targets]/[exe] BloomFilterTest/Object Files</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
-		</link>
-		<link>
-			<name>[Targets]/[exe] BloomFilterTest/Object Libraries</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
-		</link>
-		<link>
-			<name>[Targets]/[exe] BloomFilterTest/Resources</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
-		</link>
-		<link>
-			<name>[Targets]/[exe] BloomFilterTest/Source Files</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
-		</link>
-		<link>
-			<name>[Targets]/[exe] ReadUntil/CMake Rules</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
-		</link>
-		<link>
-			<name>[Targets]/[exe] ReadUntil/Header Files</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
-		</link>
-		<link>
-			<name>[Targets]/[exe] ReadUntil/Object Files</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
-		</link>
-		<link>
-			<name>[Targets]/[exe] ReadUntil/Object Libraries</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
-		</link>
-		<link>
-			<name>[Targets]/[exe] ReadUntil/Resources</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
-		</link>
-		<link>
-			<name>[Targets]/[exe] ReadUntil/Source Files</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
-		</link>
-		<link>
-			<name>[Targets]/[lib] BloomFilter/CMake Rules</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
-		</link>
-		<link>
-			<name>[Targets]/[lib] BloomFilter/Header Files</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
-		</link>
-		<link>
-			<name>[Targets]/[lib] BloomFilter/Object Files</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
-		</link>
-		<link>
-			<name>[Targets]/[lib] BloomFilter/Object Libraries</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
-		</link>
-		<link>
-			<name>[Targets]/[lib] BloomFilter/Resources</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
-		</link>
-		<link>
-			<name>[Targets]/[lib] BloomFilter/Source Files</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
+			<name>[Targets]/[lib] Minimizer/Header Files/MurmurHash3.h</name>
+			<type>1</type>
+			<location>/home/ulrichj/tools/ReadUntil/src/libMinimizer/MurmurHash3.h</location>
 		</link>
 		<link>
 			<name>[Targets]/[lib] Minimizer/CMake Rules</name>
@@ -279,7 +187,7 @@
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Targets]/[lib] Minimizer/Header Files</name>
+			<name>[Targets]/[lib] Minimizer/Resources</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
@@ -294,42 +202,132 @@
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Targets]/[lib] Minimizer/Resources</name>
+			<name>[Targets]/[lib] BloomFilter</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Targets]/[lib] Minimizer/Source Files</name>
+			<name>[Targets]/[lib] BloomFilter/</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Targets]/[lib] gmock/CMake Rules</name>
+			<name>[Targets]/[lib] BloomFilter/Source Files</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Targets]/[lib] gmock/Header Files</name>
+			<name>[Targets]/[lib] BloomFilter/Source Files/customBloomFilter.cpp</name>
+			<type>1</type>
+			<location>/home/ulrichj/tools/ReadUntil/src/libBloomFilter/customBloomFilter.cpp</location>
+		</link>
+		<link>
+			<name>[Targets]/[lib] BloomFilter/Header Files</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Targets]/[lib] gmock/Object Files</name>
+			<name>[Targets]/[lib] BloomFilter/Header Files/customBloomFilter.hpp</name>
+			<type>1</type>
+			<location>/home/ulrichj/tools/ReadUntil/src/libBloomFilter/customBloomFilter.hpp</location>
+		</link>
+		<link>
+			<name>[Targets]/[lib] BloomFilter/Header Files/bloomFilterException.hpp</name>
+			<type>1</type>
+			<location>/home/ulrichj/tools/ReadUntil/src/libBloomFilter/bloomFilterException.hpp</location>
+		</link>
+		<link>
+			<name>[Targets]/[lib] BloomFilter/Header Files/bloom_filter.hpp</name>
+			<type>1</type>
+			<location>/home/ulrichj/tools/ReadUntil/src/libBloomFilter/bloom_filter.hpp</location>
+		</link>
+		<link>
+			<name>[Targets]/[lib] BloomFilter/CMake Rules</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Targets]/[lib] gmock/Object Libraries</name>
+			<name>[Targets]/[lib] BloomFilter/Resources</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Targets]/[lib] gmock/Resources</name>
+			<name>[Targets]/[lib] BloomFilter/Object Files</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Targets]/[lib] gmock/Source Files</name>
+			<name>[Targets]/[lib] BloomFilter/Object Libraries</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] ReadUntil</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] ReadUntil/</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] ReadUntil/Source Files</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] ReadUntil/Source Files/mhc.cpp</name>
+			<type>1</type>
+			<location>/home/ulrichj/tools/ReadUntil/src/main/mhc.cpp</location>
+		</link>
+		<link>
+			<name>[Targets]/[exe] ReadUntil/Header Files</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] ReadUntil/CMake Rules</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] ReadUntil/Resources</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] ReadUntil/Object Files</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] ReadUntil/Object Libraries</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[lib] gmock_main</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[lib] gmock_main/</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[lib] gmock_main/Source Files</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[lib] gmock_main/Source Files/gmock_main.cc</name>
+			<type>1</type>
+			<location>/home/ulrichj/tools/ReadUntil/build/test/googletest-src/googlemock/src/gmock_main.cc</location>
+		</link>
+		<link>
+			<name>[Targets]/[lib] gmock_main/Header Files</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
@@ -339,7 +337,7 @@
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Targets]/[lib] gmock_main/Header Files</name>
+			<name>[Targets]/[lib] gmock_main/Resources</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
@@ -354,42 +352,72 @@
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Targets]/[lib] gmock_main/Resources</name>
+			<name>[Targets]/[lib] gmock</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Targets]/[lib] gmock_main/Source Files</name>
+			<name>[Targets]/[lib] gmock/</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Targets]/[lib] gtest/CMake Rules</name>
+			<name>[Targets]/[lib] gmock/Source Files</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Targets]/[lib] gtest/Header Files</name>
+			<name>[Targets]/[lib] gmock/Source Files/gmock-all.cc</name>
+			<type>1</type>
+			<location>/home/ulrichj/tools/ReadUntil/build/test/googletest-src/googlemock/src/gmock-all.cc</location>
+		</link>
+		<link>
+			<name>[Targets]/[lib] gmock/Header Files</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Targets]/[lib] gtest/Object Files</name>
+			<name>[Targets]/[lib] gmock/CMake Rules</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Targets]/[lib] gtest/Object Libraries</name>
+			<name>[Targets]/[lib] gmock/Resources</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Targets]/[lib] gtest/Resources</name>
+			<name>[Targets]/[lib] gmock/Object Files</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Targets]/[lib] gtest/Source Files</name>
+			<name>[Targets]/[lib] gmock/Object Libraries</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[lib] gtest_main</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[lib] gtest_main/</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[lib] gtest_main/Source Files</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[lib] gtest_main/Source Files/gtest_main.cc</name>
+			<type>1</type>
+			<location>/home/ulrichj/tools/ReadUntil/build/test/googletest-src/googletest/src/gtest_main.cc</location>
+		</link>
+		<link>
+			<name>[Targets]/[lib] gtest_main/Header Files</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
@@ -399,7 +427,7 @@
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Targets]/[lib] gtest_main/Header Files</name>
+			<name>[Targets]/[lib] gtest_main/Resources</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
@@ -414,74 +442,139 @@
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Targets]/[lib] gtest_main/Resources</name>
+			<name>[Targets]/[lib] gtest</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Targets]/[lib] gtest_main/Source Files</name>
+			<name>[Targets]/[lib] gtest/</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[lib] gtest/Source Files</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[lib] gtest/Source Files/gtest-all.cc</name>
+			<type>1</type>
+			<location>/home/ulrichj/tools/ReadUntil/build/test/googletest-src/googletest/src/gtest-all.cc</location>
+		</link>
+		<link>
+			<name>[Targets]/[lib] gtest/Header Files</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[lib] gtest/CMake Rules</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[lib] gtest/Resources</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[lib] gtest/Object Files</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[lib] gtest/Object Libraries</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] BloomFilterTest</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] BloomFilterTest/</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] BloomFilterTest/Source Files</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
 			<name>[Targets]/[exe] BloomFilterTest/Source Files/bloomFilterTest.cpp</name>
 			<type>1</type>
-			<location>/home/jens/Development/MinHashContainment/src/test/libBloomFilterTests/bloomFilterTest.cpp</location>
+			<location>/home/ulrichj/tools/ReadUntil/src/test/libBloomFilterTests/bloomFilterTest.cpp</location>
 		</link>
 		<link>
-			<name>[Targets]/[exe] ReadUntil/Source Files/mhc.cpp</name>
-			<type>1</type>
-			<location>/home/jens/Development/MinHashContainment/src/main/mhc.cpp</location>
+			<name>[Targets]/[exe] BloomFilterTest/Header Files</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Targets]/[lib] BloomFilter/Header Files/bloomFilterException.hpp</name>
-			<type>1</type>
-			<location>/home/jens/Development/MinHashContainment/src/libBloomFilter/bloomFilterException.hpp</location>
+			<name>[Targets]/[exe] BloomFilterTest/CMake Rules</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Targets]/[lib] BloomFilter/Header Files/bloom_filter.hpp</name>
-			<type>1</type>
-			<location>/home/jens/Development/MinHashContainment/src/libBloomFilter/bloom_filter.hpp</location>
+			<name>[Targets]/[exe] BloomFilterTest/Resources</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Targets]/[lib] BloomFilter/Header Files/customBloomFilter.hpp</name>
-			<type>1</type>
-			<location>/home/jens/Development/MinHashContainment/src/libBloomFilter/customBloomFilter.hpp</location>
+			<name>[Targets]/[exe] BloomFilterTest/Object Files</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Targets]/[lib] BloomFilter/Source Files/customBloomFilter.cpp</name>
-			<type>1</type>
-			<location>/home/jens/Development/MinHashContainment/src/libBloomFilter/customBloomFilter.cpp</location>
+			<name>[Targets]/[exe] BloomFilterTest/Object Libraries</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Targets]/[lib] Minimizer/Header Files/minimizer3.hpp</name>
-			<type>1</type>
-			<location>/home/jens/Development/MinHashContainment/src/libMinimizer/minimizer3.hpp</location>
+			<name>[Targets]/[exe] MinimizerTest</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Targets]/[lib] Minimizer/Source Files/minimizer3.cpp</name>
-			<type>1</type>
-			<location>/home/jens/Development/MinHashContainment/src/libMinimizer/minimizer3.cpp</location>
+			<name>[Targets]/[exe] MinimizerTest/</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Targets]/[lib] gmock/Source Files/gmock-all.cc</name>
-			<type>1</type>
-			<location>/home/jens/Development/MinHashContainment/build/test/googletest-src/googlemock/src/gmock-all.cc</location>
+			<name>[Targets]/[exe] MinimizerTest/Source Files</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Targets]/[lib] gmock_main/Source Files/gmock_main.cc</name>
+			<name>[Targets]/[exe] MinimizerTest/Source Files/minimizerTest.cpp</name>
 			<type>1</type>
-			<location>/home/jens/Development/MinHashContainment/build/test/googletest-src/googlemock/src/gmock_main.cc</location>
+			<location>/home/ulrichj/tools/ReadUntil/src/test/libMinimizerTests/minimizerTest.cpp</location>
 		</link>
 		<link>
-			<name>[Targets]/[lib] gtest/Source Files/gtest-all.cc</name>
-			<type>1</type>
-			<location>/home/jens/Development/MinHashContainment/build/test/googletest-src/googletest/src/gtest-all.cc</location>
+			<name>[Targets]/[exe] MinimizerTest/Header Files</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Targets]/[lib] gtest_main/Source Files/gtest_main.cc</name>
-			<type>1</type>
-			<location>/home/jens/Development/MinHashContainment/build/test/googletest-src/googletest/src/gtest_main.cc</location>
+			<name>[Targets]/[exe] MinimizerTest/CMake Rules</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] MinimizerTest/Resources</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] MinimizerTest/Object Files</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] MinimizerTest/Object Libraries</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>

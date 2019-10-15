@@ -80,7 +80,7 @@ void initialize_bloom_argument_parser(argument_parser &parser, cmd_arguments &ar
 	parser.add_option(args.bloom_filter_output_path, 'b', "bloom-output", "output file path to bloom filter", option_spec::REQUIRED);
 	parser.add_option(args.error_rate, 'p', "false-positive-rate", "target false positive rate for bloom filter construction [default: 0.05]");
 	parser.add_option(args.size_k, 'k', "kmer-size", "k-mer size used for bottom up sketching reads", option_spec::DEFAULT, arithmetic_range_validator
-	{ 1, 27 });
+	{ 1, 31 });
 	parser.add_positional_option(args.sequence_files, "reference file(s) to create bloom filter for");
 }
 
@@ -127,10 +127,14 @@ bool checkWriteAccessRights(std::filesystem::path &file)
 /**
 ** 
 **/
-uint64_t computeMinimizer(const std::vector<std::filesystem::path>& refFilePaths, const uint16_t& kMerSize, std::vector<std::vector<dna4_vector>>& sketch_vector)
+uint64_t computeMinimizer(const std::vector<std::filesystem::path>& refFilePaths, const uint16_t& kMerSize, std::vector<std::vector<uint64_t>>& sketch_vector)
 {
 	Minimizer minimizer { };
 	minimizer.setKmerSize(kMerSize);
+	minimizer.setWindowSize(50);
+	seqan3::shape t2{0b1110101000101001010010011001111_shape};
+	minimizer.setGappedShape(t2);
+	
 	uint64_t minimizer_number = 0;
 	debug_stream << "start loading references ....\n";
 	for (std::filesystem::path file : refFilePaths)
@@ -147,11 +151,11 @@ uint64_t computeMinimizer(const std::vector<std::filesystem::path>& refFilePaths
 			// split references by stretches of N into many sequences
 			for (auto v : std::views::split(seq, 'N'_dna5))
 			{
-				dna4_vector sub = v | seqan3::views::convert<seqan3::dna4>;
+				dna4_vector sub = v | seqan3::views::convert<seqan3::dna4> | ranges::to<std::vector<seqan3::dna4>>();
 				if (sub.size() >= kMerSize)
 				{
 					// dna4_vector as parameters for getMinimizer
-					std::vector<dna4_vector> sketch = minimizer.getMinimizer(sub, true);
+					std::vector<uint64_t> sketch = minimizer.getMinimizerHashValues(sub);
 					minimizer_number += sketch.size();
 					sketch_vector.push_back(sketch);
 				}
@@ -171,7 +175,7 @@ void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::
 		return;
 	}
 	
-	std::vector<std::vector<dna4_vector>> sketch_vector { };
+	std::vector<std::vector<uint64_t>> sketch_vector { };
 
 	// compute optimal parameters for the bloom filter creation
 
@@ -196,10 +200,10 @@ void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::
 
 	//Instantiate Bloom Filter
 	CustomBloomFilter filter(parameters, kMerSize);
-	std::cout << "Open Bloom Filter size in bits: " << filter.size() << std::endl;
-	std::cout << "Open Bloom Filter hash number: " << filter.hash_count() << std::endl;
+	//std::cout << "Open Bloom Filter size in bits: " << filter.size() << std::endl;
+	//std::cout << "Open Bloom Filter hash number: " << filter.hash_count() << std::endl;
 
-	for (std::vector<dna4_vector> sketch : sketch_vector)
+	for (std::vector<uint64_t> sketch : sketch_vector)
 	{
 		filter.insert(sketch.begin(), sketch.end());
 	}
@@ -215,24 +219,28 @@ bool bottom_up_sketching(dna4_vector &read, CustomBloomFilter &bf)
 	Minimizer minimizer
 	{ };
 	minimizer.setKmerSize(bf.kMerSize);
-	std::vector<dna4_vector> sketch = minimizer.getMinimizer(read, false);
+	minimizer.setWindowSize(50);
+	seqan3::shape t2{0b1110101000101001010010011001111_shape};
+	minimizer.setGappedShape(t2);
+	
+	std::vector<uint64_t> sketch = minimizer.getMinimizerHashValues(read);
 	int num_containments
 	{ 0 };
-	debug_stream << sketch.size() << "\n";
-	for (dna4_vector minimizer : sketch)
+	//debug_stream << sketch.size() << "\n";
+	for (uint64_t minimizer : sketch)
 	{
-		debug_stream << minimizer << " ";
+		//debug_stream << minimizer << " ";
 		if (bf.contains(minimizer))
 		{
 			++num_containments;
 		}
 	}
-	debug_stream << std::endl;
+	//debug_stream << std::endl;
 	end = std::chrono::high_resolution_clock::now();
 	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
 	debug_stream << "used time: " << duration << "\n";
-	debug_stream << "Number of minimizer Containments: " << num_containments << "\n";
-	return num_containments == sketch.size();
+	debug_stream << "Number of minimizer Containments: " << num_containments << "/" << sketch.size() << std::endl;
+	return (double(num_containments)/double(sketch.size())) > 0.15;
 }
 
 /**
@@ -272,17 +280,22 @@ void run_program(cmd_arguments &args)
 		for (auto & record : fin)
 		{
 			num_query_reads++;
-			dna4_vector query = get<field::SEQ>(record) | seqan3::views::convert<seqan3::dna4>;
-			std::vector<dna4> read(query.begin() + 100, query.begin() + 600);
-			if (bottom_up_sketching(read, bf))
+			dna4_vector query = get<field::SEQ>(record) | seqan3::views::convert<seqan3::dna4> | ranges::to<std::vector<seqan3::dna4>>();
+			for (int i = 1; i <= 3 ; ++i)
 			{
-				num_contained_reads++;
-			}
-			if (++k > 10)
+				std::vector<dna4> read(query.begin() + 100 + (i * 500), query.begin() + 100 + ((i + 1) * 500));
+				if (bottom_up_sketching(read, bf))
+				{
+					num_contained_reads++;
+					break;
+			//	debug_stream << read << std::endl;
+				}
+			/*if (num_contained_reads > 10)
 			{
 				break;
+			}*/
 			}
-
+			
 		}
 		debug_stream << "Number of contained reads: " << num_contained_reads << "/" << num_query_reads << std::endl;
 		// TODO calculate containment of sketches in reference bloom filter

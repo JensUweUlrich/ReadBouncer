@@ -94,7 +94,7 @@ void CustomBloomFilter::writeToFile(const std::experimental::filesystem::path& f
 		{
 			if (i < 10 && int(aggr) != 0)
 			{
-				std::cout << int(aggr) << std::endl;
+				//std::cout << int(aggr) << std::endl;
 				++i;
 			}
 			fout.write((const char*) &aggr, sizeof(unsigned char));
@@ -156,10 +156,10 @@ bool CustomBloomFilter::readFromFile(const std::experimental::filesystem::path& 
 			fin.read((char*) &salt_.at(i), sizeof(bloom_type));
 		}
 		
-		for (bloom_type seed : salt_)
+		/*for (bloom_type seed : salt_)
 		{
 			std::cout << seed << std::endl;
-		}
+		}*/
 	}
 	catch (std::ifstream::failure &e)
 	{
@@ -182,7 +182,7 @@ bool CustomBloomFilter::readFromFile(const std::experimental::filesystem::path& 
 			
 			if (k < 10 && int(bit_table_.at(i)) != 0)
 			{
-				std::cout << int(bit_table_.at(i)) << std::endl;
+				//std::cout << int(bit_table_.at(i)) << std::endl;
 				++k;
 			}
 		}

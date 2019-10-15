@@ -1,4 +1,4 @@
-set(MINISOURCES "minimizer3.cpp" "minimizer3.hpp")
+set(MINISOURCES "minimizer3.cpp" "minimizer3.hpp" "MurmurHash3.cpp" "MurmurHash3.h")
 
 add_library (Minimizer STATIC ${MINISOURCES})
 

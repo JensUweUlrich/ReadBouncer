@@ -1,7 +1,7 @@
 #include <deque>
 
 #include <seqan3/core/debug_stream.hpp>
-
+#include "MurmurHash3.h"
 #include <seqan3/alphabet/nucleotide/dna4.hpp>
 #include <seqan3/range/container/dynamic_bitset.hpp>
 #include <seqan3/range/views/all.hpp>
@@ -21,18 +21,22 @@ class Minimizer
 		{ 0x8F3F73B5CF1C9ADE };
 		// k-mer size -> set default value to 31 according to kraken2 paper
 		uint8_t k
-		{ 31 };
+		{ 5 };
 		// window size != w in minimizer paper -> set default value to 35 according to kraken2 paper
-		uint32_t w
-		{ 35 };
+		uint8_t w
+		{ 15 };
 		// number of masked positions
-		uint8_t s {3};
+		uint8_t s {0};
+		// gapped shape
+		seqan3::shape shape{};
 		// start positions of minimizers
 		std::vector<uint64_t> minBegin;
 		// end positions of minimizers
 		std::vector<uint64_t> minEnd;
 
 		std::vector<dna4_vector> getMinimizer(dna4_vector & text, const bool ungapped);
+		
+		std::vector<uint64_t> getMinimizerHashValues(dna4_vector & text);
 
 		inline void resize(uint16_t newKmerSize, uint32_t neww, uint64_t newSeed)
 		{
@@ -41,9 +45,25 @@ class Minimizer
 			seed = newSeed;
 		}
 
-		inline void setKmerSize(uint16_t newKmerSize)
+		inline void setKmerSize(uint8_t newKmerSize)
 		{
 			k = newKmerSize;
+		}
+		
+		inline void setWindowSize(uint8_t newWindowSize)
+		{
+			w = newWindowSize;
+		}
+		
+		inline void setMaskedPositions(uint8_t newS)
+		{
+			s = newS;
+			shape = computeSpacedSeed();
+		}
+		
+		inline void setGappedShape(seqan3::shape& newShape)
+		{
+			shape = newShape;
 		}
 		
 		inline seqan3::shape computeSpacedSeed()
@@ -52,10 +72,14 @@ class Minimizer
 			// give parameter for number of masked positions -> every other position beginning at rightmost position -> see kraken2 paper with default of 7 masked positions
 			seqan3::dynamic_bitset bs{};
 			bs.resize(k);
-	
-			for (int i = 1 ; i <= s*2 && i < k; i+=2)
+			bs.set();
+			
+			uint8_t stepSize = ((uint8_t)(k / (s + 1)));
+			
+			for (int i = 1 ; i <= s; i++)
 			{
-				bs.flip(i);
+				int pos =  stepSize * i;
+				bs.flip(pos);
 			}
 			
 			seqan3::shape shape1{};
