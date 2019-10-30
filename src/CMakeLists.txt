@@ -7,7 +7,9 @@ project (ReadUntil CXX)
 
 # add all subdirectories
 add_subdirectory(seqan)
+add_subdirectory(libReadUntil)
 add_subdirectory(libMinimizer)
 add_subdirectory(libBloomFilter)
 add_subdirectory(main)
 add_subdirectory(test)
+
