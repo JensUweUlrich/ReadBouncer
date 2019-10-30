@@ -2,24 +2,38 @@ set(READUNTILSOURCES "ReadUntilClient.cpp" "ReadUntilClient.hpp")
 
 include(ExternalProject)
 
+
+
+
+set(THIRD_PARTY_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../third-party")
+
+# download c-ares git submodule
+execute_process(COMMAND git submodule update --init -- ${THIRD_PARTY_DIR}/c-ares WORKING_DIRECTORY "${THIRD_PARTY_DIR}/c-ares")
+
 # Builds c-ares project from the git submodule.
-# Note: For all external projects, instead of using checked-out code, one could
-# specify GIT_REPOSITORY and GIT_TAG to have cmake download the dependency directly,
-# without needing to add a submodule to your project.
 ExternalProject_Add(c-ares
   PREFIX c-ares
-  SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libReadUntil/third_party/cares/cares"
+  SOURCE_DIR ${THIRD_PARTY_DIR}/c-ares
   CMAKE_CACHE_ARGS
         -DCARES_SHARED:BOOL=OFF
         -DCARES_STATIC:BOOL=ON
         -DCARES_STATIC_PIC:BOOL=ON
-        -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/c-ares
+        -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/third_party/cares/cares-build
 )
+
+execute_process(COMMAND ${CMAKE_COMMAND} --build .
+  RESULT_VARIABLE result
+  WORKING_DIRECTORY "${THIRD_PARTY_DIR}/c-ares" )
+if(result)
+  message(FATAL_ERROR "Build step for c-ares failed: ${result}")
+endif()
 
 # Builds protobuf project from the git submodule.
 ExternalProject_Add(protobuf
   PREFIX protobuf
-  SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libReadUntil/third_party/protobuf/cmake"
+  GIT_REPOSITORY    https://github.com/protocolbuffers/protobuf.git
+  GIT_TAG           master
+  SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/protobuf/cmake"
   CMAKE_CACHE_ARGS
         -Dprotobuf_BUILD_TESTS:BOOL=OFF
         -Dprotobuf_WITH_ZLIB:BOOL=OFF
@@ -30,7 +44,9 @@ ExternalProject_Add(protobuf
 # Builds zlib project from the git submodule.
 ExternalProject_Add(zlib
   PREFIX zlib
-  SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libReadUntil/third_party/zlib"
+  GIT_REPOSITORY    https://github.com/madler/zlib.git
+  GIT_TAG           master
+  SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/zlib"
   CMAKE_CACHE_ARGS
         -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/zlib
 )
@@ -52,7 +68,9 @@ endif()
 # are correctly located.
 ExternalProject_Add(grpc
   PREFIX grpc
-  SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libReadUntil/third_party/grpc"
+  GIT_REPOSITORY    https://github.com/grpc/grpc.git
+  GIT_TAG           master
+  SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/grpc"
   CMAKE_CACHE_ARGS
         -DgRPC_INSTALL:BOOL=ON
         -DgRPC_BUILD_TESTS:BOOL=OFF

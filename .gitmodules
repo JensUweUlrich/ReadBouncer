@@ -1,0 +1,12 @@
+[submodule "third-party/c-ares"]
+	path = third-party/c-ares
+	url = https://github.com/c-ares/c-ares.git
+[submodule "third-party/protobuf"]
+	path = third-party/protobuf
+	url = https://github.com/protocolbuffers/protobuf.git
+[submodule "third-party/zlib"]
+	path = third-party/zlib
+	url = https://github.com/madler/zlib.git
+[submodule "third-party/grpc"]
+	path = third-party/grpc
+	url = https://github.com/grpc/grpc.git
