@@ -9,7 +9,9 @@
 
 ReadUntilClient::ReadUntilClient()
 {
-	// TODO Auto-generated constructor stub
+	std::stringstream s;
+	s << mk_host << ":" << mk_port;
+	auto channel = grpc::CreateChannel(s.str(), grpc::InsecureChannelCredentials());
 
 }
 

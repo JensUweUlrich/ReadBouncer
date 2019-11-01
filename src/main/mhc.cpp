@@ -62,8 +62,8 @@ void initialize_mhc_argument_parser(argument_parser &parser, cmd_arguments &args
 	//TODO refine examples
 	//parser.info.examples = "mhc bloom ";
 
-	parser.add_positional_option(args.mode, "Modus to run mhc : ", value_list_validator(
-	{ "bloom", "read-until" }));
+	parser.add_positional_option(args.mode, "Modus to run mhc : ", value_list_validator
+	{ "bloom", "read-until" });
 
 	//TODO add all working modes as options and provide all additional information
 }

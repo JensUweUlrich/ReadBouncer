@@ -1,119 +1,42 @@
-set(READUNTILSOURCES "ReadUntilClient.cpp" "ReadUntilClient.hpp")
 
-include(ExternalProject)
+configure_file(CMakeLists.txt.in gRPC-build/CMakeLists.txt)
 
-
-
-
-set(THIRD_PARTY_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../third-party")
-
-# download c-ares git submodule
-execute_process(COMMAND git submodule update --init -- ${THIRD_PARTY_DIR}/c-ares WORKING_DIRECTORY "${THIRD_PARTY_DIR}/c-ares")
-
-# Builds c-ares project from the git submodule.
-ExternalProject_Add(c-ares
-  PREFIX c-ares
-  SOURCE_DIR ${THIRD_PARTY_DIR}/c-ares
-  CMAKE_CACHE_ARGS
-        -DCARES_SHARED:BOOL=OFF
-        -DCARES_STATIC:BOOL=ON
-        -DCARES_STATIC_PIC:BOOL=ON
-        -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/third_party/cares/cares-build
-)
-
+execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+  RESULT_VARIABLE result
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/gRPC-build )
+if(result)
+  message(FATAL_ERROR "Generator step for gRPC failed: ${result}")
+endif()
 execute_process(COMMAND ${CMAKE_COMMAND} --build .
   RESULT_VARIABLE result
-  WORKING_DIRECTORY "${THIRD_PARTY_DIR}/c-ares" )
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/gRPC-build)
 if(result)
-  message(FATAL_ERROR "Build step for c-ares failed: ${result}")
+  message(FATAL_ERROR "Build step for gRPC failed: ${result}")
 endif()
 
-# Builds protobuf project from the git submodule.
-ExternalProject_Add(protobuf
-  PREFIX protobuf
-  GIT_REPOSITORY    https://github.com/protocolbuffers/protobuf.git
-  GIT_TAG           master
-  SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/protobuf/cmake"
-  CMAKE_CACHE_ARGS
-        -Dprotobuf_BUILD_TESTS:BOOL=OFF
-        -Dprotobuf_WITH_ZLIB:BOOL=OFF
-        -Dprotobuf_MSVC_STATIC_RUNTIME:BOOL=OFF
-        -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/protobuf
-)
-
-# Builds zlib project from the git submodule.
-ExternalProject_Add(zlib
-  PREFIX zlib
-  GIT_REPOSITORY    https://github.com/madler/zlib.git
-  GIT_TAG           master
-  SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/zlib"
-  CMAKE_CACHE_ARGS
-        -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/zlib
-)
-
-# the location where protobuf-config.cmake will be installed varies by platform
-if (WIN32)
-  set(_FINDPACKAGE_PROTOBUF_CONFIG_DIR "${CMAKE_CURRENT_BINARY_DIR}/protobuf/cmake")
-else()
-  set(_FINDPACKAGE_PROTOBUF_CONFIG_DIR "${CMAKE_CURRENT_BINARY_DIR}/protobuf/lib/cmake/protobuf")
-endif()
-
-# if OPENSSL_ROOT_DIR is set, propagate that hint path to the external projects with OpenSSL dependency.
-set(_CMAKE_ARGS_OPENSSL_ROOT_DIR "")
-if (OPENSSL_ROOT_DIR)
-  set(_CMAKE_ARGS_OPENSSL_ROOT_DIR "-DOPENSSL_ROOT_DIR:PATH=${OPENSSL_ROOT_DIR}")
-endif()
-
-# Builds gRPC based on locally checked-out sources and set arguments so that all the dependencies
-# are correctly located.
-ExternalProject_Add(grpc
-  PREFIX grpc
-  GIT_REPOSITORY    https://github.com/grpc/grpc.git
-  GIT_TAG           master
-  SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/grpc"
-  CMAKE_CACHE_ARGS
-        -DgRPC_INSTALL:BOOL=ON
-        -DgRPC_BUILD_TESTS:BOOL=OFF
-        -DgRPC_PROTOBUF_PROVIDER:STRING=package
-        -DgRPC_PROTOBUF_PACKAGE_TYPE:STRING=CONFIG
-        -DProtobuf_DIR:PATH=${_FINDPACKAGE_PROTOBUF_CONFIG_DIR}
-        -DgRPC_ZLIB_PROVIDER:STRING=package
-        -DZLIB_ROOT:STRING=${CMAKE_CURRENT_BINARY_DIR}/zlib
-        -DgRPC_CARES_PROVIDER:STRING=package
-        -Dc-ares_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/c-ares/lib/cmake/c-ares
-        -DgRPC_SSL_PROVIDER:STRING=package
-        ${_CMAKE_ARGS_OPENSSL_ROOT_DIR}
-        -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/grpc
-  DEPENDS c-ares protobuf zlib
-)
-
-# Build the libReadUntil projects itself using a CMakeLists.txt that assumes all the dependencies
-# have already been installed.
-# Even though libReadUntil is not really an "external project" from perspective of this build,
-# we are still importing it using ExternalProject_Add because that allows us to use find_package()
-# to locate all the dependencies (if we were building it directly in this build we,
-# we would have needed to manually import the libraries as opposed to reusing targets exported by
-# gRPC and protobuf).
-ExternalProject_Add(helloworld
-  PREFIX libReaduntil
-  SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libReadUntil"
-  BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/libReadUntil"
-  INSTALL_COMMAND ""
-  CMAKE_CACHE_ARGS
-        -DProtobuf_DIR:PATH=${_FINDPACKAGE_PROTOBUF_CONFIG_DIR}
-        -Dc-ares_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/c-ares/lib/cmake/c-ares
-        -DZLIB_ROOT:STRING=${CMAKE_CURRENT_BINARY_DIR}/zlib
-        ${_CMAKE_ARGS_OPENSSL_ROOT_DIR}
-        -DgRPC_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/grpc/lib/cmake/grpc
-  DEPENDS protobuf grpc
-)
 
 
+set(READUNTILSOURCES "ReadUntilClient.cpp" "ReadUntilClient.hpp")
 
 
-#add_library (BloomFilter STATIC ${BLOOMSOURCES})
+# Include the gRPC's cmake build (normally grpc source code would live
+  # in a git submodule called "third_party/grpc", but this example lives in
+  # the same repository as gRPC sources, so we just look a few directories up)
+  add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/grpc ${CMAKE_CURRENT_BINARY_DIR}/grpc EXCLUDE_FROM_ALL)
+  message(STATUS "Using gRPC via add_subdirectory.")
+  
+  # After using add_subdirectory, we can now use the grpc targets directly from
+  # this build.
+  set(_PROTOBUF_LIBPROTOBUF libprotobuf)
+#  set(_PROTOBUF_PROTOC $<TARGET_FILE:protoc>)
+  set(_GRPC_GRPCPP_UNSECURE grpc++_unsecure)
+#  set(_GRPC_CPP_PLUGIN_EXECUTABLE $<TARGET_FILE:grpc_cpp_plugin>)
 
-#target_link_libraries (BloomFilter seqan3::seqan3)
 
-#target_include_directories (BloomFilter PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+add_library (ReadUntil STATIC ${READUNTILSOURCES})
+
+target_link_libraries (ReadUntil  ${_GRPC_GRPCPP_UNSECURE}
+    ${_PROTOBUF_LIBPROTOBUF})
+
+target_include_directories (ReadUntil PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 

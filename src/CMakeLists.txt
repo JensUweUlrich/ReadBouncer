@@ -3,7 +3,7 @@ cmake_minimum_required (VERSION 3.4)
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 
-project (ReadUntil CXX)
+project (RUHEL CXX)
 
 # add all subdirectories
 add_subdirectory(seqan)
