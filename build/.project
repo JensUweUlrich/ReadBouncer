@@ -197,6 +197,16 @@
 			<location>/home/jens/Development/MinHashContainment/src/libReadUntil/ReadUntilClient.cpp</location>
 		</link>
 		<link>
+			<name>[Targets]/[lib] ReadUntil/Source Files/reads.pb.cc</name>
+			<type>1</type>
+			<location>/home/jens/Development/MinHashContainment/build/libReadUntil/minknow/minknow/reads.pb.cc</location>
+		</link>
+		<link>
+			<name>[Targets]/[lib] ReadUntil/Source Files/reads.grpc.pb.cc</name>
+			<type>1</type>
+			<location>/home/jens/Development/MinHashContainment/build/libReadUntil/minknow/minknow/reads.grpc.pb.cc</location>
+		</link>
+		<link>
 			<name>[Targets]/[lib] ReadUntil/Header Files</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
@@ -210,6 +220,11 @@
 			<name>[Targets]/[lib] ReadUntil/CMake Rules</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[lib] ReadUntil/CMake Rules/reads.pb.cc.rule</name>
+			<type>1</type>
+			<location>/home/jens/Development/MinHashContainment/build/libReadUntil/minknow/minknow/reads.pb.cc.rule</location>
 		</link>
 		<link>
 			<name>[Targets]/[lib] ReadUntil/Resources</name>

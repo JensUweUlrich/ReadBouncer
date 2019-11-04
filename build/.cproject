@@ -421,6 +421,8 @@
 				<pathentry kind="mac" name="__STDC_IEC_559_COMPLEX__" path="" value="1"/>
 				<pathentry kind="mac" name="__STDC_ISO_10646__" path="" value="201706L"/>
 				<pathentry kind="mac" name="__STDC_NO_THREADS__" path="" value="1"/>
+				<pathentry include="/home/jens/Development/MinHashContainment/build/libReadUntil/minknow/minknow" kind="inc" path="" system="true"/>
+				<pathentry include="/home/jens/Development/MinHashContainment/build/libReadUntil/minknow/minknow/rpc" kind="inc" path="" system="true"/>
 				<pathentry include="/home/jens/Development/MinHashContainment/src/libReadUntil" kind="inc" path="" system="true"/>
 				<pathentry include="/home/jens/Development/MinHashContainment/build/libReadUntil/grpc/include" kind="inc" path="" system="true"/>
 				<pathentry include="/home/jens/Development/MinHashContainment/build/libReadUntil/grpc/third_party/protobuf/src" kind="inc" path="" system="true"/>
