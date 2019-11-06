@@ -53,27 +53,30 @@ add_custom_command(
         --plugin=protoc-gen-grpc=${_GRPC_CPP_PLUGIN_EXECUTABLE}
         "${reads_proto}"
       DEPENDS "${reads_proto}")
-
+ 
 # Include generated *.pb.h files
+list(APPEND minknow_srcs ${reads_proto_srcs} ${reads_grpc_srcs})
+file(GLOB protofiles "${CMAKE_CURRENT_BINARY_DIR}/minknow/minknow/rpc/*.proto")
 
-set(minknow_srcs ${reads_proto_srcs} ${reads_grpc_srcs})
-
-set(protofiles "${CMAKE_CURRENT_BINARY_DIR}/minknow/minknow/rpc/*.proto")
 foreach(proto ${protofiles})
+  get_filename_component(protofilepath ${proto} PATH)
   get_filename_component(fname ${proto} NAME_WE)
   add_custom_command(
-      OUTPUT "${fname}.pb.cc" "${fname}.pb.h" "${fname}.grpc.pb.cc" "${reads_grpc_hdrs}.grpc.pb.h"
+      OUTPUT "${protofilepath}/${fname}.pb.cc" "${protofilepath}/${fname}.pb.h" "${protofilepath}/${fname}.grpc.pb.cc" "${protofilepath}/${fname}.grpc.pb.h"
       COMMAND ${_PROTOBUF_PROTOC}
-      ARGS --grpc_out "${CMAKE_CURRENT_BINARY_DIR}/minknow/minknow/rpc"
-        --cpp_out "${CMAKE_CURRENT_BINARY_DIR}/minknow/minknow/rpc"
-        -I "${CMAKE_CURRENT_BINARY_DIR}/minknow/minknow/rpc"
+      ARGS --grpc_out "${CMAKE_CURRENT_BINARY_DIR}/minknow"
+        --cpp_out "${CMAKE_CURRENT_BINARY_DIR}/minknow"
+        -I "${CMAKE_CURRENT_BINARY_DIR}/minknow"
+        -I "${CMAKE_CURRENT_BINARY_DIR}/protobuf/src"
         --plugin=protoc-gen-grpc=${_GRPC_CPP_PLUGIN_EXECUTABLE}
         "${proto}"
       DEPENDS "${proto}")
-  list(APPEND ${minknow_srcs} "${fname}.pb.cc" "${fname}.grpc.pb.cc")
+  message(STATUS "building target for ${proto}")
+  list(APPEND minknow_srcs "${protofilepath}/${fname}.pb.cc" "${protofilepath}/${fname}.grpc.pb.cc")
 endforeach()
 
-include_directories("${CMAKE_CURRENT_BINARY_DIR}/minknow/minknow" "${CMAKE_CURRENT_BINARY_DIR}/minknow/minknow/rpc")
+
+include_directories("${CMAKE_CURRENT_BINARY_DIR}/minknow/minknow" "${CMAKE_CURRENT_BINARY_DIR}/minknow")
 
 
 add_library (ReadUntil STATIC ${READUNTILSOURCES} ${minknow_srcs})
