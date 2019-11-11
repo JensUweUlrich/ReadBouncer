@@ -6,6 +6,7 @@
 #include "customBloomFilter.hpp"
 #include "bloom_filter.hpp"
 #include "bloomFilterException.hpp"
+#include "ReadUntilClient.hpp"
 #include "minimizer3.hpp"
 
 #include <seqan3/alphabet/nucleotide/dna4.hpp>
@@ -304,6 +305,11 @@ void run_program(cmd_arguments &args)
 
 int main(int argc, char const ** argv)
 {
+
+	readuntil::ReadUntilClient &client = readuntil::ReadUntilClient::getClient();
+
+	client.connect();
+
 	argument_parser parser("mhc", argc, argv);
 	cmd_arguments args
 	{ };

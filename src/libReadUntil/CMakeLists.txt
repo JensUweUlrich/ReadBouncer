@@ -16,7 +16,7 @@ endif()
 
 
 
-set(READUNTILSOURCES "ReadUntilClient.cpp" "ReadUntilClient.hpp")
+file(GLOB READUNTILSOURCES "*.cpp" "*.hpp")
 
 
 # Include the gRPC's cmake build (normally grpc source code would live
@@ -71,7 +71,7 @@ foreach(proto ${protofiles})
         --plugin=protoc-gen-grpc=${_GRPC_CPP_PLUGIN_EXECUTABLE}
         "${proto}"
       DEPENDS "${proto}")
-  message(STATUS "building target for ${proto}")
+  message(STATUS "building target for ${fname}.proto")
   list(APPEND minknow_srcs "${protofilepath}/${fname}.pb.cc" "${protofilepath}/${fname}.grpc.pb.cc")
 endforeach()
 
@@ -80,9 +80,9 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}/minknow/minknow" "${CMAKE_CURRE
 
 
 add_library (ReadUntil STATIC ${READUNTILSOURCES} ${minknow_srcs})
+target_include_directories (ReadUntil PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} "${CMAKE_CURRENT_BINARY_DIR}/minknow")
 
-target_link_libraries (ReadUntil  ${_GRPC_GRPCPP_UNSECURE}
-    ${_PROTOBUF_LIBPROTOBUF})
+target_link_libraries (ReadUntil  ${_GRPC_GRPCPP_UNSECURE} ${_PROTOBUF_LIBPROTOBUF})
 
-target_include_directories (ReadUntil PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
 

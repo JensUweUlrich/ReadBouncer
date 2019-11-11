@@ -192,6 +192,11 @@
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
+			<name>[Targets]/[lib] ReadUntil/Source Files/Instance.cpp</name>
+			<type>1</type>
+			<location>/home/jens/Development/MinHashContainment/src/libReadUntil/Instance.cpp</location>
+		</link>
+		<link>
 			<name>[Targets]/[lib] ReadUntil/Source Files/ReadUntilClient.cpp</name>
 			<type>1</type>
 			<location>/home/jens/Development/MinHashContainment/src/libReadUntil/ReadUntilClient.cpp</location>
@@ -340,6 +345,21 @@
 			<name>[Targets]/[lib] ReadUntil/Header Files</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[lib] ReadUntil/Header Files/Instance.hpp</name>
+			<type>1</type>
+			<location>/home/jens/Development/MinHashContainment/src/libReadUntil/Instance.hpp</location>
+		</link>
+		<link>
+			<name>[Targets]/[lib] ReadUntil/Header Files/MinKnowService.hpp</name>
+			<type>1</type>
+			<location>/home/jens/Development/MinHashContainment/src/libReadUntil/MinKnowService.hpp</location>
+		</link>
+		<link>
+			<name>[Targets]/[lib] ReadUntil/Header Files/MinKnowServiceType.hpp</name>
+			<type>1</type>
+			<location>/home/jens/Development/MinHashContainment/src/libReadUntil/MinKnowServiceType.hpp</location>
 		</link>
 		<link>
 			<name>[Targets]/[lib] ReadUntil/Header Files/ReadUntilClient.hpp</name>
