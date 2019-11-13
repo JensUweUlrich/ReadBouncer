@@ -13,6 +13,11 @@
 #include <chrono>
 #include <grpcpp/grpcpp.h>
 #include "Instance.hpp"
+#include "Data.hpp"
+#include "Device.hpp"
+#include "Manager.hpp"
+
+#include "../debug_messages.hpp"
 
 #ifndef LIBREADUNTIL_READUNTILCLIENT_HPP_
 #define LIBREADUNTIL_READUNTILCLIENT_HPP_
@@ -28,10 +33,9 @@ namespace readuntil
 			std::string mk_host
 			{ "127.0.0.1" };
 			uint16_t mk_port
-			{ 8002 };
+			{ 8000 };
 
 			ReadUntilClient() = default;
-			~ReadUntilClient() = default;
 			ReadUntilClient(const ReadUntilClient&) = delete;
 
 		public:
@@ -55,6 +59,11 @@ namespace readuntil
 			void connect();
 
 			MinKnowService* getMinKnowService(const MinKnowServiceType type);
+
+			~ReadUntilClient()
+			{
+				channel.reset();
+			}
 
 			ReadUntilClient& operator=(const ReadUntilClient&) = delete;
 

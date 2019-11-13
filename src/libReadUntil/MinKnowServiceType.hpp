@@ -7,6 +7,9 @@
  *      Author: jens-uwe ulrich
  */
 
+#ifndef LIBREADUNTIL_MINKNOWSERVICETYPE_HPP_
+#define LIBREADUNTIL_MINKNOWSERVICETYPE_HPP_
+
 namespace readuntil
 {
 	enum MinKnowServiceType
@@ -26,3 +29,5 @@ namespace readuntil
 		STATISTICS
 	};
 }
+
+#endif

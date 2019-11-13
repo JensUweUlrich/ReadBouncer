@@ -5,6 +5,8 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 
 project (RUHEL CXX)
 
+add_compile_options(-DDEBUG)
+
 # add all subdirectories
 add_subdirectory(seqan)
 add_subdirectory(libReadUntil)

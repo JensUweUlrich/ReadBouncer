@@ -6,7 +6,6 @@
  */
 
 #include "Instance.hpp"
-#include "ReadUntilClientException.hpp"
 
 namespace readuntil
 {
@@ -17,11 +16,13 @@ namespace readuntil
 
 	std::string Instance::get_version_info()
 	{
-		GetVersionInfoRequest request;
-		GetVersionInfoResponse response;
+		::ont::rpc::instance::GetVersionInfoRequest request;
+		::ont::rpc::instance::GetVersionInfoResponse response;
+		::grpc::ClientContext context;
 		::grpc::Status status = stub->get_version_info(&context, request, &response);
 		if (status.ok())
 		{
+
 			return response.minknow().full();
 		}
 		else

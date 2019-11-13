@@ -12,6 +12,7 @@
 
 #include "MinKnowService.hpp"
 #include "ReadUntilClientException.hpp"
+#include "../debug_messages.hpp"
 
 using namespace ::ont::rpc::instance;
 

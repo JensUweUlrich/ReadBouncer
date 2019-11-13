@@ -13,24 +13,24 @@ namespace readuntil
 	{
 		std::stringstream s;
 		s << mk_host << ":" << mk_port;
-		uint8_t retry_count = 5;
-		for (uint8_t i = 1; i <= 5 ; ++i)
+		int retry_count = 5;
+		DEBUGMESSAGE(std::cout, "Trying to connect to " << s.str());
+
+
+		for (int i = 1; i <= 5 ; ++i)
 		{
 			channel = grpc::CreateChannel(s.str(), grpc::InsecureChannelCredentials());
-
-			ReadUntilClient &client = ReadUntilClient::getClient();
-			Instance *inst = (Instance*) client.getMinKnowService(MinKnowServiceType::INSTANCE);
+			Instance *inst = (Instance*) getMinKnowService(MinKnowServiceType::INSTANCE);
 			try
 			{
 				std::stringstream dm;
-				dm << "Sucessfully connected to minknow instance (version " << (*inst).get_version_info() << ")" << std::endl;
-				std::cout << dm.str() << std::endl;
+				dm << "Sucessfully connected to minknow instance (version " << (*inst).get_version_info() << ")";
 				break;
 			}
 			catch (ReadUntilClientException e)
 			{
 				std::stringstream em;
-				em << "Failed to connect to minknow instance (retry " << i << "/" << retry_count << " : " << e.what();
+				em << "Failed to connect to minknow instance (retry " << i << "/" << retry_count << ") : " << e.what();
 				std::cerr <<  em.str() << std::endl;
 			}
 			std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -39,11 +39,20 @@ namespace readuntil
 
 	MinKnowService* ReadUntilClient::getMinKnowService(const MinKnowServiceType type)
 	{
+		MinKnowService *s;
 		switch (type)
 		{
 			case INSTANCE:
-				MinKnowService *s = new Instance(channel);
+				return new Instance(channel);
+			case DATA:
+				return new Data(channel);
+			case DEVICE:
+				return new Device(channel);
+			case MANAGER:
+				return new Manager(channel);
+			default:
 				return s;
+
 		}
 	}
 

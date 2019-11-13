@@ -41,6 +41,8 @@ struct cmd_arguments
 		{ 31 };
 		float error_rate
 		{ 0.05 };
+		std::string host;
+		uint16_t port;
 };
 
 void initialize_mhc_argument_parser(argument_parser &parser, cmd_arguments &args)
@@ -58,13 +60,13 @@ void initialize_mhc_argument_parser(argument_parser &parser, cmd_arguments &args
 	parser.info.description = description;
 
 	std::vector<std::string> synopsis
-	{ "[bloom, read-until] [OPTIONS]" };
+	{ "[bloom, read-until, client] [OPTIONS]" };
 	parser.info.synopsis = synopsis;
 	//TODO refine examples
 	//parser.info.examples = "mhc bloom ";
 
 	parser.add_positional_option(args.mode, "Modus to run mhc : ", value_list_validator
-	{ "bloom", "read-until" });
+	{ "bloom", "read-until", "client" });
 
 	//TODO add all working modes as options and provide all additional information
 }
@@ -79,7 +81,7 @@ void initialize_bloom_argument_parser(argument_parser &parser, cmd_arguments &ar
 	parser.info.email = "ulrichj@rki.de";
 
 	parser.add_option(args.bloom_filter_output_path, 'b', "bloom-output", "output file path to bloom filter", option_spec::REQUIRED);
-	parser.add_option(args.error_rate, 'p', "false-positive-rate", "target false positive rate for bloom filter construction [default: 0.05]");
+	parser.add_option(args.error_rate, 'e', "false-positive-rate", "target false positive rate for bloom filter construction [default: 0.05]");
 	parser.add_option(args.size_k, 'k', "kmer-size", "k-mer size used for bottom up sketching reads", option_spec::DEFAULT, arithmetic_range_validator
 	{ 1, 31 });
 	parser.add_positional_option(args.sequence_files, "reference file(s) to create bloom filter for");
@@ -98,6 +100,21 @@ void initialize_read_until_argument_parser(argument_parser &parser, cmd_argument
 	// TODO delete after implementing client architecture
 	parser.add_option(args.query_read_file, 'q', "query", "query read file");
 	parser.add_option(args.bloom_filter_output_path, 'b', "bloom-filter", "path to bloom filter file", option_spec::REQUIRED);
+
+}
+
+void initialize_client_argument_parser(argument_parser &parser, cmd_arguments &args)
+{
+	// TODO refine parser information
+	parser.info.author = "Jens-Uwe Ulrich";
+	parser.info.short_description = "start a client to communicate with ONT's MinKNOW software";
+	parser.info.version = "0.0.1";
+	parser.info.date = "13-NOV-2019";
+	parser.info.email = "ulrichj@rki.de";
+
+	// only for debugging
+	parser.add_option(args.host, 'c', "host", "host IP address");
+	parser.add_option(args.port, 'p', "port", "port on which to communicate with host");
 
 }
 
@@ -126,16 +143,18 @@ bool checkWriteAccessRights(std::filesystem::path &file)
 }
 
 /**
-** 
-**/
-uint64_t computeMinimizer(const std::vector<std::filesystem::path>& refFilePaths, const uint16_t& kMerSize, std::vector<std::vector<uint64_t>>& sketch_vector)
+ **
+ **/
+uint64_t computeMinimizer(const std::vector<std::filesystem::path> &refFilePaths, const uint16_t &kMerSize, std::vector<std::vector<uint64_t>> &sketch_vector)
 {
-	Minimizer minimizer { };
+	Minimizer minimizer
+	{ };
 	minimizer.setKmerSize(kMerSize);
 	minimizer.setWindowSize(50);
-	seqan3::shape t2{0b1110101000101001010010011001111_shape};
+	seqan3::shape t2
+	{ 0b1110101000101001010010011001111_shape };
 	minimizer.setGappedShape(t2);
-	
+
 	uint64_t minimizer_number = 0;
 	debug_stream << "start loading references ....\n";
 	for (std::filesystem::path file : refFilePaths)
@@ -143,10 +162,9 @@ uint64_t computeMinimizer(const std::vector<std::filesystem::path>& refFilePaths
 		// load ref sequences and compute minimizer one after another
 		sequence_file_input fin
 		{ file };
-		for (auto & record : fin)
+		for (auto &record : fin)
 		{
 			debug_stream << "compute minimizer for " << get<field::ID>(record) << "\n";
-
 
 			dna5_vector seq = get<field::SEQ>(record);
 			// split references by stretches of N into many sequences
@@ -161,8 +179,7 @@ uint64_t computeMinimizer(const std::vector<std::filesystem::path>& refFilePaths
 					sketch_vector.push_back(sketch);
 				}
 			}
-			
-			
+
 		}
 	}
 	return minimizer_number;
@@ -175,8 +192,9 @@ void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::
 		std::cerr << "ERROR: No access right to create or write to " << output.u8string() << std::endl;
 		return;
 	}
-	
-	std::vector<std::vector<uint64_t>> sketch_vector { };
+
+	std::vector<std::vector<uint64_t>> sketch_vector
+	{ };
 
 	// compute optimal parameters for the bloom filter creation
 
@@ -197,7 +215,6 @@ void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::
 	}
 
 	parameters.compute_optimal_parameters();
-
 
 	//Instantiate Bloom Filter
 	CustomBloomFilter filter(parameters, kMerSize);
@@ -221,9 +238,10 @@ bool bottom_up_sketching(dna4_vector &read, CustomBloomFilter &bf)
 	{ };
 	minimizer.setKmerSize(bf.kMerSize);
 	minimizer.setWindowSize(50);
-	seqan3::shape t2{0b1110101000101001010010011001111_shape};
+	seqan3::shape t2
+	{ 0b1110101000101001010010011001111_shape };
 	minimizer.setGappedShape(t2);
-	
+
 	std::vector<uint64_t> sketch = minimizer.getMinimizerHashValues(read);
 	int num_containments
 	{ 0 };
@@ -241,7 +259,7 @@ bool bottom_up_sketching(dna4_vector &read, CustomBloomFilter &bf)
 	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
 	debug_stream << "used time: " << duration << "\n";
 	debug_stream << "Number of minimizer Containments: " << num_containments << "/" << sketch.size() << std::endl;
-	return (double(num_containments)/double(sketch.size())) > 0.15;
+	return (double(num_containments) / double(sketch.size())) > 0.15;
 }
 
 /**
@@ -274,91 +292,113 @@ void run_program(cmd_arguments &args)
 		// method only used for debugging with provided sequence file
 
 		// TODO compute bottom up minhash sketch for every read provided
-		int num_contained_reads {0};
-		int num_query_reads {0};
-		sequence_file_input fin	{ args.query_read_file };
+		int num_contained_reads
+		{ 0 };
+		int num_query_reads
+		{ 0 };
+		sequence_file_input fin
+		{ args.query_read_file };
 		int k = 0;
-		for (auto & record : fin)
+		for (auto &record : fin)
 		{
 			num_query_reads++;
 			dna4_vector query = get<field::SEQ>(record) | seqan3::views::convert<seqan3::dna4> | ranges::to<std::vector<seqan3::dna4>>();
-			for (int i = 1; i <= 3 ; ++i)
+			for (int i = 1; i <= 3; ++i)
 			{
 				std::vector<dna4> read(query.begin() + 100 + (i * 500), query.begin() + 100 + ((i + 1) * 500));
 				if (bottom_up_sketching(read, bf))
 				{
 					num_contained_reads++;
 					break;
-			//	debug_stream << read << std::endl;
+					//	debug_stream << read << std::endl;
 				}
-			/*if (num_contained_reads > 10)
-			{
-				break;
-			}*/
+				/*if (num_contained_reads > 10)
+				 {
+				 break;
+				 }*/
 			}
-			
+
 		}
 		debug_stream << "Number of contained reads: " << num_contained_reads << "/" << num_query_reads << std::endl;
 		// TODO calculate containment of sketches in reference bloom filter
 	}
-}
-
-int main(int argc, char const ** argv)
-{
+	else if (std::string("client").compare(args.mode) == 0)
+	{
 
 	readuntil::ReadUntilClient &client = readuntil::ReadUntilClient::getClient();
-
+	client.setPort(args.port);
 	client.connect();
+}
+}
 
-	argument_parser parser("mhc", argc, argv);
-	cmd_arguments args
-	{ };
-	initialize_mhc_argument_parser(parser, args);
-	if (std::string(argv[1]).compare("bloom") == 0)
+int main(int argc, char const **argv)
+{
+
+argument_parser parser("mhc", argc, argv);
+cmd_arguments args
+{ };
+initialize_mhc_argument_parser(parser, args);
+if (std::string(argv[1]).compare("bloom") == 0)
+{
+	args.mode = "bloom";
+	argument_parser bloom_parser("bloom", --argc, argv + 1);
+	initialize_bloom_argument_parser(bloom_parser, args);
+
+	try
 	{
-		args.mode = "bloom";
-		argument_parser bloom_parser("bloom", --argc, argv + 1);
-		initialize_bloom_argument_parser(bloom_parser, args);
-
-		try
-		{
-			bloom_parser.parse();
-		}
-		catch (parser_invalid_argument const & ext)
-		{
-			std::cerr << "[PARSER ERROR] " << ext.what() << '\n';
-			return -1;
-		}
+		bloom_parser.parse();
 	}
-	else if (std::string(argv[1]).compare("read-until") == 0)
+	catch (parser_invalid_argument const &ext)
 	{
-		args.mode = "read-until";
-		argument_parser read_until_parser("read-until", --argc, argv + 1);
-		initialize_read_until_argument_parser(read_until_parser, args);
-
-		try
-		{
-			read_until_parser.parse();
-		}
-		catch (parser_invalid_argument const & ext)
-		{
-			std::cerr << "[PARSER ERROR] " << ext.what() << '\n';
-			return -1;
-		}
+		std::cerr << "[PARSER ERROR] " << ext.what() << '\n';
+		return -1;
 	}
-	else
+}
+else if (std::string(argv[1]).compare("read-until") == 0)
+{
+	args.mode = "read-until";
+	argument_parser read_until_parser("read-until", --argc, argv + 1);
+	initialize_read_until_argument_parser(read_until_parser, args);
+
+	try
 	{
-		try
-		{
-			parser.parse();
-		}
-		catch (parser_invalid_argument const & ext)
-		{
-			std::cerr << "[PARSER ERROR] " << ext.what() << '\n';
-			return -1;
-		}
+		read_until_parser.parse();
 	}
+	catch (parser_invalid_argument const &ext)
+	{
+		std::cerr << "[PARSER ERROR] " << ext.what() << '\n';
+		return -1;
+	}
+}
+else if (std::string(argv[1]).compare("client") == 0)
+{
+	args.mode = "client";
+	argument_parser client_parser("client", --argc, argv + 1);
+	initialize_client_argument_parser(client_parser, args);
 
-	run_program(args);
-	return 0;
+	try
+	{
+		client_parser.parse();
+	}
+	catch (parser_invalid_argument const &ext)
+	{
+		std::cerr << "[PARSER ERROR] " << ext.what() << '\n';
+		return -1;
+	}
+}
+else
+{
+	try
+	{
+		parser.parse();
+	}
+	catch (parser_invalid_argument const &ext)
+	{
+		std::cerr << "[PARSER ERROR] " << ext.what() << '\n';
+		return -1;
+	}
+}
+
+run_program(args);
+return 0;
 }
