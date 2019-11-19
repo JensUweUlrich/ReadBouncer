@@ -1,8 +1,15 @@
 /*
  * Manager.cpp
  *
- *  Created on: 12.11.2019
- *      Author: jens
+ * Created on: 12.11.2019
+ * Author: Jens-Uwe Ulrich
+ *
+ * Fetching information about devices connected to MinKNOW via Remote Procedure Calls
+ *
+ * [update] 14.11.2019
+ *		seems to use another port (9502?) and tls secure connection with rpc certificates from the MinKNOW conf directory
+ *
+ *
  */
 
 #include "Manager.hpp"
@@ -19,7 +26,7 @@ namespace readuntil
 		ListDevicesRequest request;
 		ListDevicesResponse response;
 		::grpc::Status status = stub->list_devices(&context, request, &response);
-		std::vector < ListDevicesResponse::ActiveDevice > actDev
+		std::vector<ListDevicesResponse::ActiveDevice> actDev
 		{ };
 		if (status.ok())
 		{
@@ -45,14 +52,16 @@ namespace readuntil
 
 	std::vector<std::string> Manager::getPendingDevices()
 	{
-		ListDevicesRequest request;
-		ListDevicesResponse response;
+		::ont::rpc::manager::ListDevicesRequest request;
+		::ont::rpc::manager::ListDevicesResponse response;
+		::grpc::ClientContext context;
 		::grpc::Status status = stub->list_devices(&context, request, &response);
-		std::vector < ::std::string > pendDev
+		std::vector<::std::string> pendDev
 		{ };
 		if (status.ok())
 		{
-			pendDev.assign(response.pending().begin(), response.pending().end());
+			if (response.pending_size() > 0)
+				pendDev.assign(response.pending().begin(), response.pending().end());
 
 		}
 		else
@@ -67,7 +76,7 @@ namespace readuntil
 		ListDevicesRequest request;
 		ListDevicesResponse response;
 		::grpc::Status status = stub->list_devices(&context, request, &response);
-		std::vector < ::std::string > inactDev
+		std::vector<::std::string> inactDev
 		{ };
 		if (status.ok())
 		{
@@ -79,6 +88,21 @@ namespace readuntil
 			throw ReadUntilClientException(status.error_message());
 		}
 		return inactDev;
+	}
+
+	std::string Manager::getGuppyVersion()
+	{
+		::ont::rpc::manager::GetVersionInfoRequest request;
+		::ont::rpc::manager::GetVersionInfoResponse response;
+		::grpc::Status status = stub->get_version_info(&context, request, &response);
+		if (status.ok())
+		{
+			return response.guppy_connected_version();
+		}
+		else
+		{
+			throw ReadUntilClientException(status.error_message());
+		}
 	}
 
 }

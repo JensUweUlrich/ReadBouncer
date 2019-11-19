@@ -40,6 +40,11 @@ namespace readuntil
 
 		public:
 
+			inline std::shared_ptr<::grpc::Channel> getChannel()
+			{
+				return channel;
+			}
+
 			static ReadUntilClient& getClient()
 			{
 				static ReadUntilClient instance;

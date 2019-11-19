@@ -16,16 +16,19 @@ namespace readuntil
 
 	class ReadUntilClientException: public std::exception
 	{
-		protected:
+		private:
 			std::string error_message
 			{ };
 
 		public:
-			ReadUntilClientException(const std::string &msg) :
+
+			explicit ReadUntilClientException();
+
+			explicit ReadUntilClientException(const std::string &msg) :
 							error_message(msg)
 			{
 			}
-			~ReadUntilClientException()
+			virtual ~ReadUntilClientException() throw ()
 			{
 			}
 

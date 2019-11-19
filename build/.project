@@ -367,9 +367,19 @@
 			<location>/home/jens/Development/MinHashContainment/src/libReadUntil/Data.hpp</location>
 		</link>
 		<link>
+			<name>[Targets]/[lib] ReadUntil/Header Files/DataServiceException.hpp</name>
+			<type>1</type>
+			<location>/home/jens/Development/MinHashContainment/src/libReadUntil/DataServiceException.hpp</location>
+		</link>
+		<link>
 			<name>[Targets]/[lib] ReadUntil/Header Files/Device.hpp</name>
 			<type>1</type>
 			<location>/home/jens/Development/MinHashContainment/src/libReadUntil/Device.hpp</location>
+		</link>
+		<link>
+			<name>[Targets]/[lib] ReadUntil/Header Files/DeviceServiceException.hpp</name>
+			<type>1</type>
+			<location>/home/jens/Development/MinHashContainment/src/libReadUntil/DeviceServiceException.hpp</location>
 		</link>
 		<link>
 			<name>[Targets]/[lib] ReadUntil/Header Files/Instance.hpp</name>

@@ -22,7 +22,6 @@ namespace readuntil
 		::grpc::Status status = stub->get_version_info(&context, request, &response);
 		if (status.ok())
 		{
-
 			return response.minknow().full();
 		}
 		else

@@ -7,6 +7,7 @@
 #include "bloom_filter.hpp"
 #include "bloomFilterException.hpp"
 #include "ReadUntilClient.hpp"
+#include "Data.hpp"
 #include "minimizer3.hpp"
 
 #include <seqan3/alphabet/nucleotide/dna4.hpp>
@@ -319,86 +320,103 @@ void run_program(cmd_arguments &args)
 			}
 
 		}
-		debug_stream << "Number of contained reads: " << num_contained_reads << "/" << num_query_reads << std::endl;
+		debug_stream << "Number of contained reads: " << num_contained_reads << "/" << num_query_reads;
 		// TODO calculate containment of sketches in reference bloom filter
 	}
 	else if (std::string("client").compare(args.mode) == 0)
 	{
 
-	readuntil::ReadUntilClient &client = readuntil::ReadUntilClient::getClient();
-	client.setPort(args.port);
-	client.connect();
-}
+		readuntil::ReadUntilClient &client = readuntil::ReadUntilClient::getClient();
+		client.setPort(args.port);
+		client.connect();
+
+		readuntil::Data *data = (readuntil::Data*) client.getMinKnowService(readuntil::MinKnowServiceType::DATA);
+
+		(*data).getLiveReads();
+
+//		readuntil::Manager *mgr = (readuntil::Manager*) client.getMinKnowService(readuntil::MinKnowServiceType::MANAGER);
+//
+//		try
+//		{
+//
+//			std::cout << "guppy version : " << (*mgr).getGuppyVersion() << std::endl;
+//
+//		}
+//		catch (readuntil::ReadUntilClientException e)
+//		{
+//			std::cerr << "Could not get guppy version : " << e.what() << std::endl;
+//		}
+	}
 }
 
 int main(int argc, char const **argv)
 {
 
-argument_parser parser("mhc", argc, argv);
-cmd_arguments args
-{ };
-initialize_mhc_argument_parser(parser, args);
-if (std::string(argv[1]).compare("bloom") == 0)
-{
-	args.mode = "bloom";
-	argument_parser bloom_parser("bloom", --argc, argv + 1);
-	initialize_bloom_argument_parser(bloom_parser, args);
+	argument_parser parser("mhc", argc, argv);
+	cmd_arguments args
+	{ };
+	initialize_mhc_argument_parser(parser, args);
+	if (std::string(argv[1]).compare("bloom") == 0)
+	{
+		args.mode = "bloom";
+		argument_parser bloom_parser("bloom", --argc, argv + 1);
+		initialize_bloom_argument_parser(bloom_parser, args);
 
-	try
-	{
-		bloom_parser.parse();
+		try
+		{
+			bloom_parser.parse();
+		}
+		catch (parser_invalid_argument const &ext)
+		{
+			std::cerr << "[PARSER ERROR] " << ext.what() << '\n';
+			return -1;
+		}
 	}
-	catch (parser_invalid_argument const &ext)
+	else if (std::string(argv[1]).compare("read-until") == 0)
 	{
-		std::cerr << "[PARSER ERROR] " << ext.what() << '\n';
-		return -1;
-	}
-}
-else if (std::string(argv[1]).compare("read-until") == 0)
-{
-	args.mode = "read-until";
-	argument_parser read_until_parser("read-until", --argc, argv + 1);
-	initialize_read_until_argument_parser(read_until_parser, args);
+		args.mode = "read-until";
+		argument_parser read_until_parser("read-until", --argc, argv + 1);
+		initialize_read_until_argument_parser(read_until_parser, args);
 
-	try
-	{
-		read_until_parser.parse();
+		try
+		{
+			read_until_parser.parse();
+		}
+		catch (parser_invalid_argument const &ext)
+		{
+			std::cerr << "[PARSER ERROR] " << ext.what() << '\n';
+			return -1;
+		}
 	}
-	catch (parser_invalid_argument const &ext)
+	else if (std::string(argv[1]).compare("client") == 0)
 	{
-		std::cerr << "[PARSER ERROR] " << ext.what() << '\n';
-		return -1;
-	}
-}
-else if (std::string(argv[1]).compare("client") == 0)
-{
-	args.mode = "client";
-	argument_parser client_parser("client", --argc, argv + 1);
-	initialize_client_argument_parser(client_parser, args);
+		args.mode = "client";
+		argument_parser client_parser("client", --argc, argv + 1);
+		initialize_client_argument_parser(client_parser, args);
 
-	try
-	{
-		client_parser.parse();
+		try
+		{
+			client_parser.parse();
+		}
+		catch (parser_invalid_argument const &ext)
+		{
+			std::cerr << "[PARSER ERROR] " << ext.what() << '\n';
+			return -1;
+		}
 	}
-	catch (parser_invalid_argument const &ext)
+	else
 	{
-		std::cerr << "[PARSER ERROR] " << ext.what() << '\n';
-		return -1;
+		try
+		{
+			parser.parse();
+		}
+		catch (parser_invalid_argument const &ext)
+		{
+			std::cerr << "[PARSER ERROR] " << ext.what() << '\n';
+			return -1;
+		}
 	}
-}
-else
-{
-	try
-	{
-		parser.parse();
-	}
-	catch (parser_invalid_argument const &ext)
-	{
-		std::cerr << "[PARSER ERROR] " << ext.what() << '\n';
-		return -1;
-	}
-}
 
-run_program(args);
-return 0;
+	run_program(args);
+	return 0;
 }

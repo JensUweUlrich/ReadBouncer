@@ -14,10 +14,9 @@ namespace readuntil
 		std::stringstream s;
 		s << mk_host << ":" << mk_port;
 		int retry_count = 5;
-		DEBUGMESSAGE(std::cout, "Trying to connect to " << s.str());
+		std::cout << "Trying to connect to " << s.str() << std::endl;
 
-
-		for (int i = 1; i <= 5 ; ++i)
+		for (int i = 1; i <= 5; ++i)
 		{
 			channel = grpc::CreateChannel(s.str(), grpc::InsecureChannelCredentials());
 			Instance *inst = (Instance*) getMinKnowService(MinKnowServiceType::INSTANCE);
@@ -25,15 +24,28 @@ namespace readuntil
 			{
 				std::stringstream dm;
 				dm << "Sucessfully connected to minknow instance (version " << (*inst).get_version_info() << ")";
+				std::cout << dm.str() << std::endl;
 				break;
 			}
 			catch (ReadUntilClientException e)
 			{
 				std::stringstream em;
 				em << "Failed to connect to minknow instance (retry " << i << "/" << retry_count << ") : " << e.what();
-				std::cerr <<  em.str() << std::endl;
+				std::cerr << em.str() << std::endl;
 			}
 			std::this_thread::sleep_for(std::chrono::seconds(1));
+		}
+
+		Device *dev = (readuntil::Device*) getMinKnowService(readuntil::MinKnowServiceType::DEVICE);
+		try
+		{
+
+			std::cout << "Detected "<< (*dev).getDeviceType() <<" Device with ID : " << (*dev).getDeviceId() << std::endl;
+
+		}
+		catch (readuntil::DeviceServiceException e)
+		{
+			std::cerr << "Could not get device type/id : " << e.what() << std::endl;
 		}
 	}
 
@@ -49,7 +61,12 @@ namespace readuntil
 			case DEVICE:
 				return new Device(channel);
 			case MANAGER:
-				return new Manager(channel);
+			{
+				std::stringstream s;
+				s << mk_host << ":" << "9504";
+				std::shared_ptr<::grpc::Channel> mgrCh = grpc::CreateChannel("localhost:9504", grpc::InsecureChannelCredentials());
+				return new Manager(mgrCh);
+			}
 			default:
 				return s;
 

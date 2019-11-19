@@ -34,6 +34,7 @@ namespace readuntil
 			uint32_t getRpcPort(ListDevicesResponse::ActiveDevice &dev);
 			std::vector<std::string> getPendingDevices();
 			std::vector<std::string> getInactiveDevices();
+			std::string getGuppyVersion();
 
 	};
 } // namespace readuntil
