@@ -332,20 +332,16 @@ void run_program(cmd_arguments &args)
 
 		readuntil::Data *data = (readuntil::Data*) client.getMinKnowService(readuntil::MinKnowServiceType::DATA);
 
-		(*data).getLiveReads();
+		try
+		{
+			(*data).getLiveReads();
+		}
+		catch (readuntil::DataServiceException ex)
+		{
+			std::cerr << "Could not get live reads : " << ex.what() << std::endl;
+		}
 
-//		readuntil::Manager *mgr = (readuntil::Manager*) client.getMinKnowService(readuntil::MinKnowServiceType::MANAGER);
-//
-//		try
-//		{
-//
-//			std::cout << "guppy version : " << (*mgr).getGuppyVersion() << std::endl;
-//
-//		}
-//		catch (readuntil::ReadUntilClientException e)
-//		{
-//			std::cerr << "Could not get guppy version : " << e.what() << std::endl;
-//		}
+
 	}
 }
 

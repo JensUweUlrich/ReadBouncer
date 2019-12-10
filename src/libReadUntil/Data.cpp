@@ -9,86 +9,130 @@
 
 namespace readuntil
 {
-	Data::Data(std::shared_ptr<::grpc::Channel> channel)
-	{
-		stub = DataService::NewStub(channel);
-	}
+    Data::Data(std::shared_ptr<::grpc::Channel> channel)
+    {
+        stub = DataService::NewStub(channel);
+    }
 
-	void Data::addAction()
-	{
-		// If unblock actions or stop further data
-		GetLiveReadsRequest_Action *action = actionList.add_actions();
-		GetLiveReadsRequest_StopFurtherData data
-		{ };
-		action->set_channel(1);
-		action->set_allocated_stop_further_data(&data);
-		action->set_number(1);
-		action->set_action_id("stop_further_1_1");
-	}
+    void Data::addAction()
+    {
+        DEBUGMESSAGE(std::cout, "start action request thread");
+        // If unblock actions or stop further data
+        GetLiveReadsRequest actionRequest;
+        GetLiveReadsRequest_Actions actionList = actionRequest.actions();
+        GetLiveReadsRequest_Action *action = actionList.add_actions();
+        GetLiveReadsRequest_StopFurtherData data
+        { };
+        DEBUGMESSAGE(std::cout, "stop further");
+        action->set_channel(1);
+        action->set_allocated_stop_further_data(&data);
+        action->set_number(1);
+        action->set_action_id("stop_further_1_1");
+        if (!stream->Write(actionRequest))
+        {
+            throw DataServiceException("Unable to add action to a live read stream!");
+        }
+        DEBUGMESSAGE(std::cout, "action written");
+        //stream->WritesDone();
+        DEBUGMESSAGE(std::cout, "done");
+    }
 
-	void Data::getLiveReads()
-	{
+    bool Data::isRunning()
+    {
+        return runs;
+    }
 
-		// setup parameters of the live reads stream
-		GetLiveReadsRequest_StreamSetup setup;
-		setup.set_first_channel(1);
-		setup.set_last_channel(1);
-		setup.set_raw_data_type(GetLiveReadsRequest_RawDataType_CALIBRATED);
-		setup.set_sample_minimum_chunk_size(0);
+    void Data::createSetupMessage()
+    {
+        DEBUGMESSAGE(std::cout, "start setup message thread");
 
-		//
-		GetLiveReadsRequest setupRequest;
-		setupRequest.set_allocated_setup(&setup);
-		std::shared_ptr<grpc::ClientReaderWriter<GetLiveReadsRequest, GetLiveReadsResponse>> stream(stub->get_live_reads(&context));
-		// first write setup the stream
-		if (!stream->Write(setupRequest))
-		{
-			throw DataServiceException("Unable to setup a live read stream!");
-		}
+        GetLiveReadsRequest setupRequest{};
+        GetLiveReadsRequest_StreamSetup *setup = setupRequest.mutable_setup();
+        setup->set_first_channel(1);
+        setup->set_last_channel(512);
+        setup->set_raw_data_type(GetLiveReadsRequest_RawDataType_CALIBRATED);
+        setup->set_sample_minimum_chunk_size(50);
 
-		// If unblock actions or stop further data
+        DEBUGVAR(std::cout, setupRequest.has_setup());
+        if (!stream->Write(setupRequest))
+        {
+            throw DataServiceException("Unable to setup a live read stream!");
+        }
 
-		if (actionList.GetCachedSize() > 0)
-		{
-			GetLiveReadsRequest actionRequest;
-			actionRequest.set_allocated_actions(&actionList);
+        DEBUGMESSAGE(std::cout, "leaving setup message thread");
+    }
 
-			// write actions to the stream
-			if (!stream->Write(actionRequest))
-			{
-				throw DataServiceException("Unable to write action request to the live read stream!");
-			}
-		}
+    void Data::getLiveSignals()
+    {
+        DEBUGMESSAGE(std::cout, "start getting signals thread");
 
-		stream->WritesDone();
+        GetLiveReadsResponse response;
+        uint32 channel{};
+        uint32 readNr{};
+        stream->Read(&response);
+        //     while (stream->Read(&response))
+        //     {
+        DEBUGVAR(std::cout, response.seconds_since_start());
+        /*          for (GetLiveReadsResponse_ActionResponse actResponse : response.action_reponses())
+        {
+            switch (actResponse.response())
+            {
+                case GetLiveReadsResponse_ActionResponse_Response_SUCCESS:
+                    DEBUGMESSAGE(std::cout, "Action " + actResponse.action_id() + " was successful");
+                case GetLiveReadsResponse_ActionResponse_Response_FAILED_READ_FINISHED:
+                    DEBUGMESSAGE(std::cout, "Action " + actResponse.action_id() + " failed.");
+            }
+        }
+*/
+        Map<uint32, GetLiveReadsResponse_ReadData> readData = response.channels();
+        for (MapPair<uint32, GetLiveReadsResponse_ReadData> entry : readData)
+        {
+            channel = entry.first;
+            readNr = entry.second.number();
+            break;
+        }
+
+        //  break;
+        //  }
+        DEBUGVAR(std::cout, channel);
+        DEBUGVAR(std::cout, readNr);
+
+        // grpc::Status status = stream->Finish();
+    }
+
+    void Data::getLiveReads()
+    {
+
+        grpc::Status status;
+
+        stream = stub->get_live_reads(&context);
+        // first write setup the stream
+
+        std::thread setupThread(&Data::createSetupMessage, this);
+
+        setupThread.join();
+        DEBUGMESSAGE(std::cout, "written");
 
 
-		GetLiveReadsResponse response;
-		while(stream -> Read(&response))
-		{
-			for (GetLiveReadsResponse_ActionResponse actResponse : response.action_reponses())
-			{
-				switch (actResponse.response())
-				{
-					case GetLiveReadsResponse_ActionResponse_Response_SUCCESS:
-						DEBUGMESSAGE(std::cout, "Action " + actResponse.action_id() + " was successful");
-					case GetLiveReadsResponse_ActionResponse_Response_FAILED_READ_FINISHED:
-						DEBUGMESSAGE(std::cout, "Action " + actResponse.action_id() + " failed.");
-				}
-			}
+        //grpc::ClientContext context2;
+        //stream = stub->get_live_reads(&context);
 
-			Map<uint32, GetLiveReadsResponse_ReadData> readData = response.channels();
-			for (MapPair<uint32, GetLiveReadsResponse_ReadData> entry : readData)
-			{
-				DEBUGMESSAGE(std::cout, "Channel Number: " + entry.first);
-				DEBUGMESSAGE(std::cout, "Read Number: " + entry.second.number());
-				DEBUGMESSAGE(std::cout, "Chunk Length: " + entry.second.chunk_length());
-			}
+        //std::thread actionThread(&Data::addAction, this);
+        //actionThread.join();
 
-		}
+        std::thread readerThread(&Data::getLiveSignals, this);
 
-		grpc::Status status = stream->Finish();
-	}
+
+        readerThread.join();
+
+        /*stream->WritesDone();
+        status = stream->Finish();
+
+        DEBUGVAR(std::cout, status.error_code());
+        DEBUGVAR(std::cout, status.error_message());
+        DEBUGVAR(std::cout, status.error_details());
+*/
+    }
 
 }
 

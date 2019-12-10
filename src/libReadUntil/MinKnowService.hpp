@@ -22,6 +22,11 @@ namespace readuntil
 			::grpc::ClientContext context;
 
 		public:
+			MinKnowService() = default;
+			MinKnowService& operator=(MinKnowService &other)
+			{
+				return *this;
+			}
 			//virtual MinKnowService createService(MinKnowServiceType &type);
 	};
 }

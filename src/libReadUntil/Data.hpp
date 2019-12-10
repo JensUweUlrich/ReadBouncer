@@ -4,7 +4,8 @@
  *  Created on: 12.11.2019
  *      Author: jens
  */
-
+#include <chrono>
+#include <thread>
 #include <string>
 #include <grpcpp/grpcpp.h>
 #include <google/protobuf/map.h>
@@ -24,19 +25,44 @@ using namespace ::google::protobuf;
 
 namespace readuntil
 {
+    struct ReadCache
+    {
+            uint32 channelNr{};
+            uint32 readNr{};
+    };
 
-	class Data: public MinKnowService
-	{
-		private:
-			std::unique_ptr<DataService::Stub> stub;
-			GetLiveReadsRequest_Actions actionList;
-		public:
-			Data(std::shared_ptr<::grpc::Channel> channel);
-			~Data();
+    class Data: public MinKnowService
+    {
+        private:
+            std::unique_ptr<DataService::Stub> stub;
+            std::unique_ptr<grpc::ClientReaderWriter<GetLiveReadsRequest, GetLiveReadsResponse>> stream;
+            bool runs = false;
+            void createSetupMessage();
+            void getLiveSignals();
+        public:
+            Data() = default;
+            Data(std::shared_ptr<::grpc::Channel> channel);
 
-			void getLiveReads();
-			void addAction();
-	};
+            ~Data()
+            {
+                stub.release();
+                //actionList.Clear();
+            }
+
+            Data& operator=(const Data &other)
+            {
+                if (this != &other)
+                {
+                    stub.reset(other.stub.get());
+                    //actionList.CopyFrom(other.actionList);
+                }
+                return *this;
+            }
+
+            void getLiveReads();
+            void addAction();
+            bool isRunning();
+    };
 
 } //namespace
 #endif /* LIBREADUNTIL_DATA_HPP_ */

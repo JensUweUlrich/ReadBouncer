@@ -40,12 +40,25 @@ namespace readuntil
 		try
 		{
 
-			std::cout << "Detected "<< (*dev).getDeviceType() <<" Device with ID : " << (*dev).getDeviceId() << std::endl;
+			std::cout << "Detected " << (*dev).getDeviceType() << " Device with ID : " << (*dev).getDeviceId() << std::endl;
 
 		}
 		catch (readuntil::DeviceServiceException e)
 		{
 			std::cerr << "Could not get device type/id : " << e.what() << std::endl;
+		}
+
+		readuntil::Manager *mgr = (readuntil::Manager*) getMinKnowService(readuntil::MinKnowServiceType::MANAGER);
+
+		try
+		{
+
+			std::cout << "guppy version : " << (*mgr).getGuppyVersion() << std::endl;
+
+		}
+		catch (readuntil::ReadUntilClientException e)
+		{
+			std::cerr << "Could not get guppy version : " << e.what() << std::endl;
 		}
 	}
 
@@ -63,8 +76,8 @@ namespace readuntil
 			case MANAGER:
 			{
 				std::stringstream s;
-				s << mk_host << ":" << "9504";
-				std::shared_ptr<::grpc::Channel> mgrCh = grpc::CreateChannel("localhost:9504", grpc::InsecureChannelCredentials());
+				s << mk_host << ":" << "9501";
+				std::shared_ptr<::grpc::Channel> mgrCh = grpc::CreateChannel("localhost:9501", grpc::InsecureChannelCredentials());
 				return new Manager(mgrCh);
 			}
 			default:

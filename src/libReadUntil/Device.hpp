@@ -67,7 +67,10 @@ namespace readuntil
 
 		public:
 			Device(std::shared_ptr<::grpc::Channel> channel);
-			~Device();
+			~Device()
+			{
+				stub.release();
+			}
 			std::string getDeviceId();
 			std::string getDeviceType();
 			bool isReady();
