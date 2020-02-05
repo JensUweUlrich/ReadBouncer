@@ -1,3 +1,5 @@
 testData/
 include/
 build/
+.vscode/
+.project

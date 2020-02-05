@@ -7,6 +7,11 @@
 #include <chrono>
 #include <thread>
 #include <string>
+#include <sstream>
+#include <queue>
+#include <set>
+#include <mutex>
+#include <unistd.h>
 #include <grpcpp/grpcpp.h>
 #include <google/protobuf/map.h>
 #include <minknow/rpc/data.grpc.pb.h>
@@ -36,9 +41,12 @@ namespace readuntil
         private:
             std::unique_ptr<DataService::Stub> stub;
             std::unique_ptr<grpc::ClientReaderWriter<GetLiveReadsRequest, GetLiveReadsResponse>> stream;
+            std::queue<ReadCache> reads;
+            std::mutex mutex;
             bool runs = false;
             void createSetupMessage();
             void getLiveSignals();
+            void addActions();
         public:
             Data() = default;
             Data(std::shared_ptr<::grpc::Channel> channel);
@@ -59,8 +67,12 @@ namespace readuntil
                 return *this;
             }
 
+	        grpc::ClientContext* getContext()
+	        {
+		        return &context;
+	        }
+
             void getLiveReads();
-            void addAction();
             bool isRunning();
     };
 

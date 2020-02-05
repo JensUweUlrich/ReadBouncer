@@ -27,7 +27,11 @@ namespace readuntil
 			{
 				return *this;
 			}
-			//virtual MinKnowService createService(MinKnowServiceType &type);
+			~MinKnowService()
+			{
+				// ensures signal to server, that the stream is done
+                context.TryCancel();
+			}
 	};
 }
 

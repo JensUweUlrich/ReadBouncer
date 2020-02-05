@@ -9,32 +9,72 @@
 
 namespace readuntil
 {
+
+    void processSignals()
+    {
+		
+    }
+
     Data::Data(std::shared_ptr<::grpc::Channel> channel)
     {
         stub = DataService::NewStub(channel);
     }
 
-    void Data::addAction()
+    void Data::addActions()
     {
         DEBUGMESSAGE(std::cout, "start action request thread");
-        // If unblock actions or stop further data
-        GetLiveReadsRequest actionRequest;
-        GetLiveReadsRequest_Actions actionList = actionRequest.actions();
-        GetLiveReadsRequest_Action *action = actionList.add_actions();
-        GetLiveReadsRequest_StopFurtherData data
-        { };
-        DEBUGMESSAGE(std::cout, "stop further");
-        action->set_channel(1);
-        action->set_allocated_stop_further_data(&data);
-        action->set_number(1);
-        action->set_action_id("stop_further_1_1");
-        if (!stream->Write(actionRequest))
+        // as long as signals are received from MinKnow
+        // iterate over received data and stop further data allocation for every odd read on every odd channel
+        while (isRunning())
         {
-            throw DataServiceException("Unable to add action to a live read stream!");
+            DEBUGMESSAGE(std::cout, "setup new action request");
+            GetLiveReadsRequest actionRequest{};
+            GetLiveReadsRequest_Actions *actionList = actionRequest.mutable_actions();
+            
+            int counter = 0;
+            while (counter < 2)
+            {
+                ReadCache read{};
+                bool hasElement = false;
+                mutex.lock();
+                // take read out of the queue if it's not empty
+                if (!reads.empty())
+                {
+                    read.channelNr = reads.front().channelNr;
+                    read.readNr = reads.front().readNr;
+                    hasElement = true;
+                    reads.pop();
+                }
+                mutex.unlock();
+
+                if (hasElement)
+                {
+                    if (read.channelNr % 2 == 1 || read.readNr % 2 == 1)
+                    {
+                        GetLiveReadsRequest_Action *action = actionList->add_actions();
+                        action->set_channel(read.channelNr);
+                        GetLiveReadsRequest_StopFurtherData *data = action->mutable_stop_further_data();
+                        *data = action->stop_further_data();
+                        //DEBUGVAR(std::cout, action->has_stop_further_data());
+                        action->set_number(read.readNr);
+                        std::stringstream buf;
+                        buf << "stop_further_" << read.channelNr << "_" << read.readNr;
+                        action->set_action_id(buf.str());  
+                        //DEBUGMESSAGE(std::cout, buf.str());
+                        counter++;
+                    }
+                }
+            }
+
+            DEBUGMESSAGE(std::cout, "try to send action request");
+            if (!stream->Write(actionRequest))
+            {
+                throw DataServiceException("Unable to add action to a live read stream!");
+            }
+            DEBUGMESSAGE(std::cout, "action request sent");
+
         }
-        DEBUGMESSAGE(std::cout, "action written");
-        //stream->WritesDone();
-        DEBUGMESSAGE(std::cout, "done");
+         DEBUGMESSAGE(std::cout, "leaving action request thread");
     }
 
     bool Data::isRunning()
@@ -62,47 +102,75 @@ namespace readuntil
         DEBUGMESSAGE(std::cout, "leaving setup message thread");
     }
 
+	/*Data::getSignalType()
+	{
+		GetDataTypesRequest request;
+		GetDataTypesResponse response;
+		::grpc::ClientContext context;
+		::grpc::Status status = stub->get_data_types(&context, request, &response);
+		if (status.ok())
+		{
+			GetDataTypesResponse_DataType dataType = response.calibrated_signal();
+			
+		}
+		else
+		{
+			throw DataServiceException("Unable to resolve signal data type!");
+		}
+	}
+*/
     void Data::getLiveSignals()
     {
         DEBUGMESSAGE(std::cout, "start getting signals thread");
-
         GetLiveReadsResponse response;
-        uint32 channel{};
-        uint32 readNr{};
-        stream->Read(&response);
-        //     while (stream->Read(&response))
-        //     {
-        DEBUGVAR(std::cout, response.seconds_since_start());
-        /*          for (GetLiveReadsResponse_ActionResponse actResponse : response.action_reponses())
+        int actNr = 0;
+        int success = 0;
+        std::set<std::string> unique_reads;
+        while (stream->Read(&response))
         {
-            switch (actResponse.response())
+            runs = true;
+            
+        	for (GetLiveReadsResponse_ActionResponse actResponse : response.action_reponses())
             {
-                case GetLiveReadsResponse_ActionResponse_Response_SUCCESS:
-                    DEBUGMESSAGE(std::cout, "Action " + actResponse.action_id() + " was successful");
-                case GetLiveReadsResponse_ActionResponse_Response_FAILED_READ_FINISHED:
-                    DEBUGMESSAGE(std::cout, "Action " + actResponse.action_id() + " failed.");
+                actNr++;
+                switch (actResponse.response())
+                {
+                    case GetLiveReadsResponse_ActionResponse_Response_SUCCESS:
+                        DEBUGMESSAGE(std::cout, "Action " + actResponse.action_id() + " succeeded.");
+                        //success++;
+                        break;
+                    case GetLiveReadsResponse_ActionResponse_Response_FAILED_READ_FINISHED:
+                        DEBUGMESSAGE(std::cout, "Action " + actResponse.action_id() + " failed.");
+                        break;
+                }
             }
-        }
-*/
-        Map<uint32, GetLiveReadsResponse_ReadData> readData = response.channels();
-        for (MapPair<uint32, GetLiveReadsResponse_ReadData> entry : readData)
-        {
-            channel = entry.first;
-            readNr = entry.second.number();
-            break;
-        }
-
-        //  break;
-        //  }
-        DEBUGVAR(std::cout, channel);
-        DEBUGVAR(std::cout, readNr);
-
-        // grpc::Status status = stream->Finish();
+            
+            
+       		Map<uint32, GetLiveReadsResponse_ReadData> readData = response.channels();
+       		for (MapPair<uint32, GetLiveReadsResponse_ReadData> entry : readData)
+        	{
+                auto ret = unique_reads.emplace(entry.second.id());
+                // only add reads we did not already see to processing queue
+                if (ret.second)
+                {
+           		    uint32 channel = entry.first;
+           		    uint32 readNr = entry.second.number();
+                    ReadCache r{};
+                    r.channelNr = channel;
+                    r.readNr = readNr;
+                    mutex.lock();
+                    reads.push(r);
+                    mutex.unlock();
+                }
+       		}  
+       }
+       DEBUGMESSAGE(std::cout, "leaving signals thread");
+       runs = false;
     }
 
     void Data::getLiveReads()
     {
-
+        runs = true;
         grpc::Status status;
 
         stream = stub->get_live_reads(&context);
@@ -113,25 +181,22 @@ namespace readuntil
         setupThread.join();
         DEBUGMESSAGE(std::cout, "written");
 
-
-        //grpc::ClientContext context2;
-        //stream = stub->get_live_reads(&context);
-
-        //std::thread actionThread(&Data::addAction, this);
-        //actionThread.join();
-
         std::thread readerThread(&Data::getLiveSignals, this);
+        sleep(1);
+        std::thread actionThread(&Data::addActions, this);
 
 
         readerThread.join();
-
-        /*stream->WritesDone();
+        actionThread.join();
+	
+        stream->WritesDone();
+	    context.TryCancel();
         status = stream->Finish();
 
         DEBUGVAR(std::cout, status.error_code());
         DEBUGVAR(std::cout, status.error_message());
         DEBUGVAR(std::cout, status.error_details());
-*/
+
     }
 
 }

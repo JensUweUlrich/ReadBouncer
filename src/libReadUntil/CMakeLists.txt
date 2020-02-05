@@ -75,13 +75,30 @@ foreach(proto ${protofiles})
   list(APPEND minknow_srcs "${protofilepath}/${fname}.pb.cc" "${protofilepath}/${fname}.grpc.pb.cc")
 endforeach()
 
+# flappie build parameters
+# include hdf5 source directory for ubuntu linux
+#include_directories("/usr/include/hdf5/serial/")
+
+#set(flappie_dir "${CMAKE_CURRENT_BINARY_DIR}/flappie")
+
+#configure_file (
+#    "${flappie_dir}/src/version.h.in"
+#    "${flappie_dir}/include/version.h"
+#)
+
+
+
+
+#file(GLOB flappie_srcs "${CMAKE_CURRENT_BINARY_DIR}/flappie/src/*.c")
+#file(GLOB flappie_hdrs "${CMAKE_CURRENT_BINARY_DIR}/flappie/src/*.h")
 
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/minknow/minknow" "${CMAKE_CURRENT_BINARY_DIR}/minknow")
 
 
+#add_library (ReadUntil STATIC ${READUNTILSOURCES} ${minknow_srcs} ${flappie_srcs})
 add_library (ReadUntil STATIC ${READUNTILSOURCES} ${minknow_srcs})
+#target_include_directories (ReadUntil PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} "${CMAKE_CURRENT_BINARY_DIR}/minknow" "${CMAKE_CURRENT_BINARY_DIR}/flappie")
 target_include_directories (ReadUntil PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} "${CMAKE_CURRENT_BINARY_DIR}/minknow")
-
 target_link_libraries (ReadUntil  ${_GRPC_GRPCPP_UNSECURE} ${_PROTOBUF_LIBPROTOBUF})
 
 

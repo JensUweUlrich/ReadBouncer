@@ -81,8 +81,7 @@ ExternalProject_Add(grpc
   DEPENDS c-ares protobuf zlib
 )
 
-# Builds gRPC based on locally checked-out sources and set arguments so that all the dependencies
-# are correctly located.
+# Download of minknow-api
 ExternalProject_Add(minknow
   PREFIX minknow
   GIT_REPOSITORY    https://github.com/nanoporetech/minknow_api.git
@@ -93,3 +92,16 @@ ExternalProject_Add(minknow
   INSTALL_COMMAND   ""
   TEST_COMMAND      ""
 )
+
+# Download of Flappie sources
+#ExternalProject_Add(flappie
+#  PREFIX flappie
+#  GIT_REPOSITORY    https://github.com/nanoporetech/flappie.git
+#  GIT_TAG           master
+#  SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/flappie"
+#  CONFIGURE_COMMAND ""
+#  BUILD_COMMAND     ""
+#  INSTALL_COMMAND   ""
+#  TEST_COMMAND      ""
+#)
+

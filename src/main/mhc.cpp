@@ -2,6 +2,7 @@
 #include <vector>
 #include <math.h>
 #include <chrono>
+#include <csignal>
 
 #include "customBloomFilter.hpp"
 #include "bloom_filter.hpp"
@@ -27,6 +28,8 @@
 #include <seqan3/range/views/convert.hpp>
 
 using namespace seqan3;
+
+readuntil::Data *data;
 
 struct cmd_arguments
 {
@@ -326,11 +329,11 @@ void run_program(cmd_arguments &args)
 	else if (std::string("client").compare(args.mode) == 0)
 	{
 
-		readuntil::ReadUntilClient &client = readuntil::ReadUntilClient::getClient();
+        	readuntil::ReadUntilClient &client = readuntil::ReadUntilClient::getClient();
 		client.setPort(args.port);
 		client.connect();
 
-		readuntil::Data *data = (readuntil::Data*) client.getMinKnowService(readuntil::MinKnowServiceType::DATA);
+       	data = (readuntil::Data*) client.getMinKnowService(readuntil::MinKnowServiceType::DATA);
 
 		try
 		{
@@ -345,8 +348,19 @@ void run_program(cmd_arguments &args)
 	}
 }
 
+void signalHandler(int signum)
+{
+	//TODO: shutdown the gRPC stream smoothly
+    if (data != nullptr)
+   	{
+		data->getContext()->TryCancel();
+    }
+	exit(signum);
+}
+
 int main(int argc, char const **argv)
 {
+	std::signal(SIGINT, signalHandler);	
 
 	argument_parser parser("mhc", argc, argv);
 	cmd_arguments args
@@ -416,3 +430,4 @@ int main(int argc, char const **argv)
 	run_program(args);
 	return 0;
 }
+
