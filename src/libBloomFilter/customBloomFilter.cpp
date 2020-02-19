@@ -38,7 +38,7 @@ CustomBloomFilter::~CustomBloomFilter()
  * @param file : filesystem path to the output file
  *
  */
-void CustomBloomFilter::writeToFile(const std::experimental::filesystem::path& file)
+void CustomBloomFilter::writeToFile(const std::filesystem::path& file)
 {
 	::std::ofstream fout;
 	fout.exceptions(std::ofstream::failbit | std::ofstream::badbit);
@@ -116,7 +116,7 @@ void CustomBloomFilter::writeToFile(const std::experimental::filesystem::path& f
  * @param file : filesystem path to bloom filter input file
  *
  */
-bool CustomBloomFilter::readFromFile(const std::experimental::filesystem::path& file)
+bool CustomBloomFilter::readFromFile(const std::filesystem::path& file)
 {
 	std::ifstream fin;
 	fin.exceptions(std::ofstream::failbit | std::ofstream::badbit);

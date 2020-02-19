@@ -1,6 +1,6 @@
 #include <vector>
 #include <cstdint>
-#include <experimental/filesystem>
+#include <filesystem>
 #include <fstream>
 #include <vector>
 #include <ctime>
@@ -46,8 +46,8 @@ class CustomBloomFilter : public bloom_filter
 			return b;
 		}
 
-		void writeToFile(const std::experimental::filesystem::path& file);
+		void writeToFile(const std::filesystem::path& file);
 
-		bool readFromFile(const std::experimental::filesystem::path& file);
+		bool readFromFile(const std::filesystem::path& file);
 
 };
