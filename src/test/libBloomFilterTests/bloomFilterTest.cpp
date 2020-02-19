@@ -4,7 +4,7 @@
 #include "customBloomFilter.hpp"
 #include "gtest/gtest.h"
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 /**
  * Test fixture class used to set up some ressources required for all tests
@@ -47,7 +47,7 @@ class BloomFilterTest: public ::testing::Test
 		void TearDown() override
 		{
 			delete bf1;
-			if (std::experimental::filesystem::exists(bf_tmp_file))
+			if (std::filesystem::exists(bf_tmp_file))
 			{
 				fs::remove(bf_tmp_file);
 			}
@@ -67,7 +67,7 @@ TEST_F(BloomFilterTest, TestWriteBloomFilterToFile)
 {
 	bf1->writeToFile(bf_tmp_file);
 	// fatal failure if file does not exist
-	ASSERT_TRUE(std::experimental::filesystem::exists(bf_tmp_file));
+	ASSERT_TRUE(std::filesystem::exists(bf_tmp_file));
 
 	CustomBloomFilter bf2
 	{ };
