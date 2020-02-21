@@ -14,8 +14,8 @@ if(result)
   message(FATAL_ERROR "Build step for gRPC failed: ${result}")
 endif()
 
-file(GLOB READUNTILSOURCES "*.cpp" "*.hpp")
-
+file(GLOB READUNTILSRCS "*.cpp")
+file(GLOB READUNTILHDRS "*.hpp")
 
 # Include the gRPC's cmake build (normally grpc source code would live
   # in a git submodule called "third_party/grpc", but this example lives in
@@ -108,10 +108,14 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}/minknow/minknow" "${CMAKE_CURRE
 
 
 #add_library (ReadUntil STATIC ${READUNTILSOURCES} ${minknow_srcs} ${flappie_srcs})
-add_library (ReadUntil STATIC ${READUNTILSOURCES} ${minknow_srcs})
+add_library (ReadUntil STATIC ${READUNTILSRCS} ${READUNTILHDRS} ${minknow_srcs})
 #target_include_directories (ReadUntil PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} "${CMAKE_CURRENT_BINARY_DIR}/minknow" "${CMAKE_CURRENT_BINARY_DIR}/flappie")
 target_include_directories (ReadUntil PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} "${CMAKE_CURRENT_BINARY_DIR}/minknow")
 target_link_libraries (ReadUntil  ${_GRPC_GRPCPP_UNSECURE} ${_PROTOBUF_LIBPROTOBUF})
+
+install(TARGETS ReadUntil DESTINATION lib COMPONENT libraries)
+
+install(FILES  ${READUNTILHDRS} DESTINATION include COMPONENT headers)
 
 
 
