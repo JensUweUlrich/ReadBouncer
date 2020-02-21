@@ -7,6 +7,7 @@ add_compile_options(-DDEBUG)
 add_compile_options(-DBUILD_SHARED_LIBS=ON)
 add_compile_options(-Wno-format)
 add_compile_options(-D_WIN32_WINNT=0x600)
+add_compile_options(-DSEQAN3_HAS_BZIP2=0)
 add_definitions(-D_WIN32_WINNT=0x600)
 
 set(CMAKE_GENERATORS "MinGW Makefiles")
