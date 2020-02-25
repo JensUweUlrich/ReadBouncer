@@ -7,6 +7,7 @@ execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
 if(result)
   message(FATAL_ERROR "Generator step for gRPC failed: ${result}")
 endif()
+
 execute_process(COMMAND ${CMAKE_COMMAND} -D_WIN32_WINNT=0x600 --build .
   RESULT_VARIABLE result
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/gRPC-build)
@@ -18,10 +19,10 @@ file(GLOB READUNTILSRCS "*.cpp")
 file(GLOB READUNTILHDRS "*.hpp")
 
 # Include the gRPC's cmake build (normally grpc source code would live
-  # in a git submodule called "third_party/grpc", but this example lives in
-  # the same repository as gRPC sources, so we just look a few directories up)
-  add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/grpc ${CMAKE_CURRENT_BINARY_DIR}/grpc EXCLUDE_FROM_ALL)
-  message(STATUS "Using gRPC via add_subdirectory.")
+# in a git submodule called "third_party/grpc", but this example lives in
+# the same repository as gRPC sources, so we just look a few directories up)
+add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/grpc ${CMAKE_CURRENT_BINARY_DIR}/grpc EXCLUDE_FROM_ALL)
+message(STATUS "Using gRPC via add_subdirectory.")
 
   #message(STATUS "Using gRPC via add_subdirectory (FetchContent).")
  # include(FetchContent)
