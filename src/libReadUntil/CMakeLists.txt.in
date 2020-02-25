@@ -60,10 +60,7 @@ set(Protobuf_DIR ${_FINDPACKAGE_PROTOBUF_CONFIG_DIR})
 
 message(STATUS "Protobuf directory : ${CMAKE_CURRENT_BINARY_DIR}")
 
-#find_package(ZLIB)
-#if (ZLIB_FOUND)
-#    include_directories(${ZLIB_INCLUDE_DIRS})
-#endif()
+
 
 # Builds gRPC based on locally checked-out sources and set arguments so that all the dependencies
 # are correctly located.
@@ -75,6 +72,7 @@ ExternalProject_Add(grpc
   CMAKE_CACHE_ARGS
         -DgRPC_INSTALL:BOOL=ON
         -DgRPC_BUILD_TESTS:BOOL=OFF
+        -D_WIN32_WINNT:STRING=0x600
         -DgRPC_PROTOBUF_PROVIDER:STRING=package
         -DgRPC_PROTOBUF_PACKAGE_TYPE:STRING=CONFIG
         -DProtobuf_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/gRPC-build/protobuf/src/protobuf-build/lib/cmake/protobuf

@@ -7,7 +7,6 @@ add_compile_options(-DDEBUG)
 add_compile_options(-DBUILD_SHARED_LIBS=ON)
 add_compile_options(-Wno-format)
 add_compile_options(-D_WIN32_WINNT=0x600)
-add_compile_options(-DSEQAN3_HAS_BZIP2=0)
 add_definitions(-D_WIN32_WINNT=0x600)
 
 set(CMAKE_GENERATORS "MinGW Makefiles")
@@ -19,6 +18,8 @@ set(CMAKE_ASM_NASM_OBJECT_FORMAT win32)
 
 if (WIN32)
     set(CMAKE_INSTALL_PREFIX "C:/Apps/${PROJECT_NAME}")
+    find_file(libbz2_DLL "libbz2-1__.dll")
+    install(FILES ${libbz2_DLL} DESTINATION bin)
 else()
     set(CMAKE_INSTALL_PREFIX "/usr/local/${PROJECT_NAME}")
 endif()
@@ -32,7 +33,6 @@ add_subdirectory(main)
 add_subdirectory(test)
 
 # now pack everything into an installer
-#list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIRECTORY}/conf)
 
 set(CPACK_SOURCE_GENERATOR "NSIS")
 set(CPACK_NSIS_EXECUTION_LEVEL "user")
