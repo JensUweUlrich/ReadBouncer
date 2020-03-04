@@ -2,7 +2,7 @@
  * ReadUntilClient.cpp
  *
  *  Created on: 28.10.2019
- *      Author: jens
+ *      Author: jens-uwe.ulrich
  */
 
 #include "ReadUntilClient.hpp"

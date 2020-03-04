@@ -2,7 +2,7 @@
  * Data.cpp
  *
  *  Created on: 12.11.2019
- *      Author: jens
+ *      Author: jens-uwe.ulrich
  */
 
 #include "Data.hpp"
@@ -49,16 +49,17 @@ namespace readuntil
 
                 if (hasElement)
                 {
-                    if (read.channelNr % 2 == 1 || read.readNr % 2 == 1)
+                    if (read.channelNr % unblockChannels != 0 || read.readNr % unblockReads != 0)
                     {
                         GetLiveReadsRequest_Action *action = actionList->add_actions();
                         action->set_channel(read.channelNr);
-                        GetLiveReadsRequest_StopFurtherData *data = action->mutable_stop_further_data();
-                        *data = action->stop_further_data();
+                        GetLiveReadsRequest_UnblockAction *data = action->mutable_unblock();
+                        *data = action->unblock();
+                        data->set_duration(1);
                         //DEBUGVAR(std::cout, action->has_stop_further_data());
                         action->set_number(read.readNr);
                         std::stringstream buf;
-                        buf << "stop_further_" << read.channelNr << "_" << read.readNr;
+                        buf << "unblock_" << read.channelNr << "_" << read.readNr;
                         action->set_action_id(buf.str());  
                         //DEBUGMESSAGE(std::cout, buf.str());
                         counter++;
@@ -91,7 +92,7 @@ namespace readuntil
         setup->set_first_channel(1);
         setup->set_last_channel(512);
         setup->set_raw_data_type(GetLiveReadsRequest_RawDataType_CALIBRATED);
-        setup->set_sample_minimum_chunk_size(50);
+        setup->set_sample_minimum_chunk_size(4);
 
         DEBUGVAR(std::cout, setupRequest.has_setup());
         if (!stream->Write(setupRequest))

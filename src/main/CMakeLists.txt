@@ -1,4 +1,4 @@
-set(Main_SRC "mhc.cpp")
+set(Main_SRC "main.cpp")
 add_executable (${PROJECT_NAME} ${Main_SRC})
 find_package (Threads)
 target_link_libraries (${PROJECT_NAME} pthread seqan3::seqan3 Minimizer BloomFilter ReadUntil)

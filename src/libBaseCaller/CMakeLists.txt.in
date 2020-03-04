@@ -1,0 +1,44 @@
+cmake_minimum_required(VERSION 3.4)
+
+project(flappie-build NONE)
+
+include(ExternalProject)
+
+# Download and build OpenBLAS
+ExternalProject_Add(OpenBLAS
+  PREFIX OpenBLAS
+  GIT_REPOSITORY    https://github.com/xianyi/OpenBLAS.git
+  GIT_TAG           v0.3.8
+  SOURCE_DIR        "${CMAKE_CURRENT_BINARY_DIR}/OpenBLAS"
+  CONFIGURE_COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/OpenBLAS
+  BUILD_COMMAND     ${CMAKE_COMMAND} --build .
+  INSTALL_DIR       ""
+  BUILD_IN_SOURCE   1
+)
+
+# Download and build hdf5 library
+ExternalProject_Add(hdf5
+  PREFIX hdf5
+  GIT_REPOSITORY    https://github.com/live-clones/hdf5.git
+  GIT_TAG           hdf5-1_10_6
+  SOURCE_DIR        "${CMAKE_CURRENT_BINARY_DIR}/hdf5"
+  BINARY_DIR        "${CMAKE_CURRENT_BINARY_DIR}/hdf5/build"
+  CMAKE_CACHE_ARGS  
+        -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/hdf5
+        -DBUILD_SHARED_LIBS:BOOL=OFF
+        -DBUILD_TESTING:BOOL=OFF
+)
+
+# Download of Flappie sources
+ExternalProject_Add(flappie
+  PREFIX flappie
+  GIT_REPOSITORY    https://github.com/JensUweUlrich/flappie.git
+  GIT_TAG           master
+  SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/flappie"
+  CMAKE_CACHE_ARGS
+        -DOPENBLAS_ROOT:PATH=${CMAKE_CURRENT_BINARY_DIR}/OpenBLAS
+        -DHDF5_ROOT:PATH=${CMAKE_CURRENT_BINARY_DIR}/hdf5
+        -DOPENSSL_ROOT:PATH=${OPENSSL_ROOT_DIR}
+  DEPENDS OpenBLAS hdf5
+)
+

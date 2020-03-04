@@ -2,7 +2,7 @@
  * Data.hpp
  *
  *  Created on: 12.11.2019
- *      Author: jens
+ *      Author: jens-uwe.ulrich
  */
 #include <chrono>
 #include <thread>
@@ -44,6 +44,8 @@ namespace readuntil
             std::queue<ReadCache> reads;
             std::mutex mutex;
             bool runs = false;
+            uint8_t unblockChannels;
+            uint8_t unblockReads;
             void createSetupMessage();
             void getLiveSignals();
             void addActions();
@@ -74,6 +76,16 @@ namespace readuntil
 
             void getLiveReads();
             bool isRunning();
+            
+            inline void setUnblockChannels(const uint8_t &unblock)
+            {
+                unblockChannels = unblock;
+            }
+
+            inline void setUnblockReads(const uint8_t & unblock)
+            {
+                unblockReads = unblock;
+            }
     };
 
 } //namespace

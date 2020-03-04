@@ -54,9 +54,9 @@ set(Protobuf_DIR ${_FINDPACKAGE_PROTOBUF_CONFIG_DIR})
 
 # if OPENSSL_ROOT_DIR is set, propagate that hint path to the external projects with OpenSSL dependency.
 #set(_CMAKE_ARGS_OPENSSL_ROOT_DIR "${CMAKE_CURRENT_BINARY_DIR}/../openssl)
-#if (OPENSSL_ROOT_DIR)
-#set(_CMAKE_ARGS_OPENSSL_ROOT_DIR "-DOPENSSL_ROOT_DIR:PATH=${OPENSSL_ROOT_DIR}")
-#endif()
+if (OPENSSL_ROOT_DIR)
+  set(_CMAKE_ARGS_OPENSSL_ROOT_DIR "-DOPENSSL_ROOT_DIR:PATH=${OPENSSL_ROOT_DIR}")
+endif()
 
 message(STATUS "Protobuf directory : ${CMAKE_CURRENT_BINARY_DIR}")
 
@@ -98,16 +98,4 @@ ExternalProject_Add(minknow
   INSTALL_COMMAND   ""
   TEST_COMMAND      ""
 )
-
-# Download of Flappie sources
-#ExternalProject_Add(flappie
-#  PREFIX flappie
-#  GIT_REPOSITORY    https://github.com/nanoporetech/flappie.git
-#  GIT_TAG           master
-#  SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/flappie"
-#  CONFIGURE_COMMAND ""
-#  BUILD_COMMAND     ""
-#  INSTALL_COMMAND   ""
-#  TEST_COMMAND      ""
-#)
 

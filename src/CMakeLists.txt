@@ -26,6 +26,7 @@ endif()
 
 # add all subdirectories
 add_subdirectory(seqan)
+#add_subdirectory(libBaseCaller)
 add_subdirectory(libReadUntil)
 add_subdirectory(libMinimizer)
 add_subdirectory(libBloomFilter)
@@ -40,8 +41,8 @@ set(CPACK_PACKAGE_NAME "NanoLiveTk")
 set(CPACK_PACKAGE_VENDOR "Jens-Uwe Ulrich")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "NanoLiveTk - Installer")
 set(CPACK_PACKAGE_VERSION "1.0.0")
-set(CPACK_PACKAGE_VERSION_MAJOR "1")
-set(CPACK_PACKAGE_VERSION_MINOR "0")
+set(CPACK_PACKAGE_VERSION_MAJOR "0")
+set(CPACK_PACKAGE_VERSION_MINOR "2")
 set(CPACK_PACKAGE_VERSION_PATCH "0")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY ${PROJECT_NAME})
 
