@@ -29,6 +29,7 @@ message(STATUS "Using gRPC via add_subdirectory.")
   set(_PROTOBUF_LIBPROTOBUF libprotobuf)
   set(_PROTOBUF_PROTOC $<TARGET_FILE:protoc>)
   set(_GRPC_GRPCPP_UNSECURE grpc++_unsecure)
+  #find_program(_GRPC_CPP_PLUGIN_EXECUTABLE grpc_cpp_plugin)
   set(_GRPC_CPP_PLUGIN_EXECUTABLE $<TARGET_FILE:grpc_cpp_plugin>)
 
 set(Protobuf_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/protobuf/include")
