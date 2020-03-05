@@ -57,7 +57,7 @@ namespace readuntil
             GetLiveReadsRequest_Actions *actionList = actionRequest.mutable_actions();
             
             int counter = 0;
-            while (counter < 2)
+            while (counter < 1000)
             {
                 ReadCache read{};
                 bool hasElement = false;
@@ -107,8 +107,8 @@ namespace readuntil
         GetLiveReadsRequest_StreamSetup *setup = setupRequest.mutable_setup();
         setup->set_first_channel(1);
         setup->set_last_channel(512);
-        setup->set_raw_data_type(GetLiveReadsRequest_RawDataType_CALIBRATED);
-        setup->set_sample_minimum_chunk_size(4);
+        setup->set_raw_data_type(GetLiveReadsRequest_RawDataType_UNCALIBRATED);
+        setup->set_sample_minimum_chunk_size(0);
 
         DEBUGVAR(std::cout, setupRequest.has_setup());
         if (!stream->Write(setupRequest))
@@ -206,7 +206,6 @@ namespace readuntil
         DEBUGMESSAGE(std::cout, "written");
 
         std::thread readerThread(&Data::getLiveSignals, this);
-        sleep(1);
         std::thread actionThread(&Data::addActions, this);
 
 
