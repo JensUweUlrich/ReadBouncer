@@ -52,6 +52,8 @@ namespace readuntil
         // iterate over received data and stop further data allocation for every odd read on every odd channel
         while (isRunning())
         {
+            std::chrono::time_point<std::chrono::system_clock> start, end;
+            start = std::chrono::system_clock::now();
             //DEBUGMESSAGE(std::cout, "setup new action request");
             GetLiveReadsRequest actionRequest{};
             GetLiveReadsRequest_Actions *actionList = actionRequest.mutable_actions();
@@ -90,6 +92,12 @@ namespace readuntil
             }
             //DEBUGMESSAGE(std::cout, "action request sent");
 
+            end = std::chrono::system_clock::now();
+            int elapsed_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
+            if(elapsed_milliseconds < 100)
+            {
+                sleep(100 - elapsed_milliseconds);
+            }
         }
          DEBUGMESSAGE(std::cout, "leaving action request thread");
     }
