@@ -20,6 +20,31 @@ namespace readuntil
         stub = DataService::NewStub(channel);
     }
 
+    void Data::addUnblockAction(GetLiveReadsRequest_Actions *actionList, ReadCache &read)
+    {
+        GetLiveReadsRequest_Action *action = actionList->add_actions();
+        action->set_channel(read.channelNr);
+        GetLiveReadsRequest_UnblockAction *data = action->mutable_unblock();
+        *data = action->unblock();
+        data->set_duration(0.1);
+        action->set_number(read.readNr);
+        std::stringstream buf;
+        buf << "unblock_" << read.channelNr << "_" << read.readNr;
+        action->set_action_id(buf.str());
+    }
+
+    void Data::addStopReceivingDataAction(GetLiveReadsRequest_Actions *actionList, ReadCache &read)
+    {
+        GetLiveReadsRequest_Action *action = actionList->add_actions();
+        action->set_channel(read.channelNr);
+        GetLiveReadsRequest_StopFurtherData *data = action->mutable_stop_further_data();
+        *data = action->stop_further_data();
+        action->set_number(read.readNr);
+        std::stringstream buf;
+        buf << "stop_receiving_" << read.channelNr << "_" << read.readNr;
+        action->set_action_id(buf.str());
+    }
+
     void Data::addActions()
     {
         DEBUGMESSAGE(std::cout, "start action request thread");
@@ -27,7 +52,7 @@ namespace readuntil
         // iterate over received data and stop further data allocation for every odd read on every odd channel
         while (isRunning())
         {
-            DEBUGMESSAGE(std::cout, "setup new action request");
+            //DEBUGMESSAGE(std::cout, "setup new action request");
             GetLiveReadsRequest actionRequest{};
             GetLiveReadsRequest_Actions *actionList = actionRequest.mutable_actions();
             
@@ -51,28 +76,19 @@ namespace readuntil
                 {
                     if (read.channelNr % unblockChannels != 0 || read.readNr % unblockReads != 0)
                     {
-                        GetLiveReadsRequest_Action *action = actionList->add_actions();
-                        action->set_channel(read.channelNr);
-                        GetLiveReadsRequest_UnblockAction *data = action->mutable_unblock();
-                        *data = action->unblock();
-                        data->set_duration(1);
-                        //DEBUGVAR(std::cout, action->has_stop_further_data());
-                        action->set_number(read.readNr);
-                        std::stringstream buf;
-                        buf << "unblock_" << read.channelNr << "_" << read.readNr;
-                        action->set_action_id(buf.str());  
-                        //DEBUGMESSAGE(std::cout, buf.str());
+                        addUnblockAction(actionList, read);
+                        addStopReceivingDataAction(actionList, read);
                         counter++;
                     }
                 }
             }
 
-            DEBUGMESSAGE(std::cout, "try to send action request");
+            //DEBUGMESSAGE(std::cout, "try to send action request");
             if (!stream->Write(actionRequest))
             {
                 throw DataServiceException("Unable to add action to a live read stream!");
             }
-            DEBUGMESSAGE(std::cout, "action request sent");
+            //DEBUGMESSAGE(std::cout, "action request sent");
 
         }
          DEBUGMESSAGE(std::cout, "leaving action request thread");
@@ -126,7 +142,8 @@ namespace readuntil
         GetLiveReadsResponse response;
         int actNr = 0;
         int success = 0;
-        std::set<std::string> unique_reads;
+        int failed = 0;
+        
         while (stream->Read(&response))
         {
             runs = true;
@@ -137,22 +154,24 @@ namespace readuntil
                 switch (actResponse.response())
                 {
                     case GetLiveReadsResponse_ActionResponse_Response_SUCCESS:
-                        DEBUGMESSAGE(std::cout, "Action " + actResponse.action_id() + " succeeded.");
-                        //success++;
+                        //DEBUGMESSAGE(std::cout, "Action " + actResponse.action_id() + " succeeded.");
+                        success++;
                         break;
                     case GetLiveReadsResponse_ActionResponse_Response_FAILED_READ_FINISHED:
-                        DEBUGMESSAGE(std::cout, "Action " + actResponse.action_id() + " failed.");
+                        //DEBUGMESSAGE(std::cout, "Action " + actResponse.action_id() + " failed.");
+                        failed++;
                         break;
                 }
             }
-            
+            std::stringstream ss;
+            ss << "Success/Failed rate = " << success <<"/" << failed; 
+            DEBUGMESSAGE(std::cout, ss.str());
             
        		Map<uint32, GetLiveReadsResponse_ReadData> readData = response.channels();
        		for (MapPair<uint32, GetLiveReadsResponse_ReadData> entry : readData)
         	{
-                auto ret = unique_reads.emplace(entry.second.id());
                 // only add reads we did not already see to processing queue
-                if (ret.second)
+                if (std::find(uniqueReadIds.begin(), uniqueReadIds.end(), entry.second.id()) == uniqueReadIds.end())
                 {
            		    uint32 channel = entry.first;
            		    uint32 readNr = entry.second.number();
@@ -162,8 +181,12 @@ namespace readuntil
                     mutex.lock();
                     reads.push(r);
                     mutex.unlock();
+                    uniqueReadIds.push_back(entry.second.id());
                 }
-       		}  
+       		}
+            std::stringstream ss2;
+            ss2 << "ReadCacheSize : " << reads.size();
+            DEBUGMESSAGE(std::cout, ss2.str());  
        }
        DEBUGMESSAGE(std::cout, "leaving signals thread");
        runs = false;

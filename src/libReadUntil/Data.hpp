@@ -4,6 +4,7 @@
  *  Created on: 12.11.2019
  *      Author: jens-uwe.ulrich
  */
+#include <algorithm>
 #include <chrono>
 #include <thread>
 #include <string>
@@ -34,6 +35,7 @@ namespace readuntil
     {
             uint32 channelNr{};
             uint32 readNr{};
+            string id{};
     };
 
     class Data: public MinKnowService
@@ -42,6 +44,7 @@ namespace readuntil
             std::unique_ptr<DataService::Stub> stub;
             std::unique_ptr<grpc::ClientReaderWriter<GetLiveReadsRequest, GetLiveReadsResponse>> stream;
             std::queue<ReadCache> reads;
+            std::vector<std::string> uniqueReadIds;
             std::mutex mutex;
             bool runs = false;
             uint8_t unblockChannels;
@@ -49,6 +52,8 @@ namespace readuntil
             void createSetupMessage();
             void getLiveSignals();
             void addActions();
+            void addUnblockAction(GetLiveReadsRequest_Actions *actionList, ReadCache &read);
+            void addStopReceivingDataAction(GetLiveReadsRequest_Actions *actionList, ReadCache &read);
         public:
             Data() = default;
             Data(std::shared_ptr<::grpc::Channel> channel);
