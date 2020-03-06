@@ -49,6 +49,7 @@ namespace readuntil
             bool runs = false;
             uint8_t unblockChannels;
             uint8_t unblockReads;
+            uint8_t actionBatchSize;
             void createSetupMessage();
             void getLiveSignals();
             void addActions();
@@ -87,9 +88,14 @@ namespace readuntil
                 unblockChannels = unblock;
             }
 
-            inline void setUnblockReads(const uint8_t & unblock)
+            inline void setUnblockReads(const uint8_t &unblock)
             {
                 unblockReads = unblock;
+            }
+
+            inline void setActionBatchSize(const uint8_t &size)
+            {
+                actionBatchSize = size;
             }
     };
 

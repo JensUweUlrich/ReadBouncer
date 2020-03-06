@@ -49,6 +49,7 @@ struct cmd_arguments
 		uint16_t port;
 		uint8_t unblock_channels{2};
 		uint8_t unblock_reads{2};
+		uint16_t batch_size{512};
 };
 
 void initialize_main_argument_parser(argument_parser &parser, cmd_arguments &args)
@@ -123,6 +124,7 @@ void initialize_poretest_argument_parser(argument_parser &parser, cmd_arguments 
 	parser.add_option(args.port, 'p', "port", "port on which to communicate with host");
 	parser.add_option(args.unblock_channels, 'u',"unblock-channels", "channels to unblock",option_spec::DEFAULT);
 	parser.add_option(args.unblock_reads, 'r',"unblock-reads","unblock every r-th read of an unblock channel",option_spec::DEFAULT);
+	parser.add_option(args.batch_size, 'b', "batch-size", "number of actions send in one response to MinKNOW", option_spec::DEFAULT);
 
 }
 
@@ -343,6 +345,7 @@ void run_program(cmd_arguments &args)
 		{
 			(*data).setUnblockChannels(args.unblock_channels);		
 			(*data).setUnblockReads(args.unblock_reads);
+			(*data).setActionBatchSize(args.batch_size);
 			(*data).getLiveReads();
 		}
 		catch (readuntil::DataServiceException ex)

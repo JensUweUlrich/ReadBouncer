@@ -59,7 +59,7 @@ namespace readuntil
             GetLiveReadsRequest_Actions *actionList = actionRequest.mutable_actions();
             
             int counter = 0;
-            while (counter < 1000)
+            while (counter < actionBatchSize)
             {
                 ReadCache read{};
                 bool hasElement = false;
@@ -80,7 +80,7 @@ namespace readuntil
                     {
                         addUnblockAction(actionList, read);
                         addStopReceivingDataAction(actionList, read);
-                        counter++;
+                        counter+=2;
                     }
                 }
             }
