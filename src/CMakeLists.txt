@@ -25,6 +25,7 @@ else()
 endif()
 
 # add all subdirectories
+add_subdirectory(spdlog)
 add_subdirectory(seqan)
 #add_subdirectory(libBaseCaller)
 add_subdirectory(libReadUntil)

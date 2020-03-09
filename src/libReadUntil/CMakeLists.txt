@@ -86,20 +86,19 @@ endforeach()
 #    "${flappie_dir}/include/version.h"
 #)
 
-
-
+set(spdlog_DIR ${CMAKE_CURRENT_BINARY_DIR}/../spdlog/spdlog/lib/cmake/spdlog)
+find_package(spdlog REQUIRED)
 
 #file(GLOB flappie_srcs "${CMAKE_CURRENT_BINARY_DIR}/flappie/src/*.c")
 #file(GLOB flappie_hdrs "${CMAKE_CURRENT_BINARY_DIR}/flappie/src/*.h")
 
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/minknow/minknow" "${CMAKE_CURRENT_BINARY_DIR}/minknow")
 
-
 #add_library (ReadUntil STATIC ${READUNTILSOURCES} ${minknow_srcs} ${flappie_srcs})
 add_library (ReadUntil STATIC ${READUNTILSRCS} ${READUNTILHDRS} ${minknow_srcs})
 #target_include_directories (ReadUntil PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} "${CMAKE_CURRENT_BINARY_DIR}/minknow" "${CMAKE_CURRENT_BINARY_DIR}/flappie")
 target_include_directories (ReadUntil PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} "${CMAKE_CURRENT_BINARY_DIR}/minknow")
-target_link_libraries (ReadUntil  ${_GRPC_GRPCPP_UNSECURE} ${_PROTOBUF_LIBPROTOBUF})
+target_link_libraries (ReadUntil  ${_GRPC_GRPCPP_UNSECURE} ${_PROTOBUF_LIBPROTOBUF} spdlog::spdlog)
 
 install(TARGETS ReadUntil DESTINATION lib COMPONENT libraries)
 

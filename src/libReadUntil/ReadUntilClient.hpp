@@ -17,6 +17,9 @@
 #include "Device.hpp"
 #include "Manager.hpp"
 
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/daily_file_sink.h"
+
 #include "../debug_messages.hpp"
 
 #ifndef LIBREADUNTIL_READUNTILCLIENT_HPP_
@@ -30,10 +33,9 @@ namespace readuntil
 		private:
 
 			std::shared_ptr<::grpc::Channel> channel;
-			std::string mk_host
-			{ "127.0.0.1" };
-			uint16_t mk_port
-			{ 8000 };
+			std::string mk_host{ "127.0.0.1" };
+			uint16_t mk_port{ 8000 };
+			std::shared_ptr<spdlog::sinks::daily_file_sink_mt> daily_sink = std::make_shared<spdlog::sinks::daily_file_sink_mt>("RUClientLog", 23, 59);
 
 			ReadUntilClient() = default;
 			ReadUntilClient(const ReadUntilClient&) = delete;

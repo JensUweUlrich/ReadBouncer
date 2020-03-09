@@ -1,0 +1,17 @@
+cmake_minimum_required(VERSION 3.4)
+
+project(spdlog-build)
+
+include(ExternalProject)
+ExternalProject_Add(spdlog
+  PREFIX            spdlog
+  GIT_REPOSITORY    https://github.com/gabime/spdlog.git
+  GIT_TAG           v1.5.0
+  SOURCE_DIR        "${CMAKE_CURRENT_BINARY_DIR}/spdlog"
+  CMAKE_ARGS        "-DCMAKE_PREFIX_PATH=<SOURCE_DIR>/spdlog/cmake"
+  CMAKE_CACHE_ARGS  
+        -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/spdlog
+        
+)
+
+

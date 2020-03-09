@@ -11,10 +11,13 @@ namespace readuntil
 {
 	void ReadUntilClient::connect()
 	{
+		auto connection_logger = std::make_shared<spdlog::logger>("ClientConnection", daily_sink);
+		spdlog::register_logger(connection_logger);
 		std::stringstream s;
-		s << mk_host << ":" << mk_port;
+		s << "Trying to connect to " << mk_host << ":" << mk_port;
 		int retry_count = 5;
-		std::cout << "Trying to connect to " << s.str() << std::endl;
+		connection_logger->set_level(spdlog::level::debug);
+		connection_logger->info(s.str());
 
 		for (int i = 1; i <= 5; ++i)
 		{
@@ -24,14 +27,14 @@ namespace readuntil
 			{
 				std::stringstream dm;
 				dm << "Sucessfully connected to minknow instance (version " << (*inst).get_version_info() << ")";
-				std::cout << dm.str() << std::endl;
+				connection_logger->info(dm.str());
 				break;
 			}
 			catch (ReadUntilClientException e)
 			{
 				std::stringstream em;
 				em << "Failed to connect to minknow instance (retry " << i << "/" << retry_count << ") : " << e.what();
-				std::cerr << em.str() << std::endl;
+				connection_logger->error(em.str());
 			}
 			std::this_thread::sleep_for(std::chrono::seconds(1));
 		}
@@ -39,26 +42,31 @@ namespace readuntil
 		Device *dev = (readuntil::Device*) getMinKnowService(readuntil::MinKnowServiceType::DEVICE);
 		try
 		{
-
-			std::cout << "Detected " << (*dev).getDeviceType() << " Device with ID : " << (*dev).getDeviceId() << std::endl;
+			std::stringstream devss;
+			devss << "Detected " << (*dev).getDeviceType() << " Device with ID : " << (*dev).getDeviceId();
+			connection_logger->info(devss.str());
 
 		}
 		catch (readuntil::DeviceServiceException e)
 		{
-			std::cerr << "Could not get device type/id : " << e.what() << std::endl;
+			std::stringstream em;
+			em << "Could not get device type/id : " << e.what();
+			connection_logger->error(em.str());
 		}
 
 		readuntil::Manager *mgr = (readuntil::Manager*) getMinKnowService(readuntil::MinKnowServiceType::MANAGER);
 
 		try
 		{
-
-			std::cout << "guppy version : " << (*mgr).getGuppyVersion() << std::endl;
-
+			std::stringstream gupss;
+			gupss << "guppy version : " << (*mgr).getGuppyVersion();
+			connection_logger->info(gupss.str());
 		}
 		catch (readuntil::ReadUntilClientException e)
 		{
-			std::cerr << "Could not get guppy version : " << e.what() << std::endl;
+			std::stringstream em;
+			em << "Could not get guppy version : " << e.what();
+			connection_logger->error(em.str());
 		}
 	}
 
