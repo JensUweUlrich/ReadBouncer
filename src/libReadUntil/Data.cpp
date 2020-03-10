@@ -18,6 +18,7 @@ namespace readuntil
     Data::Data(std::shared_ptr<::grpc::Channel> channel)
     {
         stub = DataService::NewStub(channel);
+        data_logger = spdlog::get("Client_connection");
     }
 
     void Data::addUnblockAction(GetLiveReadsRequest_Actions *actionList, ReadCache &read)
@@ -47,7 +48,7 @@ namespace readuntil
 
     void Data::addActions()
     {
-        DEBUGMESSAGE(std::cout, "start action request thread");
+        data_logger->debug("start action request thread");
         // as long as signals are received from MinKnow
         // iterate over received data and stop further data allocation for every odd read on every odd channel
         while (isRunning())
@@ -99,7 +100,7 @@ namespace readuntil
                 sleep(100 - elapsed_milliseconds);
             }
         }
-         DEBUGMESSAGE(std::cout, "leaving action request thread");
+        data_logger->debug("leaving action request thread");
     }
 
     bool Data::isRunning()
@@ -109,7 +110,7 @@ namespace readuntil
 
     void Data::createSetupMessage()
     {
-        DEBUGMESSAGE(std::cout, "start setup message thread");
+        data_logger->debug("start setup message thread");
 
         GetLiveReadsRequest setupRequest{};
         GetLiveReadsRequest_StreamSetup *setup = setupRequest.mutable_setup();
@@ -118,13 +119,12 @@ namespace readuntil
         setup->set_raw_data_type(GetLiveReadsRequest_RawDataType_UNCALIBRATED);
         setup->set_sample_minimum_chunk_size(0);
 
-        DEBUGVAR(std::cout, setupRequest.has_setup());
         if (!stream->Write(setupRequest))
         {
             throw DataServiceException("Unable to setup a live read stream!");
         }
 
-        DEBUGMESSAGE(std::cout, "leaving setup message thread");
+        data_logger->debug("leaving setup message thread");
     }
 
 	/*Data::getSignalType()
@@ -146,7 +146,7 @@ namespace readuntil
 */
     void Data::getLiveSignals()
     {
-        DEBUGMESSAGE(std::cout, "start getting signals thread");
+        data_logger->debug("start getting signals thread");
         GetLiveReadsResponse response;
         int actNr = 0;
         int success = 0;
@@ -173,7 +173,7 @@ namespace readuntil
             }
             std::stringstream ss;
             ss << "Success/Failed rate = " << success <<"/" << failed; 
-            DEBUGMESSAGE(std::cout, ss.str());
+            data_logger->info(ss.str());
             
        		Map<uint32, GetLiveReadsResponse_ReadData> readData = response.channels();
        		for (MapPair<uint32, GetLiveReadsResponse_ReadData> entry : readData)
@@ -194,9 +194,9 @@ namespace readuntil
        		}
             std::stringstream ss2;
             ss2 << "ReadCacheSize : " << reads.size();
-            DEBUGMESSAGE(std::cout, ss2.str());  
+            data_logger->debug(ss2.str());  
        }
-       DEBUGMESSAGE(std::cout, "leaving signals thread");
+       data_logger->debug("leaving signals thread");
        runs = false;
     }
 
@@ -211,7 +211,6 @@ namespace readuntil
         std::thread setupThread(&Data::createSetupMessage, this);
 
         setupThread.join();
-        DEBUGMESSAGE(std::cout, "written");
 
         std::thread readerThread(&Data::getLiveSignals, this);
         std::thread actionThread(&Data::addActions, this);
@@ -224,9 +223,9 @@ namespace readuntil
 	    context.TryCancel();
         status = stream->Finish();
 
-        DEBUGVAR(std::cout, status.error_code());
-        DEBUGVAR(std::cout, status.error_message());
-        DEBUGVAR(std::cout, status.error_details());
+        data_logger->debug(status.error_code());
+        data_logger->debug(status.error_message());
+        data_logger->debug(status.error_details());
 
     }
 

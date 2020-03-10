@@ -18,7 +18,7 @@
 #include <minknow/rpc/data.grpc.pb.h>
 #include <minknow/rpc/data.pb.h>
 
-#include "../debug_messages.hpp"
+#include "spdlog/spdlog.h"
 
 #include "MinKnowService.hpp"
 #include "DataServiceException.hpp"
@@ -46,6 +46,7 @@ namespace readuntil
             std::queue<ReadCache> reads;
             std::vector<std::string> uniqueReadIds;
             std::mutex mutex;
+            std::shared_ptr<spdlog::logger> data_logger;
             bool runs = false;
             uint8_t unblockChannels;
             uint8_t unblockReads;
