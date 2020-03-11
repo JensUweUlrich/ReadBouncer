@@ -55,7 +55,6 @@ namespace readuntil
         {
             std::chrono::time_point<std::chrono::system_clock> start, end;
             start = std::chrono::system_clock::now();
-            //DEBUGMESSAGE(std::cout, "setup new action request");
             GetLiveReadsRequest actionRequest{};
             GetLiveReadsRequest_Actions *actionList = actionRequest.mutable_actions();
             
@@ -86,18 +85,16 @@ namespace readuntil
                 }
             }
 
-            //DEBUGMESSAGE(std::cout, "try to send action request");
             if (!stream->Write(actionRequest))
             {
                 throw DataServiceException("Unable to add action to a live read stream!");
             }
-            //DEBUGMESSAGE(std::cout, "action request sent");
 
             end = std::chrono::system_clock::now();
             int elapsed_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
             if(elapsed_milliseconds < 100)
             {
-                sleep(100 - elapsed_milliseconds);
+                std::this_thread::sleep_for(std::chrono::milliseconds(100 - elapsed_milliseconds));
             }
         }
         data_logger->debug("leaving action request thread");
@@ -117,7 +114,7 @@ namespace readuntil
         setup->set_first_channel(1);
         setup->set_last_channel(512);
         setup->set_raw_data_type(GetLiveReadsRequest_RawDataType_UNCALIBRATED);
-        setup->set_sample_minimum_chunk_size(0);
+        setup->set_sample_minimum_chunk_size(4);
 
         if (!stream->Write(setupRequest))
         {
@@ -166,8 +163,11 @@ namespace readuntil
                         success++;
                         break;
                     case GetLiveReadsResponse_ActionResponse_Response_FAILED_READ_FINISHED:
-                        //DEBUGMESSAGE(std::cout, "Action " + actResponse.action_id() + " failed.");
-                        failed++;
+                        std::string id(actResponse.action_id());
+                        if (id.rfind("unblock",0) == 0)
+                        {
+                            failed++;
+                        }
                         break;
                 }
             }

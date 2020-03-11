@@ -61,7 +61,7 @@ namespace readuntil
 				mk_port = newPort;
 			}
 
-			void connect();
+			bool connect();
 
 			MinKnowService* getMinKnowService(const MinKnowServiceType type);
 

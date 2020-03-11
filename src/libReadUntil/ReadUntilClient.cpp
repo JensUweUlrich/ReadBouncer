@@ -9,34 +9,37 @@
 
 namespace readuntil
 {
-	void ReadUntilClient::connect()
+	bool ReadUntilClient::connect()
 	{
 		try
 		{
-			connection_logger = spdlog::rotating_logger_mt("RUClientLog", "logs/ReadUntilClientLog.txt", 1048576 * 5, 3);
+			connection_logger = spdlog::rotating_logger_mt("RUClientLog", "logs/ReadUntilClientLog.txt", 1048576 * 5, 100);
 		}
 		catch(const spdlog::spdlog_ex& e)
 		{
 			std::cerr << "Log initialization failed: " << e.what() << std::endl;
 		}
 		
-		
-		std::stringstream s;
-		s << "Trying to connect to " << mk_host << ":" << mk_port;
+		bool connected = false;
+		std::stringstream connect_str;
+		std::stringstream info_str;
+		connect_str << mk_host << ":" << mk_port;
+		info_str << "Trying to connect to Minknow on " << connect_str.str();
 		int retry_count = 5;
 		connection_logger->flush_on(spdlog::level::err);
 		connection_logger->set_level(spdlog::level::debug);
-		connection_logger->info(s.str());
+		connection_logger->info(info_str.str());
 
 		for (int i = 1; i <= 5; ++i)
 		{
-			channel = grpc::CreateChannel(s.str(), grpc::InsecureChannelCredentials());
+			channel = grpc::CreateChannel(connect_str.str(), grpc::InsecureChannelCredentials());
 			Instance *inst = (Instance*) getMinKnowService(MinKnowServiceType::INSTANCE);
 			try
 			{
 				std::stringstream dm;
 				dm << "Sucessfully connected to minknow instance (version " << (*inst).get_version_info() << ")";
 				connection_logger->info(dm.str());
+				connected = true;
 				break;
 			}
 			catch (ReadUntilClientException e)
@@ -61,6 +64,7 @@ namespace readuntil
 			std::stringstream em;
 			em << "Could not get device type/id : " << e.what();
 			connection_logger->error(em.str());
+			connected = false;
 		}
 
 		readuntil::Manager *mgr = (readuntil::Manager*) getMinKnowService(readuntil::MinKnowServiceType::MANAGER);
@@ -77,6 +81,8 @@ namespace readuntil
 			em << "Could not get guppy version : " << e.what();
 			connection_logger->error(em.str());
 		}
+
+		return connected;
 	}
 
 	MinKnowService* ReadUntilClient::getMinKnowService(const MinKnowServiceType type)
