@@ -18,7 +18,7 @@ namespace readuntil
     Data::Data(std::shared_ptr<::grpc::Channel> channel)
     {
         stub = DataService::NewStub(channel);
-        data_logger = spdlog::get("Client_connection");
+        data_logger = spdlog::get("RUClientLog");
     }
 
     void Data::addUnblockAction(GetLiveReadsRequest_Actions *actionList, ReadCache &read)

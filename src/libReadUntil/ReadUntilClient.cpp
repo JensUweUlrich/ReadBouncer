@@ -11,11 +11,20 @@ namespace readuntil
 {
 	void ReadUntilClient::connect()
 	{
-		auto connection_logger = std::make_shared<spdlog::logger>("ClientConnection", daily_sink);
-		spdlog::register_logger(connection_logger);
+		try
+		{
+			connection_logger = spdlog::rotating_logger_mt("RUClientLog", "logs/ReadUntilClientLog.txt", 1048576 * 5, 3);
+		}
+		catch(const spdlog::spdlog_ex& e)
+		{
+			std::cerr << "Log initialization failed: " << e.what() << std::endl;
+		}
+		
+		
 		std::stringstream s;
 		s << "Trying to connect to " << mk_host << ":" << mk_port;
 		int retry_count = 5;
+		connection_logger->flush_on(spdlog::level::err);
 		connection_logger->set_level(spdlog::level::debug);
 		connection_logger->info(s.str());
 
