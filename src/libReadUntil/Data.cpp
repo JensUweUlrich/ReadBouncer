@@ -27,7 +27,7 @@ namespace readuntil
         action->set_channel(read.channelNr);
         GetLiveReadsRequest_UnblockAction *data = action->mutable_unblock();
         *data = action->unblock();
-        data->set_duration(0.1);
+        data->set_duration(1);
         action->set_number(read.readNr);
         std::stringstream buf;
         buf << "unblock_" << read.channelNr << "_" << read.readNr;

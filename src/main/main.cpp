@@ -349,8 +349,16 @@ void run_program(cmd_arguments &args)
 	else if (std::string("poretest").compare(args.mode) == 0)
 	{
         readuntil::ReadUntilClient &client = readuntil::ReadUntilClient::getClient();
+		client.setHost(args.host);
 		client.setPort(args.port);
-		client.connect();
+		if (client.connect())
+		{
+			std::cout << "Connection successfully established!" << ::std::endl;
+		}
+		else
+		{
+			std::cerr << "Could not establish connection to MinKNOW or MinION device" << std::endl;
+		}
        	data = (readuntil::Data*) client.getMinKnowService(readuntil::MinKnowServiceType::DATA);
 
 		try
@@ -372,6 +380,7 @@ void run_program(cmd_arguments &args)
 	else if (std::string("connectiontest").compare(args.mode) == 0)
 	{
         readuntil::ReadUntilClient &client = readuntil::ReadUntilClient::getClient();
+		client.setHost(args.host);
 		client.setPort(args.port);
 		if (client.connect())
 		{
