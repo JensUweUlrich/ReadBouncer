@@ -1,6 +1,5 @@
 set(Main_SRC "main.cpp")
 add_executable (${PROJECT_NAME} ${Main_SRC})
 find_package (Threads)
-target_link_libraries (${PROJECT_NAME} pthread seqan3::seqan3 Minimizer BloomFilter ReadUntil)
-#target_include_directories (${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIRECTORY}/libBloomFilter ${CMAKE_CURRENT_SOURCE_DIRECTORY}/libMinimizer)
+target_link_libraries (${PROJECT_NAME} pthread seqan3::seqan3 Minimizer BloomFilter)
 install(TARGETS ${PROJECT_NAME} DESTINATION bin COMPONENT applications)

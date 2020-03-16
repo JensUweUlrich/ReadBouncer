@@ -45,11 +45,6 @@ struct cmd_arguments
 		{ 31 };
 		float error_rate
 		{ 0.05 };
-		std::string host;
-		uint16_t port;
-		uint8_t unblock_channels{2};
-		uint8_t unblock_reads{2};
-		uint16_t batch_size{512};
 };
 
 void initialize_main_argument_parser(argument_parser &parser, cmd_arguments &args)
@@ -67,13 +62,13 @@ void initialize_main_argument_parser(argument_parser &parser, cmd_arguments &arg
 	parser.info.description = description;
 
 	std::vector<std::string> synopsis
-	{ "[bloom, minhash, poretest, connectiontest] [OPTIONS]" };
+	{ "[bloom, minhash] [OPTIONS]" };
 	parser.info.synopsis = synopsis;
 	//TODO refine examples
 	//parser.info.examples = "mhc bloom ";
 
 	parser.add_positional_option(args.mode, "Modus to run NanoLiveTk : ", value_list_validator
-	{ "bloom", "minhash", "poretest", "connectiontest" });
+	{ "bloom", "minhash"});
 
 	//TODO add all working modes as options and provide all additional information
 }
@@ -108,38 +103,6 @@ void initialize_read_until_argument_parser(argument_parser &parser, cmd_argument
 	parser.add_option(args.query_read_file, 'q', "query", "query read file");
 	parser.add_option(args.bloom_filter_output_path, 'b', "bloom-filter", "path to bloom filter file", option_spec::REQUIRED);
 
-}
-
-void initialize_poretest_argument_parser(argument_parser &parser, cmd_arguments &args)
-{
-	// TODO refine parser information
-	parser.info.author = "Jens-Uwe Ulrich";
-	parser.info.short_description = "start a client to communicate with ONT's MinKNOW software";
-	parser.info.version = "0.0.2";
-	parser.info.date = "03-March-2020";
-	parser.info.email = "jens-uwe.ulrich@hpi.de";
-
-	// only for debugging
-	parser.add_option(args.host, 'c', "host", "host IP address");
-	parser.add_option(args.port, 'p', "port", "port on which to communicate with host");
-	parser.add_option(args.unblock_channels, 'u',"unblock-channels", "channels to unblock",option_spec::DEFAULT);
-	parser.add_option(args.unblock_reads, 'r',"unblock-reads","unblock every r-th read of an unblock channel",option_spec::DEFAULT);
-	parser.add_option(args.batch_size, 'b', "batch-size", "number of actions send in one response to MinKNOW", option_spec::DEFAULT);
-
-}
-
-void initialize_connectiontest_argument_parser(argument_parser &parser, cmd_arguments &args)
-{
-	// TODO refine parser information
-	parser.info.author = "Jens-Uwe Ulrich";
-	parser.info.short_description = "start a client to communicate with ONT's MinKNOW software";
-	parser.info.version = "0.0.2";
-	parser.info.date = "11-March-2020";
-	parser.info.email = "jens-uwe.ulrich@hpi.de";
-
-	// only for debugging
-	parser.add_option(args.host, 'c', "host", "host IP address");
-	parser.add_option(args.port, 'p', "port", "port on which to communicate with host");
 }
 
 /**
@@ -346,63 +309,6 @@ void run_program(cmd_arguments &args)
 		debug_stream << "Number of contained reads: " << num_contained_reads << "/" << num_query_reads;
 		// TODO calculate containment of sketches in reference bloom filter
 	}
-	else if (std::string("poretest").compare(args.mode) == 0)
-	{
-        readuntil::ReadUntilClient &client = readuntil::ReadUntilClient::getClient();
-		client.setHost(args.host);
-		client.setPort(args.port);
-		if (client.connect())
-		{
-			std::cout << "Connection successfully established!" << ::std::endl;
-		}
-		else
-		{
-			std::cerr << "Could not establish connection to MinKNOW or MinION device" << std::endl;
-		}
-       	data = (readuntil::Data*) client.getMinKnowService(readuntil::MinKnowServiceType::DATA);
-
-		try
-		{
-			(*data).setUnblockChannels(args.unblock_channels);		
-			(*data).setUnblockReads(args.unblock_reads);
-			(*data).setActionBatchSize(args.batch_size);
-			(*data).getLiveReads();
-		}
-		catch (readuntil::DataServiceException ex)
-		{
-			std::cerr << "Could not get live reads : " << ex.what() << std::endl;
-			if (data != nullptr)
-   			{
-				data->getContext()->TryCancel();
-    		}
-		}
-	}
-	else if (std::string("connectiontest").compare(args.mode) == 0)
-	{
-        readuntil::ReadUntilClient &client = readuntil::ReadUntilClient::getClient();
-		client.setHost(args.host);
-		client.setPort(args.port);
-		if (client.connect())
-		{
-			std::cout << "Connection successfully established!" << ::std::endl;
-		}
-		else
-		{
-			std::cerr << "Could not establish connection to MinKNOW or MinION device" << std::endl;
-		}
-		
-       	
-	}
-}
-
-void signalHandler(int signum)
-{
-	//TODO: shutdown the gRPC stream smoothly
-    if (data != nullptr)
-   	{
-		data->getContext()->TryCancel();
-    }
-	exit(signum);
 }
 
 int main(int argc, char const **argv)
@@ -438,38 +344,6 @@ int main(int argc, char const **argv)
 		try
 		{
 			read_until_parser.parse();
-		}
-		catch (parser_invalid_argument const &ext)
-		{
-			std::cerr << "[PARSER ERROR] " << ext.what() << '\n';
-			return -1;
-		}
-	}
-	else if (std::string(argv[1]).compare("poretest") == 0)
-	{
-		args.mode = "poretest";
-		argument_parser client_parser("poretest", --argc, argv + 1);
-		initialize_poretest_argument_parser(client_parser, args);
-
-		try
-		{
-			client_parser.parse();
-		}
-		catch (parser_invalid_argument const &ext)
-		{
-			std::cerr << "[PARSER ERROR] " << ext.what() << '\n';
-			return -1;
-		}
-	}
-	else if (std::string(argv[1]).compare("connectiontest") == 0)
-	{
-		args.mode = "connectiontest";
-		argument_parser client_parser("connectiontest", --argc, argv + 1);
-		initialize_connectiontest_argument_parser(client_parser, args);
-
-		try
-		{
-			client_parser.parse();
 		}
 		catch (parser_invalid_argument const &ext)
 		{
