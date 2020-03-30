@@ -1,3 +1,4 @@
+//Assertion failed: (size() > 0), function front
 #include <string>//
 #include <vector>
 #include <math.h>
