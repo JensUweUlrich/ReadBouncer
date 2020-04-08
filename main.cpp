@@ -54,8 +54,14 @@ struct cmd_arguments
 		float error_rate
 		{ 0.05 };
 };
-
- 
+/* kurze Beschreibung der Funktion : 
+Die Funktion Shape_generator_seqan bekommt in main ein seqan::shape ungapped oder bin_literal . Der Unterschied ist , dass bei 
+ungapped_shape die Funktion ein ungapped_shape der Länge n bekommt , wobei in bin_literal die Funktion eine dezimale Darstellung 
+bekommt und davon ein ungapped shape(z.B bin_literal{1048575} = ein ungapped_shape der Länge 20 )erzeugt, 
+dann durch die Funktion werden die Fehlerrate bzw. Filter erledigt . 
+- Die Funktion kann auch die shape in Vektor pushen . 
+- Test in Zeile 381 
+ */
 
 
 //  korrigiert am 08.04.2020 um 14:21:41 Uhr 
