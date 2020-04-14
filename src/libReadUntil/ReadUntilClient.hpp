@@ -12,6 +12,7 @@
 #include <thread>
 #include <chrono>
 #include <grpcpp/grpcpp.h>
+#include "Acquisition.hpp"
 #include "Instance.hpp"
 #include "Data.hpp"
 #include "Device.hpp"

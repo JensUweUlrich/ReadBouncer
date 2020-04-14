@@ -18,19 +18,28 @@ namespace readuntil
     Data::Data(std::shared_ptr<::grpc::Channel> channel)
     {
         stub = DataService::NewStub(channel);
+        acq = new readuntil::Acquisition(channel);
         data_logger = spdlog::get("RUClientLog");
     }
 
-    void Data::addUnblockAction(GetLiveReadsRequest_Actions *actionList, ReadCache &read)
+    void Data::addUnblockAction(GetLiveReadsRequest_Actions *actionList, ReadCache &read, const double unblock_duration)
     {
         GetLiveReadsRequest_Action *action = actionList->add_actions();
         action->set_channel(read.channelNr);
         GetLiveReadsRequest_UnblockAction *data = action->mutable_unblock();
         *data = action->unblock();
-        data->set_duration(1);
+        data->set_duration(unblock_duration);
         action->set_number(read.readNr);
         std::stringstream buf;
-        buf << "unblock_" << read.channelNr << "_" << read.readNr;
+        buf << read.channelNr << "_" << read.readNr;
+        responseMutex.lock();
+        std::map<string, ReadResponse>::iterator it = responseCache.find(buf.str());
+        if (it != responseCache.end())
+        {
+            (*it).second.unblock_duration = unblock_duration;
+        }
+        responseMutex.unlock();
+        buf << "unblock_" << buf.str();
         action->set_action_id(buf.str());
     }
 
@@ -63,7 +72,7 @@ namespace readuntil
             {
                 ReadCache read{};
                 bool hasElement = false;
-                mutex.lock();
+                readMutex.lock();
                 // take read out of the queue if it's not empty
                 if (!reads.empty())
                 {
@@ -72,15 +81,60 @@ namespace readuntil
                     hasElement = true;
                     reads.pop();
                 }
-                mutex.unlock();
+                readMutex.unlock();
 
                 if (hasElement)
                 {
-                    if (read.channelNr % unblockChannels != 0 || read.readNr % unblockReads != 0)
+                    // 
+                    switch(read.channelNr % 4)
                     {
-                        addUnblockAction(actionList, read);
-                        addStopReceivingDataAction(actionList, read);
-                        counter+=2;
+                        case 0:
+                        {
+                            //channel numbers with mod 4 == 0 are sequenced as usual
+                            std::stringstream buf;
+                            buf << read.channelNr << "_" << read.readNr;
+                            responseMutex.lock();
+                            std::map<string, ReadResponse>::iterator it = responseCache.find(buf.str());
+                            if (it != responseCache.end())
+                            {
+                                (*it).second.unblock_duration = -1.0;
+                            }
+                            responseMutex.unlock();
+                            break;
+                        }
+                        case 1:
+                        {
+                            // unblock odd numbered reads with duration 1 sec 
+                            if (read.readNr % 2 == 1)
+                            {
+                                addUnblockAction(actionList, read, 1.0);
+                                counter++;
+                            }
+                            break;
+                        }
+                        case 2:
+                        {
+                            // unblock odd numbered reads with duration 0.1 sec
+                            if (read.readNr % 2 == 1)
+                            {
+                                addUnblockAction(actionList, read, 0.1);
+                                counter++;
+                            }
+                            break;
+                        }
+                        case 3:
+                        {
+                            // unblock every fourth read with duration 0.1 sec
+                            if (read.readNr % 4 == 0)
+                            {
+                                addUnblockAction(actionList, read, 0.1);
+                                counter++;
+                            }
+                            break;
+                        }
+                        default:
+                            // do nothing
+                            break;
                     }
                 }
             }
@@ -124,6 +178,36 @@ namespace readuntil
         data_logger->debug("leaving setup message thread");
     }
 
+    void Data::printResponseData()
+    {
+        std::ofstream ofs("readMetaData.csv", std::ofstream::out);
+        ofs << "read_id\tchannel_nr\tread_nr\tresponse\tunblock_duration\tsamples_since_start\tseconds_since_start\tstart_sample\tchunk_start_sample\tchunk_length\n"; 
+        while (isRunning())
+        {
+            ReadResponse r{};
+            responseMutex.lock();
+            if (!responseCache.empty())
+            {
+                std::map<string,ReadResponse>::iterator it = responseCache.begin();
+                if((*it).second.response > 0 || (*it).second.unblock_duration < 0)
+                {
+                    ofs << (*it).first << "\t" << (*it).second.channelNr << "\t" << (*it).second.readNr << "\t" << (*it).second.response << "\t" << (*it).second.unblock_duration << "\t" << (*it).second.samples_since_start << "\t" << (*it).second.start_sample << "\t" << (*it).second.chunk_start_sample << "\t" << (*it).second.chunk_length << "\n";
+                    responseCache.erase(it);
+                }
+            }
+            responseMutex.unlock();
+
+        }
+
+        responseMutex.lock();
+        for (std::map<string,ReadResponse>::iterator it = responseCache.begin(); it != responseCache.end(); ++it)
+        {
+            ofs << (*it).first << "\t" << (*it).second.channelNr << "\t" << (*it).second.readNr << "\t" << (*it).second.response << "\t" << (*it).second.unblock_duration << "\t" << (*it).second.samples_since_start << "\t" << (*it).second.start_sample << "\t" << (*it).second.chunk_start_sample << "\t" << (*it).second.chunk_length << "\n";
+        }
+        responseMutex.unlock();
+        ofs.close();
+    }
+
 	/*Data::getSignalType()
 	{
 		GetDataTypesRequest request;
@@ -148,26 +232,50 @@ namespace readuntil
         int actNr = 0;
         int success = 0;
         int failed = 0;
-        
+
         while (stream->Read(&response))
         {
+            if (acq->isFinished())
+            {
+                runs = false;
+                break;
+            }
+
             runs = true;
             
         	for (GetLiveReadsResponse_ActionResponse actResponse : response.action_reponses())
             {
+                // add action success/failed information to responseCache entry
+                std::string id(actResponse.action_id());
+                if (id.rfind("unblock_",0) == 0)
+                {
+                    id = id.substr(8);
+                }
+                responseMutex.lock();
+                std::map<string, ReadResponse>::iterator it = responseCache.find(id);
+                if (it != responseCache.end())
+                {
+                    switch(actResponse.response())
+                    {
+                        case GetLiveReadsResponse_ActionResponse_Response_SUCCESS:
+                            (*it).second.response = 1;
+                            break;
+                        case GetLiveReadsResponse_ActionResponse_Response_FAILED_READ_FINISHED:
+                            (*it).second.response = 2;
+                            break;
+                    }
+                }
+                responseMutex.unlock();
+
+
                 actNr++;
                 switch (actResponse.response())
                 {
                     case GetLiveReadsResponse_ActionResponse_Response_SUCCESS:
-                        //DEBUGMESSAGE(std::cout, "Action " + actResponse.action_id() + " succeeded.");
                         success++;
                         break;
                     case GetLiveReadsResponse_ActionResponse_Response_FAILED_READ_FINISHED:
-                        std::string id(actResponse.action_id());
-                        if (id.rfind("unblock",0) == 0)
-                        {
-                            failed++;
-                        }
+                        failed++;
                         break;
                 }
             }
@@ -181,14 +289,31 @@ namespace readuntil
                 // only add reads we did not already see to processing queue
                 if (std::find(uniqueReadIds.begin(), uniqueReadIds.end(), entry.second.id()) == uniqueReadIds.end())
                 {
+
+                    // store read data for csv printing
+                    ReadResponse respData{};
+                    respData.channelNr = entry.first;
+                    respData.readNr = entry.second.number();
+                    respData.samples_since_start = response.samples_since_start();
+                    respData.seconds_since_start = response.seconds_since_start();
+                    respData.start_sample = entry.second.start_sample();
+                    respData.chunk_start_sample = entry.second.chunk_start_sample();
+                    respData.chunk_length = entry.second.chunk_length();
+                    std::stringstream buf;
+                    buf << respData.channelNr << "_" << respData.readNr;
+                    responseMutex.lock();
+                    responseCache.emplace(buf.str(), respData);
+                    responseMutex.unlock();
+
+                    // add read to read cache for action request processing
            		    uint32 channel = entry.first;
            		    uint32 readNr = entry.second.number();
                     ReadCache r{};
                     r.channelNr = channel;
                     r.readNr = readNr;
-                    mutex.lock();
+                    readMutex.lock();
                     reads.push(r);
-                    mutex.unlock();
+                    readMutex.unlock();
                     uniqueReadIds.push_back(entry.second.id());
                 }
        		}
@@ -214,6 +339,7 @@ namespace readuntil
 
         std::thread readerThread(&Data::getLiveSignals, this);
         std::thread actionThread(&Data::addActions, this);
+        std::thread printThread(&Data::printResponseData, this);
 
 
         readerThread.join();
@@ -222,6 +348,8 @@ namespace readuntil
         stream->WritesDone();
 	    context.TryCancel();
         status = stream->Finish();
+
+        printThread.join();
 
         data_logger->debug(status.error_code());
         data_logger->debug(status.error_message());

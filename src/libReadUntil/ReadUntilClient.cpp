@@ -90,6 +90,8 @@ namespace readuntil
 		MinKnowService *s;
 		switch (type)
 		{
+			case ACQUISITION:
+				return new Acquisition(channel);
 			case INSTANCE:
 				return new Instance(channel);
 			case DATA:

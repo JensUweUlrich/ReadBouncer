@@ -9,6 +9,7 @@
 #include <thread>
 #include <string>
 #include <sstream>
+#include <fstream>
 #include <queue>
 #include <set>
 #include <mutex>
@@ -20,6 +21,7 @@
 
 #include "spdlog/spdlog.h"
 
+#include "Acquisition.hpp"
 #include "MinKnowService.hpp"
 #include "DataServiceException.hpp"
 
@@ -38,14 +40,31 @@ namespace readuntil
             string id{};
     };
 
+    struct ReadResponse
+    {
+        uint32 channelNr{};
+        uint32 readNr{};
+        uint8_t response{0};
+        double unblock_duration{0.0};
+        uint64 samples_since_start{};
+        double seconds_since_start{};
+        uint64 start_sample{};
+        uint64 chunk_start_sample{};
+        uint64 chunk_length{};
+    };
+
+
     class Data: public MinKnowService
     {
         private:
             std::unique_ptr<DataService::Stub> stub;
             std::unique_ptr<grpc::ClientReaderWriter<GetLiveReadsRequest, GetLiveReadsResponse>> stream;
+            readuntil::Acquisition *acq;
             std::queue<ReadCache> reads;
+            std::map<string, ReadResponse> responseCache;
             std::vector<std::string> uniqueReadIds;
-            std::mutex mutex;
+            std::mutex readMutex;
+            std::mutex responseMutex;
             std::shared_ptr<spdlog::logger> data_logger;
             bool runs = false;
             uint8_t unblockChannels;
@@ -54,8 +73,9 @@ namespace readuntil
             void createSetupMessage();
             void getLiveSignals();
             void addActions();
-            void addUnblockAction(GetLiveReadsRequest_Actions *actionList, ReadCache &read);
+            void addUnblockAction(GetLiveReadsRequest_Actions *actionList, ReadCache &read, const double unblock_duration);
             void addStopReceivingDataAction(GetLiveReadsRequest_Actions *actionList, ReadCache &read);
+            void printResponseData();
         public:
             Data() = default;
             Data(std::shared_ptr<::grpc::Channel> channel);

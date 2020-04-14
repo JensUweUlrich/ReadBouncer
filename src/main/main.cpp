@@ -359,6 +359,17 @@ void run_program(cmd_arguments &args)
 		{
 			std::cerr << "Could not establish connection to MinKNOW or MinION device" << std::endl;
 		}
+
+		std::cout << "Waiting for device to start sequencing!" << ::std::endl;
+
+		readuntil::Acquisition *acq = (readuntil::Acquisition*) client.getMinKnowService(readuntil::MinKnowServiceType::ACQUISITION);
+
+		if (acq->hasStarted())
+		{
+			std::cout << "Sequencing has begun. Starting live signal processing!" << ::std::endl;
+		}
+
+
        	data = (readuntil::Data*) client.getMinKnowService(readuntil::MinKnowServiceType::DATA);
 
 		try
