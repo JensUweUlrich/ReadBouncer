@@ -226,14 +226,14 @@ namespace readuntil
                 responseMutex.unlock();
             }
 
-            ReadResponse r{};
+
             responseMutex.lock();
             if (!responseCache.empty())
             {
                 std::map<string,ReadResponse>::iterator it = responseCache.begin();
-                if((*it).second.response > 0 || (*it).second.unblock_duration < 0)
+                if((*it).second.unblock_duration < 0)
                 {
-                    ofs << (*it).second.id << "\t" << (*it).second.channelNr << "\t" << (*it).second.readNr << "\t" << (*it).second.response << "\t" << (*it).second.unblock_duration << "\t" << (*it).second.samples_since_start << "\t" << (*it).second.start_sample << "\t" << (*it).second.chunk_start_sample << "\t" << (*it).second.chunk_length << "\n";
+                    ofs << (*it).second.id << "\t" << (*it).second.channelNr << "\t" << (*it).second.readNr << "\t0\t" << (*it).second.unblock_duration << "\t" << (*it).second.samples_since_start << "\t" << (*it).second.start_sample << "\t" << (*it).second.chunk_start_sample << "\t" << (*it).second.chunk_length << "\n";
                     responseCache.erase(it);
                 }
             }
@@ -242,9 +242,10 @@ namespace readuntil
         }
 
         responseMutex.lock();
+        
         for (std::map<string,ReadResponse>::iterator it = responseCache.begin(); it != responseCache.end(); ++it)
         {
-            ofs << (*it).second.id << "\t" << (*it).second.channelNr << "\t" << (*it).second.readNr << "\t" << (*it).second.response << "\t" << (*it).second.unblock_duration << "\t" << (*it).second.samples_since_start << "\t" << (*it).second.start_sample << "\t" << (*it).second.chunk_start_sample << "\t" << (*it).second.chunk_length << "\n";
+            ofs << (*it).second.id << "\t" << (*it).second.channelNr << "\t" << (*it).second.readNr << "\t0\t" << (*it).second.unblock_duration << "\t" << (*it).second.samples_since_start << "\t" << (*it).second.start_sample << "\t" << (*it).second.chunk_start_sample << "\t" << (*it).second.chunk_length << "\n";
         }
         responseMutex.unlock();
         ofs.close();
