@@ -31,15 +31,14 @@ namespace readuntil
         data->set_duration(unblock_duration);
         action->set_number(read.readNr);
         std::stringstream buf;
-        buf << read.channelNr << "_" << read.readNr;
+        buf << "unblock_" << read.channelNr << "_" << read.readNr;
         responseMutex.lock();
-        std::map<string, ReadResponse>::iterator it = responseCache.find(buf.str());
+        std::map<string, ReadResponse>::iterator it = responseCache.find(buf.str().substr(8));
         if (it != responseCache.end())
         {
             (*it).second.unblock_duration = unblock_duration;
         }
         responseMutex.unlock();
-        buf << "unblock_" << buf.str();
         action->set_action_id(buf.str());
     }
 
@@ -168,7 +167,7 @@ namespace readuntil
         setup->set_first_channel(1);
         setup->set_last_channel(512);
         setup->set_raw_data_type(GetLiveReadsRequest_RawDataType_UNCALIBRATED);
-        setup->set_sample_minimum_chunk_size(4);
+        setup->set_sample_minimum_chunk_size(0);
 
         if (!stream->Write(setupRequest))
         {
@@ -191,7 +190,7 @@ namespace readuntil
                 std::map<string,ReadResponse>::iterator it = responseCache.begin();
                 if((*it).second.response > 0 || (*it).second.unblock_duration < 0)
                 {
-                    ofs << (*it).first << "\t" << (*it).second.channelNr << "\t" << (*it).second.readNr << "\t" << (*it).second.response << "\t" << (*it).second.unblock_duration << "\t" << (*it).second.samples_since_start << "\t" << (*it).second.start_sample << "\t" << (*it).second.chunk_start_sample << "\t" << (*it).second.chunk_length << "\n";
+                    ofs << (*it).second.id << "\t" << (*it).second.channelNr << "\t" << (*it).second.readNr << "\t" << (*it).second.response << "\t" << (*it).second.unblock_duration << "\t" << (*it).second.samples_since_start << "\t" << (*it).second.start_sample << "\t" << (*it).second.chunk_start_sample << "\t" << (*it).second.chunk_length << "\n";
                     responseCache.erase(it);
                 }
             }
@@ -202,7 +201,7 @@ namespace readuntil
         responseMutex.lock();
         for (std::map<string,ReadResponse>::iterator it = responseCache.begin(); it != responseCache.end(); ++it)
         {
-            ofs << (*it).first << "\t" << (*it).second.channelNr << "\t" << (*it).second.readNr << "\t" << (*it).second.response << "\t" << (*it).second.unblock_duration << "\t" << (*it).second.samples_since_start << "\t" << (*it).second.start_sample << "\t" << (*it).second.chunk_start_sample << "\t" << (*it).second.chunk_length << "\n";
+            ofs << (*it).second.id << "\t" << (*it).second.channelNr << "\t" << (*it).second.readNr << "\t" << (*it).second.response << "\t" << (*it).second.unblock_duration << "\t" << (*it).second.samples_since_start << "\t" << (*it).second.start_sample << "\t" << (*it).second.chunk_start_sample << "\t" << (*it).second.chunk_length << "\n";
         }
         responseMutex.unlock();
         ofs.close();
@@ -247,6 +246,7 @@ namespace readuntil
             {
                 // add action success/failed information to responseCache entry
                 std::string id(actResponse.action_id());
+                std::cout<<id<<std::endl;
                 if (id.rfind("unblock_",0) == 0)
                 {
                     id = id.substr(8);
@@ -294,6 +294,7 @@ namespace readuntil
                     ReadResponse respData{};
                     respData.channelNr = entry.first;
                     respData.readNr = entry.second.number();
+                    respData.id = entry.second.id();
                     respData.samples_since_start = response.samples_since_start();
                     respData.seconds_since_start = response.seconds_since_start();
                     respData.start_sample = entry.second.start_sample();

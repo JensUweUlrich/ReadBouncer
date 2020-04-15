@@ -44,6 +44,7 @@ namespace readuntil
     {
         uint32 channelNr{};
         uint32 readNr{};
+        string id{};
         uint8_t response{0};
         double unblock_duration{0.0};
         uint64 samples_since_start{};
