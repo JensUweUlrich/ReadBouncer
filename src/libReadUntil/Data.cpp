@@ -183,6 +183,49 @@ namespace readuntil
         ofs << "read_id\tchannel_nr\tread_nr\tresponse\tunblock_duration\tsamples_since_start\tseconds_since_start\tstart_sample\tchunk_start_sample\tchunk_length\n"; 
         while (isRunning())
         {
+            
+            string id{};
+
+            bool hasElement = false;
+            uint8_t success = 0;
+            respQueueMutex.lock();
+            // take response out of the queue if it's not empty
+            if (!responseQueue.empty())
+            {
+                id = responseQueue.front().action_id();
+                switch(responseQueue.front().response())
+                {
+                    case GetLiveReadsResponse_ActionResponse_Response_SUCCESS:
+                        success = 1;
+                        break;
+                    case GetLiveReadsResponse_ActionResponse_Response_FAILED_READ_FINISHED:
+                        success = 2;
+                        break;
+                }
+                hasElement = true;
+                responseQueue.pop();
+            }
+            respQueueMutex.unlock();
+
+            if (hasElement)
+            {
+                // add action success/failed information to responseCache entry
+                
+                if (id.rfind("unblock_",0) == 0)
+                {
+                    id = id.substr(8);
+                }
+                
+                responseMutex.lock();
+                std::map<string, ReadResponse>::iterator it = responseCache.find(id);
+                if (it != responseCache.end())
+                {
+                    ofs << (*it).second.id << "\t" << (*it).second.channelNr << "\t" << (*it).second.readNr << "\t" << success << "\t" << (*it).second.unblock_duration << "\t" << (*it).second.samples_since_start << "\t" << (*it).second.start_sample << "\t" << (*it).second.chunk_start_sample << "\t" << (*it).second.chunk_length << "\n";
+                    responseCache.erase(it);
+                }
+                responseMutex.unlock();
+            }
+
             ReadResponse r{};
             responseMutex.lock();
             if (!responseCache.empty())
@@ -242,32 +285,11 @@ namespace readuntil
 
             runs = true;
             
+            
+            respQueueMutex.lock();
         	for (GetLiveReadsResponse_ActionResponse actResponse : response.action_reponses())
             {
-                // add action success/failed information to responseCache entry
-                std::string id(actResponse.action_id());
-                std::cout<<id<<std::endl;
-                if (id.rfind("unblock_",0) == 0)
-                {
-                    id = id.substr(8);
-                }
-                responseMutex.lock();
-                std::map<string, ReadResponse>::iterator it = responseCache.find(id);
-                if (it != responseCache.end())
-                {
-                    switch(actResponse.response())
-                    {
-                        case GetLiveReadsResponse_ActionResponse_Response_SUCCESS:
-                            (*it).second.response = 1;
-                            break;
-                        case GetLiveReadsResponse_ActionResponse_Response_FAILED_READ_FINISHED:
-                            (*it).second.response = 2;
-                            break;
-                    }
-                }
-                responseMutex.unlock();
-
-
+                responseQueue.push(actResponse);
                 actNr++;
                 switch (actResponse.response())
                 {
@@ -279,6 +301,8 @@ namespace readuntil
                         break;
                 }
             }
+            respQueueMutex.unlock();
+            
             std::stringstream ss;
             ss << "Success/Failed rate = " << success <<"/" << failed; 
             data_logger->info(ss.str());

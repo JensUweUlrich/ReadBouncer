@@ -62,10 +62,12 @@ namespace readuntil
             std::unique_ptr<grpc::ClientReaderWriter<GetLiveReadsRequest, GetLiveReadsResponse>> stream;
             readuntil::Acquisition *acq;
             std::queue<ReadCache> reads;
+            std::queue<GetLiveReadsResponse_ActionResponse> responseQueue;
             std::map<string, ReadResponse> responseCache;
             std::vector<std::string> uniqueReadIds;
             std::mutex readMutex;
             std::mutex responseMutex;
+            std::mutex respQueueMutex;
             std::shared_ptr<spdlog::logger> data_logger;
             bool runs = false;
             uint8_t unblockChannels;
