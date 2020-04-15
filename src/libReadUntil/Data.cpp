@@ -187,7 +187,7 @@ namespace readuntil
             string id{};
 
             bool hasElement = false;
-            uint8_t success = 0;
+            string success = "none";
             respQueueMutex.lock();
             // take response out of the queue if it's not empty
             if (!responseQueue.empty())
@@ -196,10 +196,10 @@ namespace readuntil
                 switch(responseQueue.front().response())
                 {
                     case GetLiveReadsResponse_ActionResponse_Response_SUCCESS:
-                        success = 1;
+                        success = "success";
                         break;
                     case GetLiveReadsResponse_ActionResponse_Response_FAILED_READ_FINISHED:
-                        success = 2;
+                        success = "failed";
                         break;
                 }
                 hasElement = true;
@@ -233,7 +233,7 @@ namespace readuntil
                 std::map<string,ReadResponse>::iterator it = responseCache.begin();
                 if((*it).second.unblock_duration < 0)
                 {
-                    ofs << (*it).second.id << "\t" << (*it).second.channelNr << "\t" << (*it).second.readNr << "\t0\t" << (*it).second.unblock_duration << "\t" << (*it).second.samples_since_start << "\t" << (*it).second.start_sample << "\t" << (*it).second.chunk_start_sample << "\t" << (*it).second.chunk_length << "\n";
+                    ofs << (*it).second.id << "\t" << (*it).second.channelNr << "\t" << (*it).second.readNr << "\t none\t" << (*it).second.unblock_duration << "\t" << (*it).second.samples_since_start << "\t" << (*it).second.start_sample << "\t" << (*it).second.chunk_start_sample << "\t" << (*it).second.chunk_length << "\n";
                     responseCache.erase(it);
                 }
             }
@@ -245,7 +245,7 @@ namespace readuntil
         
         for (std::map<string,ReadResponse>::iterator it = responseCache.begin(); it != responseCache.end(); ++it)
         {
-            ofs << (*it).second.id << "\t" << (*it).second.channelNr << "\t" << (*it).second.readNr << "\t0\t" << (*it).second.unblock_duration << "\t" << (*it).second.samples_since_start << "\t" << (*it).second.start_sample << "\t" << (*it).second.chunk_start_sample << "\t" << (*it).second.chunk_length << "\n";
+            ofs << (*it).second.id << "\t" << (*it).second.channelNr << "\t" << (*it).second.readNr << "\tnone\t" << (*it).second.unblock_duration << "\t" << (*it).second.samples_since_start << "\t" << (*it).second.start_sample << "\t" << (*it).second.chunk_start_sample << "\t" << (*it).second.chunk_length << "\n";
         }
         responseMutex.unlock();
         ofs.close();
