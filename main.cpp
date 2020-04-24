@@ -10,13 +10,19 @@
 #include <stdio.h> //
 #include <stdlib.h> //
 #include<time.h> //
-#include <seqan3/range/container/dynamic_bitset.hpp>//
+#include <list>   
+#include"tp.hpp"
+
+#include <numeric>
+
 #include "customBloomFilter.hpp"
 #include "bloom_filter.hpp"
 #include "bloomFilterException.hpp"
 #include <seqan3/search/kmer_index/shape.hpp>
 #include <seqan3/range/container/bitcompressed_vector.hpp>//
 #include "minimizer3.hpp"
+
+
 
 #include <seqan3/alphabet/nucleotide/dna4.hpp>
 #include <seqan3/alphabet/nucleotide/dna5.hpp>
@@ -34,8 +40,10 @@
 
 #include <seqan3/range/views/convert.hpp>
 
+
 using namespace seqan3;
 //using namespace shape;
+
 
 
 
@@ -54,14 +62,8 @@ struct cmd_arguments
 		float error_rate
 		{ 0.05 };
 };
-/* kurze Beschreibung der Funktion : 
-Die Funktion Shape_generator_seqan bekommt in main ein seqan::shape ungapped oder bin_literal . Der Unterschied ist , dass bei 
-ungapped_shape die Funktion ein ungapped_shape der Länge n bekommt , wobei in bin_literal die Funktion eine dezimale Darstellung 
-bekommt und davon ein ungapped shape(z.B bin_literal{1048575} = ein ungapped_shape der Länge 20 )erzeugt, 
-dann durch die Funktion werden die Fehlerrate bzw. Filter erledigt . 
-- Die Funktion kann auch die shape in Vektor pushen . 
-- Test in Zeile 381 
- */
+
+ 
 
 
 //  korrigiert am 08.04.2020 um 14:21:41 Uhr 
@@ -78,12 +80,17 @@ void shape_generator_seqan(seqan3::shape s, unsigned long long i) // Funktion en
            if (x > 5 ){// Fehlerrate 
                return ;// tue nix
            }
-		   else if (s[0]==0  | s[5]==0){return ;}//die Bedingung aus Seqan3
+		   else if (s[0]==0  | s[24]==0){return ;}//die Bedingung aus Seqan3
            else {
-			   
+			  // s[i];
 			 seqan3::debug_stream << s[i] <<"";
 			 
+			 /*std::cout<<std::endl;
+			 std::vector<seqan3::shape> vec ;
+             vec.push_back(s);
+             seqan3::debug_stream << vec.front() <<"";*/
 			 
+			
 			 
 			 
 			 
@@ -192,7 +199,7 @@ uint64_t computeMinimizer(const std::vector<std::filesystem::path> &refFilePaths
 
 	
    
-    seqan3::shape t2{seqan3::ungapped{31}};
+    seqan3::shape t2{seqan3::bin_literal{0b1000111111111111111110011111111}};
 	minimizer.setGappedShape(t2); 
 	 
 
@@ -282,7 +289,7 @@ bool bottom_up_sketching(dna4_vector &read, CustomBloomFilter &bf)
 	minimizer.setWindowSize(50);
 
 
-	seqan3::shape t2{seqan3::ungapped{31}};
+	seqan3::shape t2{seqan3::bin_literal{0b1000111111111111111110011111111}};
 	//seqan3::shape t2{seqan3::bin_literal{0b1001111111011111110111011111111}};
 	
 	minimizer.setGappedShape(t2);
@@ -300,14 +307,34 @@ bool bottom_up_sketching(dna4_vector &read, CustomBloomFilter &bf)
 		if (bf.contains(minimizer))
 		{
 			++num_containments;
+
 		}
+
+
 	}
 	//debug_stream << std::endl;
 	end = std::chrono::high_resolution_clock::now();
 	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
 	debug_stream << "used time: " << duration << "\n";
 	debug_stream << "Number of minimizer Containments: " << num_containments << "/" << sketch.size() << std::endl;
+
+// to do again 
+
+
+	double NbMinimizer = double(num_containments)/double(sketch.size());
+	std::vector<double> minimizer_vector;
+	minimizer_vector.push_back(NbMinimizer);
+	double sum_of_elems = 0.0;
+	for(std::vector<double>::iterator it = minimizer_vector.begin(); it != minimizer_vector.end(); ++it)
+    sum_of_elems += *it;
+	debug_stream<<"Number of all minimizer "<<sum_of_elems<< "\n";
+
+	
+
+
+
 	return (double(num_containments) / double(sketch.size())) > 0.15;
+
 }
 
 /**
@@ -353,9 +380,11 @@ void run_program(cmd_arguments &args)
 		{
 			num_query_reads++;
 			dna4_vector query = get<field::SEQ>(record) | seqan3::views::convert<seqan3::dna4> | ranges::to<std::vector<seqan3::dna4>>();
-			for (int i = 1; i <= 3; ++i)
+			for (int i = 1; i <= 3; ++i) // for schleife rausnehmen , bzw, (i*100)
 			{
-				std::vector<dna4> read(query.begin() + 100 + (i * 500), query.begin() + 100 + ((i + 1) * 500));
+				//std::vector<dna4> read(query.begin() + 100 + (i * 500), query.begin() + 100 + ((i + 1) * 500));// die ersten 500 Basen werden genommen 
+				//std::vector<dna4> read(query.begin() + 100 )); check in seqan3 dna4
+				std::vector<dna4> read(query.begin() + 100 + (i * 100), query.begin() + 100 + ((i + 1) * 100));
 				if (bottom_up_sketching(read, bf))
 				{
 					num_contained_reads++;
@@ -370,10 +399,47 @@ void run_program(cmd_arguments &args)
 
 		}
 		debug_stream << "Number of contained reads: " << num_contained_reads << "/" << num_query_reads;
+		//######################################################
+
+
+		
+
+
 		// TODO calculate containment of sketches in reference bloom filter
 	}
 }
+//###################################################### Threading #########################################
+/*
+Pseudocode : 
+Void testeAlles(shape s , parameter for BlommFilter , reference fast , reads fastq) 
+{
+creatBloomFilter();
+BerechneGefundeneMinimizerDerReadsInBF();
+}
 
+main(args)
+{
+Vector<shape> vac = shapeGenerator();
+//threadpool mit max größe 12 … list , vector oder ähnliches  
+threadpool tp[12];
+For (vector<shape>::iterator it = vec.begin();it!=vec.end;++it)
+{
+Std::thread t()testeAlles , *it , andere Parameter);
+Füge t zu threadpool hinzu;
+If (maximale größe von threadpool erreicht ){
+Erste shape kommt -> erste thread generiert 
+Dieses thread in thread Pool hinzufügen 
+If (maximal) hat 
+
+Thread.join() 
+}
+
+}
+}
+
+*/
+
+ 
 int main(int argc, char const **argv)
 {
 	
@@ -381,8 +447,19 @@ int main(int argc, char const **argv)
 
 // new function dieses Test ist fuer gapped shape der Laenge 6 entspricht 63 in Binaerdarstellung
 		//seqan3::shape s {seqan3::ungapped{6}};
-		seqan3::shape s{seqan3::bin_literal{63}};
-		shape_generator_seqan(s,0);
+		// shape der Laenge 25 
+		{//g++ -std=c++17 -Ofast -o b example.cpp 
+		// old 1,14 minuten , in main thread : 10 seconds 
+		ThreadPool pool {2};
+		pool.enqueue([]{
+                seqan3::shape s{seqan3::bin_literal{33554431}}; //25
+				//seqan3::shape s{seqan3::bin_literal{1073741823}}; // 30 
+				//seqan3::shape s{seqan3::bin_literal{2147483647}}; //31
+                shape_generator_seqan(s,0);
+          });}
+
+
+
 
 
 
