@@ -1,4 +1,4 @@
-// issue : Zeile 324 alle Minimizer aussummieren 
+// issue : Zeile 324 alle Minimizer aufsummieren 
 #include <string>
 #include <vector>
 #include <math.h>
