@@ -1,4 +1,3 @@
-// issue : Zeile 324 alle Minimizer aufsummieren 
 #include <string>
 #include <vector>
 #include <math.h>
@@ -48,6 +47,8 @@ using namespace seqan3;
 
 
 
+
+
 struct cmd_arguments
 {
 		std::vector<std::filesystem::path> sequence_files
@@ -64,7 +65,6 @@ struct cmd_arguments
 		{ 0.05 };
 };
 
- 
 
 
 //  korrigiert am 08.04.2020 um 14:21:41 Uhr 
@@ -280,6 +280,7 @@ void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::
 	filter.writeToFile(output);
 }
 
+
 bool bottom_up_sketching(dna4_vector &read, CustomBloomFilter &bf)
 {
 	std::chrono::high_resolution_clock::time_point begin, end;
@@ -294,6 +295,7 @@ bool bottom_up_sketching(dna4_vector &read, CustomBloomFilter &bf)
 	//seqan3::shape t2{seqan3::bin_literal{0b1001111111011111110111011111111}};
 	
 	minimizer.setGappedShape(t2);
+     
 
 
 
@@ -301,17 +303,34 @@ bool bottom_up_sketching(dna4_vector &read, CustomBloomFilter &bf)
 	std::vector<uint64_t> sketch = minimizer.getMinimizerHashValues(read);
 	int num_containments
 	{ 0 };
+
+
+
+	
+	/*for(uint64_t i = 0 ; i <= bf.size() ; i++){//
+	double NbMinimizer = double(num_containments)/double(sketch.size()); //
+	minimizer_vector.push_back(NbMinimizer);//
+	if (i = bf.size()-1){//
+		for(std::vector<double>::iterator it = minimizer_vector.begin(); it != minimizer_vector.end(); ++it)//
+        sum_of_elems += *it;//
+		debug_stream<<"Number of all minimizer "<<sum_of_elems<< "\n";//
+
+	}
+
+	}*/
+	
 	//debug_stream << sketch.size() << "\n";
+ 
 	for (uint64_t minimizer : sketch)
 	{
+		
+		
 		//debug_stream << minimizer << " ";
 		if (bf.contains(minimizer))
 		{
+			
 			++num_containments;
-
 		}
-
-
 	}
 	//debug_stream << std::endl;
 	end = std::chrono::high_resolution_clock::now();
@@ -320,19 +339,62 @@ bool bottom_up_sketching(dna4_vector &read, CustomBloomFilter &bf)
 	debug_stream << "Number of minimizer Containments: " << num_containments << "/" << sketch.size() << std::endl;
 
 // to do again 
-
-
-	double NbMinimizer = double(num_containments)/double(sketch.size());
-	std::vector<double> minimizer_vector;
-	minimizer_vector.push_back(NbMinimizer);
-	double sum_of_elems = 0.0;
-	for(std::vector<double>::iterator it = minimizer_vector.begin(); it != minimizer_vector.end(); ++it)
-    sum_of_elems += *it;
-	debug_stream<<"Number of all minimizer "<<sum_of_elems<< "\n";
+// global variable , dann NbMinimizer dazu aufsummieren  . -> mit der letzten aufsummieren 
+//  also NbMinimizer ++= damit es aufsumiert wird 
 
 	
+	
+//##################################-1-###############################
 
 
+//##################################################	
+
+	/*for (unsigned i = 0 ; i < 31  ; i++) {
+		double  NbMinimizer = (double(num_containments) / double(sketch.size()));
+		sum_of_elems += NbMinimizer; 
+		debug_stream<<"Number of all minimizer "<<sum_of_elems<< "\n";
+	}*/
+	
+	//#################################-2-################################
+	/*NbMinimizer = (double(num_containments) / double(sketch.size()));//
+	for(NbMinimizer = (double(num_containments) / double(sketch.size())) ; NbMinimizer <= minimizer_vector.size(); NbMinimizer++ )
+	{
+		minimizer_vector.push_back(NbMinimizer);
+		debug_stream <<"the new idea "<<minimizer_vector[NbMinimizer]  <<"\n";
+
+	}
+
+	/*for (;num_containments<= sketch.size() ;num_containments++ ){
+		double NbMinimizer = (double(num_containments) / double(sketch.size()));
+		minimizer_vector.push_back(NbMinimizer);
+		debug_stream << minimizer_vector[NbMinimizer] <<"\n";
+
+	}*/
+
+double sum = 0.0 ; 
+int n; 
+std::vector<double> minimizer_vector(n);
+double NbMinimizer;
+for (int i = 0 ; i <= n ; i++){
+	NbMinimizer = (double(num_containments) / double(sketch.size()));
+	minimizer_vector.push_back(NbMinimizer);
+	sum = sum + NbMinimizer;
+	debug_stream<< minimizer_vector [i] << "\n";
+	//debug_stream<< "Number of all Elements : " << sum << "\n";
+}
+// Problem :  Vector wird immer und wieder leer !!!!! 
+/*std::vector<double> minimizer_vector ; 
+double x = (double(num_containments) / double(sketch.size()));
+if(minimizer_vector.empty()){
+	minimizer_vector.push_back(x); 
+	for (auto y :minimizer_vector ){
+		debug_stream<<"y is : " << y <<"\n";
+	}
+	
+}*/
+
+
+	//#################################################################
 
 	return (double(num_containments) / double(sketch.size())) > 0.15;
 
@@ -384,8 +446,9 @@ void run_program(cmd_arguments &args)
 			for (int i = 1; i <= 3; ++i) // for schleife rausnehmen , bzw, (i*100)
 			{
 				//std::vector<dna4> read(query.begin() + 100 + (i * 500), query.begin() + 100 + ((i + 1) * 500));// die ersten 500 Basen werden genommen 
-				//std::vector<dna4> read(query.begin() + 100 )); check in seqan3 dna4
-				std::vector<dna4> read(query.begin() + 100 + (i * 100), query.begin() + 100 + ((i + 1) * 100));
+				//std::vector<dna4> read(query.begin() + 100 , query.end()); //check in seqan3 dna4
+				//std::vector<dna4> read(query.begin() + 100 ); //error 
+			   std::vector<dna4> read(query.begin() + 100 + (i * 100), query.begin() + 100 + ((i + 1) * 100));
 				if (bottom_up_sketching(read, bf))
 				{
 					num_contained_reads++;
