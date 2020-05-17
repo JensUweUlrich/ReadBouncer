@@ -1,4 +1,4 @@
-/*
+/* ThreadingALL function
 1) Funktion erstellen ... done
 2) ComputeMinimizer aufrufen ....done
 3) CreatBloomFilter aufrufen ....done
