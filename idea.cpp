@@ -31,10 +31,10 @@ CreatBloomFilter(s,...)
 }
 // TODO :
 /*
-1) add sleep to header ThreadPool 
-2) Creat BloomFilter soll keine Ausgaben mehr haben 
+1) add sleep to header ThreadPool // done
+2) Creat BloomFilter soll keine Ausgaben mehr haben // nachher
 3) ComputeMinimizer auch 
-4) Defeniere Vector von Shapes als glbale Variable , dann die Shapes zu dem Hinzufügen dann verwenden 
+4) Defeniere Vector von Shapes als glbale Variable , dann die Shapes zu dem Hinzufügen dann verwenden // done
 in Sketching und Minimizer 
 5) Addiere eine neue Parameter zu run_programm, ComputeMinimizer, Sketching
 */ 
