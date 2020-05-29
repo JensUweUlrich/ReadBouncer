@@ -99,6 +99,8 @@ namespace readuntil
                                 (*it).second.unblock_duration = -1.0;
                             }
                             responseMutex.unlock();
+                            addStopReceivingDataAction(actionList, read);
+                            counter++;
                             break;
                         }
                         case 1:
@@ -107,6 +109,11 @@ namespace readuntil
                             if (read.readNr % 2 == 1)
                             {
                                 addUnblockAction(actionList, read, 1.0);
+                                counter++;
+                            }
+                            else
+                            {
+                                addStopReceivingDataAction(actionList, read);
                                 counter++;
                             }
                             break;
@@ -119,6 +126,11 @@ namespace readuntil
                                 addUnblockAction(actionList, read, 0.1);
                                 counter++;
                             }
+                            else
+                            {
+                                addStopReceivingDataAction(actionList, read);
+                                counter++;
+                            }
                             break;
                         }
                         case 3:
@@ -127,6 +139,11 @@ namespace readuntil
                             if (read.readNr % 4 == 0)
                             {
                                 addUnblockAction(actionList, read, 0.1);
+                                counter++;
+                            }
+                            else
+                            {
+                                addStopReceivingDataAction(actionList, read);
                                 counter++;
                             }
                             break;
