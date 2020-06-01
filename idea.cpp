@@ -7,6 +7,7 @@ threading_all{
     for(shape s in shapes )
     {
         while (active_threads == 25)
+        {
         
             sleep(1000); // damit ist 1 Sekunbde gemeint , nachschauen  --> In Header hinzufügen , nachschauen 
 
@@ -14,6 +15,7 @@ threading_all{
         thread t = thread(run_program ,s)
         active_threads++;
         t.start();
+        }
     }
 }
 // die Idee ist es , nach jedem Thread eine Puase zu haben von 1 Sekunde #+
