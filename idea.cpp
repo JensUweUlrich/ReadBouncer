@@ -1,4 +1,4 @@
-//Not run
+//Not run --still in progress--
 // defeniere eine globale Variable int active_threads = 0 ; 
 // Die Funktion Threading All 
 threading_all{
@@ -37,6 +37,6 @@ CreatBloomFilter(s,...)
 2) Creat BloomFilter soll keine Ausgaben mehr haben // nachher
 3) ComputeMinimizer auch 
 4) Defeniere Vector von Shapes als glbale Variable , dann die Shapes zu dem Hinzufügen dann verwenden // done
-in Sketching und Minimizer 
-5) Addiere eine neue Parameter zu run_programm, ComputeMinimizer, Sketching
+in Sketching und Minimizer // done
+5) Addiere eine neue Parameter zu run_programm, ComputeMinimizer, Sketching//done
 */ 
