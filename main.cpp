@@ -5,13 +5,14 @@
 #include <csignal>
 #include <cmath>
 #include <algorithm> //
-#include <iostream> // 
+#include <iostream> //
 #include<iterator> //
 #include <stdio.h> //
 #include <stdlib.h> //
 #include<time.h> //
-#include <list>   
+#include <list>
 #include"tp.hpp"
+#include <thread>
 
 #include <numeric>
 
@@ -42,12 +43,12 @@
 
 
 using namespace seqan3;
-//using namespace shape;
 
 
 
 
 
+double Minimizer::NumberOfMinimizer = 0.0;
 
 struct cmd_arguments
 {
@@ -67,41 +68,43 @@ struct cmd_arguments
 
 
 
-//  korrigiert am 08.04.2020 um 14:21:41 Uhr 
-void shape_generator_seqan(seqan3::shape s, unsigned long long i) // Funktion enthaelt shape aus seqan::shape (ungapped oder bin_literal) & index 
+std::vector<seqan3::shape> shapes_vector;
+void shape_generator_seqan(seqan3::shape s, unsigned long long i) // Funktion enthaelt shape aus seqan::shape (ungapped oder bin_literal) & index
 {
-	
-	std::vector<seqan3::shape> vect;  // shapes-Vektor
-	vect.push_back(s);
-	while (i == std::ranges::size(s)){	
-      unsigned long long x = std::count(s.begin(), s.end(), 0);	
-	  
-	  
+
+	//std::vector<seqan3::shape> vect;  // shapes-Vektor
+	shapes_vector.push_back(s);
+	while (i == std::ranges::size(s)){
+      unsigned long long x = std::count(s.begin(), s.end(), 0);
+
+
 	  for(unsigned long long i = 0 ; i != std::ranges::size(s); i++ )
-           if (x > 5 ){// Fehlerrate 
+           if (x > 5 ){// we allow just [0..5] errors
                return ;// tue nix
            }
 		   else if (s[0]==0  | s[24]==0){return ;}//die Bedingung aus Seqan3
            else {
 			  // s[i];
 			 seqan3::debug_stream << s[i] <<"";
-			 
+
 			 /*std::cout<<std::endl;
 			 std::vector<seqan3::shape> vec ;
              vec.push_back(s);
              seqan3::debug_stream << vec.front() <<"";*/
-			 
-			
-			 
-			 
-			 
+               //vect.push_back(s);
+            /*   for (seqan3::shape s1:vect){
+                 seqan3::debug_stream << s1 <<"";
+               }*/
+
+
+
           }
     std::cout<<std::endl;
     return; }
     unsigned long long zeros = 0;
     s[i] = zeros;
     shape_generator_seqan(s, i + 1);
-    unsigned long long ones = 1; 
+    unsigned long long ones = 1;
     s[i] = ones;
     shape_generator_seqan(s, i + 1);
 }
@@ -190,19 +193,27 @@ bool checkWriteAccessRights(std::filesystem::path &file)
 /**
  **
  **/
-uint64_t computeMinimizer(const std::vector<std::filesystem::path> &refFilePaths, const uint16_t &kMerSize, std::vector<std::vector<uint64_t>> &sketch_vector)
+uint64_t computeMinimizer(const std::vector<std::filesystem::path> &refFilePaths, const uint16_t &kMerSize, std::vector<std::vector<uint64_t>> &sketch_vector, seqan3::shape s)
 {
-	Minimizer minimizer
+	Minimizer minimizer // wird 25 mal verwendet , kann nie als global sein
 	{ };
 	minimizer.setKmerSize(kMerSize);
 	minimizer.setWindowSize(50);
 
 
-	
-   
-    seqan3::shape t2{seqan3::bin_literal{0b1000111111111111111110011111111}};
-	minimizer.setGappedShape(t2); 
-	 
+
+
+   //seqan3::shape t2{seqan3::bin_literal{0b1000111111111111111110011111111}};
+	 minimizer.setGappedShape(s);
+/* Minimizer Objekt nutzen, um wiederzuverwenden
+in dem Header von minimizer nachgucken, ob irgendwo etwas gepseichert wird
+Nihct die Funkt setGappedShape () irgendwas gespeichert wird */
+/*for (seqan3::shape t2 : shapes_vector)// zusätzliches hinzufügen
+{
+ minimizer.setGappedShape(t2);
+}*/
+
+
 
 
 	uint64_t minimizer_number = 0;
@@ -235,7 +246,7 @@ uint64_t computeMinimizer(const std::vector<std::filesystem::path> &refFilePaths
 	return minimizer_number;
 }
 
-void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::filesystem::path &output, const float error_rate, uint16_t kMerSize)
+void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::filesystem::path &output, const float error_rate, uint16_t kMerSize,seqan3::shape s)
 {
 	if (!checkWriteAccessRights(output))
 	{
@@ -251,7 +262,7 @@ void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::
 	bloom_parameters parameters;
 
 	// How many elements roughly do we expect to insert?
-	parameters.projected_element_count = computeMinimizer(refFilePaths, kMerSize, sketch_vector);
+	parameters.projected_element_count = computeMinimizer(refFilePaths, kMerSize, sketch_vector,s);
 
 	// Maximum tolerable false positive probability? (0,1)
 	parameters.false_positive_probability = error_rate; // 1 in 10000
@@ -281,21 +292,32 @@ void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::
 }
 
 
-bool bottom_up_sketching(dna4_vector &read, CustomBloomFilter &bf)
+
+
+bool bottom_up_sketching(dna4_vector &read, CustomBloomFilter &bf,seqan3::shape s)
 {
+	//ThreadPool pool {25};
+	//pool.enqueue([] {
+	//	CustomBloomFilter bf;
+	//	dna4_vector read;
+
 	std::chrono::high_resolution_clock::time_point begin, end;
 	begin = std::chrono::high_resolution_clock::now();
 	Minimizer minimizer
 	{ };
 	minimizer.setKmerSize(bf.kMerSize);
 	minimizer.setWindowSize(50);
+	//seqan3::shape t2{seqan3::bin_literal{0b1000111111111111111110011111111}};
+	minimizer.setGappedShape(s);
 
-
-	seqan3::shape t2{seqan3::bin_literal{0b1000111111111111111110011111111}};
+	//seqan3::shape t2{seqan3::bin_literal{0b1000111111111111111110011111111}};
 	//seqan3::shape t2{seqan3::bin_literal{0b1001111111011111110111011111111}};
-	
+/*for (seqan3::shape t2 : shapes_vector)
+{
 	minimizer.setGappedShape(t2);
-     
+}
+//	minimizer.setGappedShape(t2);*/
+
 
 
 
@@ -304,101 +326,43 @@ bool bottom_up_sketching(dna4_vector &read, CustomBloomFilter &bf)
 	int num_containments
 	{ 0 };
 
-
-
-	
-	/*for(uint64_t i = 0 ; i <= bf.size() ; i++){//
-	double NbMinimizer = double(num_containments)/double(sketch.size()); //
-	minimizer_vector.push_back(NbMinimizer);//
-	if (i = bf.size()-1){//
-		for(std::vector<double>::iterator it = minimizer_vector.begin(); it != minimizer_vector.end(); ++it)//
-        sum_of_elems += *it;//
-		debug_stream<<"Number of all minimizer "<<sum_of_elems<< "\n";//
-
-	}
-
-	}*/
-	
 	//debug_stream << sketch.size() << "\n";
- 
+
 	for (uint64_t minimizer : sketch)
 	{
-		
-		
+
+
 		//debug_stream << minimizer << " ";
 		if (bf.contains(minimizer))
 		{
-			
+
 			++num_containments;
 		}
 	}
+
+
+
+
+
+
+
 	//debug_stream << std::endl;
 	end = std::chrono::high_resolution_clock::now();
 	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
 	debug_stream << "used time: " << duration << "\n";
 	debug_stream << "Number of minimizer Containments: " << num_containments << "/" << sketch.size() << std::endl;
 
-// to do again 
-// global variable , dann NbMinimizer dazu aufsummieren  . -> mit der letzten aufsummieren 
-//  also NbMinimizer ++= damit es aufsumiert wird 
 
-	
-	
-//##################################-1-###############################
+// The number of minimizer for sensitivity
+	double NbMinimizer = (double(num_containments) / double(sketch.size()));
+	Minimizer::NumberOfMinimizer= Minimizer::NumberOfMinimizer+ NbMinimizer;
+	debug_stream<<"The number of minimizer is  : " <<Minimizer::NumberOfMinimizer<<"\n";
 
 
-//##################################################	
-
-	/*for (unsigned i = 0 ; i < 31  ; i++) {
-		double  NbMinimizer = (double(num_containments) / double(sketch.size()));
-		sum_of_elems += NbMinimizer; 
-		debug_stream<<"Number of all minimizer "<<sum_of_elems<< "\n";
-	}*/
-	
-	//#################################-2-################################
-	/*NbMinimizer = (double(num_containments) / double(sketch.size()));//
-	for(NbMinimizer = (double(num_containments) / double(sketch.size())) ; NbMinimizer <= minimizer_vector.size(); NbMinimizer++ )
-	{
-		minimizer_vector.push_back(NbMinimizer);
-		debug_stream <<"the new idea "<<minimizer_vector[NbMinimizer]  <<"\n";
-
-	}
-
-	/*for (;num_containments<= sketch.size() ;num_containments++ ){
-		double NbMinimizer = (double(num_containments) / double(sketch.size()));
-		minimizer_vector.push_back(NbMinimizer);
-		debug_stream << minimizer_vector[NbMinimizer] <<"\n";
-
-	}*/
-
-double sum = 0.0 ; 
-int n; 
-std::vector<double> minimizer_vector(n);
-double NbMinimizer;
-for (int i = 0 ; i <= n ; i++){
-	NbMinimizer = (double(num_containments) / double(sketch.size()));
-	minimizer_vector.push_back(NbMinimizer);
-	sum = sum + NbMinimizer;
-	debug_stream<< minimizer_vector [i] << "\n";
-	//debug_stream<< "Number of all Elements : " << sum << "\n";
-}
-// Problem :  Vector wird immer und wieder leer !!!!! 
-/*std::vector<double> minimizer_vector ; 
-double x = (double(num_containments) / double(sketch.size()));
-if(minimizer_vector.empty()){
-	minimizer_vector.push_back(x); 
-	for (auto y :minimizer_vector ){
-		debug_stream<<"y is : " << y <<"\n";
-	}
-	
-}*/
-
-
-	//#################################################################
 
 	return (double(num_containments) / double(sketch.size())) > 0.15;
-
-}
+	//});
+	}
 
 /**
  * core method to run the program depending on the switched mode given
@@ -406,11 +370,71 @@ if(minimizer_vector.empty()){
  */
 
 
-void run_program(cmd_arguments &args)
+/*
+Die Funktion testAlles besteht aus :
+seqan3::shape s : Aus Shape_generator
+bloom_parameters &b : alle Bloomfilter Parameters fuer CreatBloomFilter
+std::vector<std::filesystem::path> &refFilePaths : Die Referenzsequenz
+std::filesystem::path query_read_file : Readsequenz
+cmd_arguments &args : Fuer alle Argumente des BloomFilter
+*/
+
+/*void threading_all(seqan3::shape s , bloom_parameters &b , std::vector<std::filesystem::path> &refFilePaths ,std::filesystem::path query_read_file ,
+cmd_arguments &args)
+ {
+	 {
+	 // 0) call the function shape_generator for the local shape s
+		 seqan3::shape s{seqan3::bin_literal{33554431}};// set shape with length 25
+	     shape_generator_seqan(s,0); // calculate all possible shapes with the length 25
+
+	 //1) Compute Minimizer using the shapes s
+		 Minimizer minimizer
+	    { };
+	    minimizer.setGappedShape(s);
+	    std::vector<std::vector<uint64_t>> sketch_vector
+	    { };
+		uint16_t kMerSize;
+
+	 // compute optimal parameters for the bloom filter creation
+
+	    bloom_parameters parameters;
+
+	// How many elements roughly do we expect to insert?
+
+	    parameters.projected_element_count = computeMinimizer(refFilePaths,kMerSize, sketch_vector);
+	    create_bloom_filter(args.sequence_files, args.bloom_filter_output_path, args.error_rate, args.size_k);
+
+	// 2) bottum up sketching
+	    //bottom_up_sketching(dna4_vector &read, CustomBloomFilter &bf);
+	    std::vector<uint64_t> sketch ;
+	    int num_containments
+	    { 0 };
+
+    // 3) Count Minimizer
+	// The number of minimizer for sensitivity
+
+        std::vector<double> MinimizerVector;
+	    double NbMinimizer = (double(num_containments) / double(sketch.size()));
+	    Minimizer::NumberOfMinimizer= Minimizer::NumberOfMinimizer+ NbMinimizer;
+	    MinimizerVector.push_back(Minimizer::NumberOfMinimizer);
+	    debug_stream<<"The number of minimizer is  : " <<Minimizer::NumberOfMinimizer<<"\n";
+
+
+
+	    ThreadPool pool {25};
+		   pool.enqueue([] {
+            });}
+
+
+
+}*/
+
+
+void run_program(cmd_arguments &args,seqan3::shape s)
 {
 	if (std::string("bloom").compare(args.mode) == 0)
 	{
-		create_bloom_filter(args.sequence_files, args.bloom_filter_output_path, args.error_rate, args.size_k);
+		create_bloom_filter(args.sequence_files, args.bloom_filter_output_path, args.error_rate, args.size_k,s);
 	}
 	else if (std::string("minhash").compare(args.mode) == 0)
 	{
@@ -445,11 +469,11 @@ void run_program(cmd_arguments &args)
 			dna4_vector query = get<field::SEQ>(record) | seqan3::views::convert<seqan3::dna4> | ranges::to<std::vector<seqan3::dna4>>();
 			for (int i = 1; i <= 3; ++i) // for schleife rausnehmen , bzw, (i*100)
 			{
-				//std::vector<dna4> read(query.begin() + 100 + (i * 500), query.begin() + 100 + ((i + 1) * 500));// die ersten 500 Basen werden genommen 
-				//std::vector<dna4> read(query.begin() + 100 , query.end()); //check in seqan3 dna4
-				//std::vector<dna4> read(query.begin() + 100 ); //error 
-			   std::vector<dna4> read(query.begin() + 100 + (i * 100), query.begin() + 100 + ((i + 1) * 100));
-				if (bottom_up_sketching(read, bf))
+				//std::vector<dna4> read(query.begin() + 100 + (i * 500), query.begin() + 100 + ((i + 1) * 500));// die ersten 500 Basen werden genommen
+				std::vector<dna4> read(query.begin() + 100 , query.end()); //check in seqan3 dna4-> worked
+				//std::vector<dna4> read(query.begin() + 100 ); //error
+			   //std::vector<dna4> read(query.begin() + 100 + (i * 100), query.begin() + 100 + ((i + 1) * 100)); for test
+				if (bottom_up_sketching(read, bf,s))
 				{
 					num_contained_reads++;
 					break;
@@ -463,10 +487,9 @@ void run_program(cmd_arguments &args)
 
 		}
 		debug_stream << "Number of contained reads: " << num_contained_reads << "/" << num_query_reads;
-		//######################################################
 
 
-		
+
 
 
 		// TODO calculate containment of sketches in reference bloom filter
@@ -474,8 +497,8 @@ void run_program(cmd_arguments &args)
 }
 //###################################################### Threading #########################################
 /*
-Pseudocode : 
-Void testeAlles(shape s , parameter for BlommFilter , reference fast , reads fastq) 
+Pseudocode :
+Void testeAlles(shape s , parameter for BlommFilter , reference fast , reads fastq)
 {
 creatBloomFilter();
 BerechneGefundeneMinimizerDerReadsInBF();
@@ -484,49 +507,66 @@ BerechneGefundeneMinimizerDerReadsInBF();
 main(args)
 {
 Vector<shape> vac = shapeGenerator();
-//threadpool mit max größe 12 … list , vector oder ähnliches  
+//threadpool mit max größe 12 … list , vector oder ähnliches
 threadpool tp[12];
 For (vector<shape>::iterator it = vec.begin();it!=vec.end;++it)
 {
 Std::thread t()testeAlles , *it , andere Parameter);
 Füge t zu threadpool hinzu;
 If (maximale größe von threadpool erreicht ){
-Erste shape kommt -> erste thread generiert 
-Dieses thread in thread Pool hinzufügen 
-If (maximal) hat 
+Erste shape kommt -> erste thread generiert
+Dieses thread in thread Pool hinzufügen
+If (maximal) hat
 
-Thread.join() 
+Thread.join()
 }
 
 }
 }
 
 */
+int active_thread = 0;
 
- 
+void threading(seqan3::shape s)
+{
+	{
+		ThreadPool pool {25};
+		pool.enqueue([]{
+	for(shape s : shapes_vector)
+	{
+	//	debug_stream << s <<std::endl;
+
+		while(active_thread == 25)
+     {
+			//std::thread t(run_program,s);
+			active_thread++;
+    }
+
+  }
+	});}
+
+}
+
+//pool.enqueue([]{ ThreadPool pool {2};
+//});
 int main(int argc, char const **argv)
 {
-	
 
 
-// new function dieses Test ist fuer gapped shape der Laenge 6 entspricht 63 in Binaerdarstellung
-		//seqan3::shape s {seqan3::ungapped{6}};
-		// shape der Laenge 25 
-		{//g++ -std=c++17 -Ofast -o b example.cpp 
-		// old 1,14 minuten , in main thread : 10 seconds 
-		ThreadPool pool {2};
-		pool.enqueue([]{
-                seqan3::shape s{seqan3::bin_literal{33554431}}; //25
-				//seqan3::shape s{seqan3::bin_literal{1073741823}}; // 30 
+
+
+
+		//{//g++ -std=c++17 -Ofast -o b example.cpp
+
+		//ThreadPool pool {2};
+	//	pool.enqueue([]{
+      //seqan3::shape s{seqan3::bin_literal{31}};
+         seqan3::shape s{seqan3::bin_literal{33554431}}; //25
+				//seqan3::shape s{seqan3::bin_literal{1073741823}}; // 30
 				//seqan3::shape s{seqan3::bin_literal{2147483647}}; //31
-                shape_generator_seqan(s,0);
-          });}
-
-
-
-
-
-
+        shape_generator_seqan(s,0);
+        //  });}
+		// Run testAlles() with 25 Threads
 
 	argument_parser parser("mhc", argc, argv);
 	cmd_arguments args
@@ -577,7 +617,6 @@ int main(int argc, char const **argv)
 		}
 	}
 
-	run_program(args);
+	run_program(args,s);
 	return 0;
 }
-
