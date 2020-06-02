@@ -1,7 +1,7 @@
 //Not run --still in progress--
 // defeniere eine globale Variable int active_threads = 0 ; 
 // Die Funktion Threading All 
-threading_all{
+threading_all{ // oder man fügt ThreadingPool enqueue 
     vec shapes = shape_generator();
 
     for(shape s in shapes )
