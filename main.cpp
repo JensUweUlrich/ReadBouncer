@@ -5,26 +5,25 @@
 #include <chrono>
 #include <csignal>
 #include <cmath>
-#include <algorithm> //
-#include <iostream> //
-#include<iterator> //
-#include <stdio.h> //
-#include <stdlib.h> //
-#include<time.h> //
+#include <algorithm>
+#include <iostream>
+#include<iterator>
+#include <stdio.h>
+#include <stdlib.h>
+#include<time.h>
 #include <list>
-#include"tp.hpp"
+#include"ThreadPool.hpp"
 #include <thread>
-
 #include <numeric>
-
 #include "customBloomFilter.hpp"
 #include "bloom_filter.hpp"
 #include "bloomFilterException.hpp"
-#include <seqan3/search/kmer_index/shape.hpp>
-#include <seqan3/range/container/bitcompressed_vector.hpp>//
 #include "minimizer3.hpp"
 
+// Seqan3's Header
 
+#include <seqan3/search/kmer_index/shape.hpp>
+#include <seqan3/range/container/bitcompressed_vector.hpp>
 
 #include <seqan3/alphabet/nucleotide/dna4.hpp>
 #include <seqan3/alphabet/nucleotide/dna5.hpp>
@@ -49,7 +48,12 @@ using namespace seqan3;
 
 
 
-double Minimizer::NumberOfMinimizer = 0.0;
+double Minimizer::NumberOfMinimizer = 0.0;// for counting Minimizer
+//seqan3::shape s{seqan3::bin_literal{33554431}};//shape with length 25
+//seqan3::shape s{seqan3::bin_literal{63}};//shape with length 25
+seqan3::shape s{seqan3::bin_literal{2147483647}}; //31
+std::vector<seqan3::shape> shapes_vector;// as global variabel
+
 
 struct cmd_arguments
 {
@@ -69,45 +73,40 @@ struct cmd_arguments
 
 
 
-std::vector<seqan3::shape> shapes_vector;
-void shape_generator_seqan(seqan3::shape s, unsigned long long i) // Funktion enthaelt shape aus seqan::shape (ungapped oder bin_literal) & index
+
+void shape_generator_seqan(seqan3::shape s, unsigned long long i)
 {
 
-	//std::vector<seqan3::shape> vect;  // shapes-Vektor
-	shapes_vector.push_back(s);
+
 	while (i == std::ranges::size(s)){
       unsigned long long x = std::count(s.begin(), s.end(), 0);
 
-
-	  for(unsigned long long i = 0 ; i != std::ranges::size(s); i++ )
+	   for(unsigned long long i = 0 ; i < std::ranges::size(s); i++ )
            if (x > 5 ){// we allow just [0..5] errors
-               return ;// tue nix
+               return ;// do nothing if we have more than 5 errors
            }
-		   else if (s[0]==0  | s[24]==0){return ;}//die Bedingung aus Seqan3
+		   else if (s[0]==0  | s[24]==0){return ;}//first and last binary number should not be 0 -> from seqan3
            else {
-			  // s[i];
+			 //s[i];
 			 seqan3::debug_stream << s[i] <<"";
-
-			 /*std::cout<<std::endl;
-			 std::vector<seqan3::shape> vec ;
-             vec.push_back(s);
-             seqan3::debug_stream << vec.front() <<"";*/
-               //vect.push_back(s);
-            /*   for (seqan3::shape s1:vect){
-                 seqan3::debug_stream << s1 <<"";
-               }*/
-
-
-
+			 shapes_vector.push_back(s);
+			 //for (seqan3::shape s1:shapes_vector){seqan3::debug_stream<<s1<<std::endl;}
+			// debug_stream << shapes_vector[i]<<std::endl;
           }
+
     std::cout<<std::endl;
-    return; }
+    return;
+	 }
     unsigned long long zeros = 0;
     s[i] = zeros;
     shape_generator_seqan(s, i + 1);
     unsigned long long ones = 1;
     s[i] = ones;
     shape_generator_seqan(s, i + 1);
+
+
+
+
 }
 void initialize_main_argument_parser(argument_parser &parser, cmd_arguments &args)
 {
@@ -196,26 +195,18 @@ bool checkWriteAccessRights(std::filesystem::path &file)
  **/
 uint64_t computeMinimizer(const std::vector<std::filesystem::path> &refFilePaths, const uint16_t &kMerSize, std::vector<std::vector<uint64_t>> &sketch_vector, seqan3::shape s)
 {
-	Minimizer minimizer // wird 25 mal verwendet , kann nie als global sein
+	Minimizer minimizer // Minimizer stay as local variabel, because the code use it 25 times
 	{ };
 	minimizer.setKmerSize(kMerSize);
 	minimizer.setWindowSize(50);
 
-
-
-
+   // if we use one shape
    //seqan3::shape t2{seqan3::bin_literal{0b1000111111111111111110011111111}};
 	 minimizer.setGappedShape(s);
+
 /* Minimizer Objekt nutzen, um wiederzuverwenden
 in dem Header von minimizer nachgucken, ob irgendwo etwas gepseichert wird
 Nihct die Funkt setGappedShape () irgendwas gespeichert wird */
-/*for (seqan3::shape t2 : shapes_vector)// zusätzliches hinzufügen
-{
- minimizer.setGappedShape(t2);
-}*/
-
-
-
 
 	uint64_t minimizer_number = 0;
 	debug_stream << "start loading references ....\n";
@@ -297,8 +288,7 @@ void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::
 
 bool bottom_up_sketching(dna4_vector &read, CustomBloomFilter &bf,seqan3::shape s)
 {
-	//ThreadPool pool {25};
-	//pool.enqueue([] {
+
 	//	CustomBloomFilter bf;
 	//	dna4_vector read;
 
@@ -306,21 +296,11 @@ bool bottom_up_sketching(dna4_vector &read, CustomBloomFilter &bf,seqan3::shape 
 	begin = std::chrono::high_resolution_clock::now();
 	Minimizer minimizer
 	{ };
+
 	minimizer.setKmerSize(bf.kMerSize);
 	minimizer.setWindowSize(50);
 	//seqan3::shape t2{seqan3::bin_literal{0b1000111111111111111110011111111}};
 	minimizer.setGappedShape(s);
-
-	//seqan3::shape t2{seqan3::bin_literal{0b1000111111111111111110011111111}};
-	//seqan3::shape t2{seqan3::bin_literal{0b1001111111011111110111011111111}};
-/*for (seqan3::shape t2 : shapes_vector)
-{
-	minimizer.setGappedShape(t2);
-}
-//	minimizer.setGappedShape(t2);*/
-
-
-
 
 
 	std::vector<uint64_t> sketch = minimizer.getMinimizerHashValues(read);
@@ -370,67 +350,6 @@ bool bottom_up_sketching(dna4_vector &read, CustomBloomFilter &bf,seqan3::shape 
  * @param : struct of command line arguments provided
  */
 
-
-/*
-Die Funktion testAlles besteht aus :
-seqan3::shape s : Aus Shape_generator
-bloom_parameters &b : alle Bloomfilter Parameters fuer CreatBloomFilter
-std::vector<std::filesystem::path> &refFilePaths : Die Referenzsequenz
-std::filesystem::path query_read_file : Readsequenz
-cmd_arguments &args : Fuer alle Argumente des BloomFilter
-*/
-
-/*void threading_all(seqan3::shape s , bloom_parameters &b , std::vector<std::filesystem::path> &refFilePaths ,std::filesystem::path query_read_file ,
-cmd_arguments &args)
- {
-	 {
-	 // 0) call the function shape_generator for the local shape s
-		 seqan3::shape s{seqan3::bin_literal{33554431}};// set shape with length 25
-	     shape_generator_seqan(s,0); // calculate all possible shapes with the length 25
-
-	 //1) Compute Minimizer using the shapes s
-		 Minimizer minimizer
-	    { };
-	    minimizer.setGappedShape(s);
-	    std::vector<std::vector<uint64_t>> sketch_vector
-	    { };
-		uint16_t kMerSize;
-
-	 // compute optimal parameters for the bloom filter creation
-
-	    bloom_parameters parameters;
-
-	// How many elements roughly do we expect to insert?
-
-	    parameters.projected_element_count = computeMinimizer(refFilePaths,kMerSize, sketch_vector);
-	    create_bloom_filter(args.sequence_files, args.bloom_filter_output_path, args.error_rate, args.size_k);
-
-	// 2) bottum up sketching
-	    //bottom_up_sketching(dna4_vector &read, CustomBloomFilter &bf);
-	    std::vector<uint64_t> sketch ;
-	    int num_containments
-	    { 0 };
-
-    // 3) Count Minimizer
-	// The number of minimizer for sensitivity
-
-        std::vector<double> MinimizerVector;
-	    double NbMinimizer = (double(num_containments) / double(sketch.size()));
-	    Minimizer::NumberOfMinimizer= Minimizer::NumberOfMinimizer+ NbMinimizer;
-	    MinimizerVector.push_back(Minimizer::NumberOfMinimizer);
-	    debug_stream<<"The number of minimizer is  : " <<Minimizer::NumberOfMinimizer<<"\n";
-
-
-
-	    ThreadPool pool {25};
-		   pool.enqueue([] {
-            });}
-
-
-
-}*/
-
-
 void run_program(cmd_arguments &args,seqan3::shape s)
 {
 	if (std::string("bloom").compare(args.mode) == 0)
@@ -470,10 +389,7 @@ void run_program(cmd_arguments &args,seqan3::shape s)
 			dna4_vector query = get<field::SEQ>(record) | seqan3::views::convert<seqan3::dna4> | ranges::to<std::vector<seqan3::dna4>>();
 			for (int i = 1; i <= 3; ++i) // for schleife rausnehmen , bzw, (i*100)
 			{
-				//std::vector<dna4> read(query.begin() + 100 + (i * 500), query.begin() + 100 + ((i + 1) * 500));// die ersten 500 Basen werden genommen
-				std::vector<dna4> read(query.begin() + 100 , query.end()); //check in seqan3 dna4-> worked
-				//std::vector<dna4> read(query.begin() + 100 ); //error
-			   //std::vector<dna4> read(query.begin() + 100 + (i * 100), query.begin() + 100 + ((i + 1) * 100)); for test
+				std::vector<dna4> read(query.begin() + 100 , query.end());
 				if (bottom_up_sketching(read, bf,s))
 				{
 					num_contained_reads++;
@@ -496,41 +412,12 @@ void run_program(cmd_arguments &args,seqan3::shape s)
 		// TODO calculate containment of sketches in reference bloom filter
 	}
 }
-//###################################################### Threading #########################################
-/*
-Pseudocode :
-Void testeAlles(shape s , parameter for BlommFilter , reference fast , reads fastq)
-{
-creatBloomFilter();
-BerechneGefundeneMinimizerDerReadsInBF();
-}
 
-main(args)
-{
-Vector<shape> vac = shapeGenerator();
-//threadpool mit max größe 12 … list , vector oder ähnliches
-threadpool tp[12];
-For (vector<shape>::iterator it = vec.begin();it!=vec.end;++it)
-{
-Std::thread t()testeAlles , *it , andere Parameter);
-Füge t zu threadpool hinzu;
-If (maximale größe von threadpool erreicht ){
-Erste shape kommt -> erste thread generiert
-Dieses thread in thread Pool hinzufügen
-If (maximal) hat
 
-Thread.join()
-}
 
-}
-}
-
-*/
-int active_thread = 0;
-
-void threading(seqan3::shape s)
-{
-	{
+//void threading(seqan3::shape s)
+//{
+	/*{
 		ThreadPool pool {25};
 		pool.enqueue([]{
 	for(shape s : shapes_vector)
@@ -544,9 +431,9 @@ void threading(seqan3::shape s)
     }
 
   }
-	});}
+});}*/
 
-}
+//}
 
 //pool.enqueue([]{ ThreadPool pool {2};
 //});
@@ -562,13 +449,18 @@ int main(int argc, char const **argv)
 		//ThreadPool pool {2};
 	//	pool.enqueue([]{
       //seqan3::shape s{seqan3::bin_literal{31}};
-         seqan3::shape s{seqan3::bin_literal{33554431}}; //25
+        // seqan3::shape s{seqan3::bin_literal{33554431}}; //25
 				//seqan3::shape s{seqan3::bin_literal{1073741823}}; // 30
 				//seqan3::shape s{seqan3::bin_literal{2147483647}}; //31
-        shape_generator_seqan(s,0);
+        //shape_generator_seqan(s,0);
         //  });}
 		// Run testAlles() with 25 Threads
+	/*	for (seqan3::shape sh : shapes_vector)
+		{
 
+				debug_stream<< sh<<std::endl;
+
+		}*/
 	argument_parser parser("mhc", argc, argv);
 	cmd_arguments args
 	{ };
@@ -618,6 +510,16 @@ int main(int argc, char const **argv)
 		}
 	}
 
-	run_program(args,s);
+		ThreadPool pool {25};
+	  pool.threading([]{
+			shape_generator_seqan(s,0);
+			cmd_arguments args
+			{ };
+			for (seqan3::shape s : shapes_vector)
+			{
+      run_program(args,s);
+			}
+	   });
+	//run_program(args,s);
 	return 0;
 }
