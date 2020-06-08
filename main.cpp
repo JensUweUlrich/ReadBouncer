@@ -1,4 +1,5 @@
 // still in progress (next step, change the output from Bloomfilter)
+// Seqan3::shape is not a global any more 
 #include <string>
 #include <vector>
 #include <math.h>
@@ -51,7 +52,6 @@ using namespace seqan3;
 double Minimizer::NumberOfMinimizer = 0.0;// for counting Minimizer
 //seqan3::shape s{seqan3::bin_literal{33554431}};//shape with length 25
 //seqan3::shape s{seqan3::bin_literal{63}};//shape with length 6
-seqan3::shape s{seqan3::bin_literal{2147483647}}; //31
 std::vector<seqan3::shape> shapes_vector;// as global variabel
 
 
@@ -469,6 +469,7 @@ int main(int argc, char const **argv)
 
 		ThreadPool pool {25};
 	  pool.threading([]{
+			seqan3::shape s{seqan3::bin_literal{2147483647}}; //31
 			shape_generator_seqan(s,0);
 			cmd_arguments args
 			{ };
