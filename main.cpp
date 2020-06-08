@@ -1,4 +1,4 @@
-// still in progress
+// still in progress (next step, change the output from Bloomfilter)
 #include <string>
 #include <vector>
 #include <math.h>
@@ -50,8 +50,8 @@ using namespace seqan3;
 
 double Minimizer::NumberOfMinimizer = 0.0;// for counting Minimizer
 //seqan3::shape s{seqan3::bin_literal{33554431}};//shape with length 25
-//seqan3::shape s{seqan3::bin_literal{63}};//shape with length 25
-seqan3::shape s{seqan3::bin_literal{2147483647}}; //31
+seqan3::shape s{seqan3::bin_literal{63}};//shape with length 6
+//seqan3::shape s{seqan3::bin_literal{2147483647}}; //31
 std::vector<seqan3::shape> shapes_vector;// as global variabel
 
 
@@ -78,18 +78,18 @@ void shape_generator_seqan(seqan3::shape s, unsigned long long i)
 {
 
 
-	while (i == std::ranges::size(s)){
+	    while (i == std::ranges::size(s)){
       unsigned long long x = std::count(s.begin(), s.end(), 0);
 
-	   for(unsigned long long i = 0 ; i < std::ranges::size(s); i++ )
-           if (x > 5 ){// we allow just [0..5] errors
+
+          if (x > 5 ){// we allow just [0..5] errors
                return ;// do nothing if we have more than 5 errors
            }
-		   else if (s[0]==0  | s[24]==0){return ;}//first and last binary number should not be 0 -> from seqan3
+		       else if (s[0]==0  | s[5]==0){return ;}//first and last binary number should not be 0 -> from seqan3
            else {
 			 //s[i];
-			 seqan3::debug_stream << s[i] <<"";
-			 shapes_vector.push_back(s);
+			 seqan3::debug_stream << s <<"";
+			    shapes_vector.push_back(s);
 			 //for (seqan3::shape s1:shapes_vector){seqan3::debug_stream<<s1<<std::endl;}
 			// debug_stream << shapes_vector[i]<<std::endl;
           }
