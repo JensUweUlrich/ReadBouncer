@@ -50,8 +50,8 @@ using namespace seqan3;
 
 double Minimizer::NumberOfMinimizer = 0.0;// for counting Minimizer
 //seqan3::shape s{seqan3::bin_literal{33554431}};//shape with length 25
-seqan3::shape s{seqan3::bin_literal{63}};//shape with length 6
-//seqan3::shape s{seqan3::bin_literal{2147483647}}; //31
+//seqan3::shape s{seqan3::bin_literal{63}};//shape with length 6
+seqan3::shape s{seqan3::bin_literal{2147483647}}; //31
 std::vector<seqan3::shape> shapes_vector;// as global variabel
 
 
@@ -77,26 +77,28 @@ struct cmd_arguments
 void shape_generator_seqan(seqan3::shape s, unsigned long long i)
 {
 
+  unsigned long long x = std::count(s.begin(), s.end(), 0);
+	while (i == std::ranges::size(s)){
 
-	    while (i == std::ranges::size(s)){
-      unsigned long long x = std::count(s.begin(), s.end(), 0);
-
-
-          if (x > 5 ){// we allow just [0..5] errors
+          if (x > 5 )
+					{// we allow just [0..5] errors
                return ;// do nothing if we have more than 5 errors
            }
-		       else if (s[0]==0  | s[5]==0){return ;}//first and last binary number should not be 0 -> from seqan3
-           else {
-			 //s[i];
-			 seqan3::debug_stream << s <<"";
+		       else if (s[0]==0  | s[30]==0)
+					 {
+						 return ;
+					 }//first and last binary number should not be 0 -> from seqan3
+           else
+					 {
+			    seqan3::debug_stream << s <<"";
 			    shapes_vector.push_back(s);
-			 //for (seqan3::shape s1:shapes_vector){seqan3::debug_stream<<s1<<std::endl;}
-			// debug_stream << shapes_vector[i]<<std::endl;
+			    //for (seqan3::shape s1:shapes_vector){seqan3::debug_stream<<s1<<std::endl;}
           }
 
     std::cout<<std::endl;
     return;
-	 }
+	}
+
     unsigned long long zeros = 0;
     s[i] = zeros;
     shape_generator_seqan(s, i + 1);
@@ -413,54 +415,9 @@ void run_program(cmd_arguments &args,seqan3::shape s)
 	}
 }
 
-
-
-//void threading(seqan3::shape s)
-//{
-	/*{
-		ThreadPool pool {25};
-		pool.enqueue([]{
-	for(shape s : shapes_vector)
-	{
-	//	debug_stream << s <<std::endl;
-
-		while(active_thread == 25)
-     {
-			//std::thread t(run_program,s);
-			active_thread++;
-    }
-
-  }
-});}*/
-
-//}
-
-//pool.enqueue([]{ ThreadPool pool {2};
-//});
 int main(int argc, char const **argv)
 {
 
-
-
-
-
-		//{//g++ -std=c++17 -Ofast -o b example.cpp
-
-		//ThreadPool pool {2};
-	//	pool.enqueue([]{
-      //seqan3::shape s{seqan3::bin_literal{31}};
-        // seqan3::shape s{seqan3::bin_literal{33554431}}; //25
-				//seqan3::shape s{seqan3::bin_literal{1073741823}}; // 30
-				//seqan3::shape s{seqan3::bin_literal{2147483647}}; //31
-        //shape_generator_seqan(s,0);
-        //  });}
-		// Run testAlles() with 25 Threads
-	/*	for (seqan3::shape sh : shapes_vector)
-		{
-
-				debug_stream<< sh<<std::endl;
-
-		}*/
 	argument_parser parser("mhc", argc, argv);
 	cmd_arguments args
 	{ };
