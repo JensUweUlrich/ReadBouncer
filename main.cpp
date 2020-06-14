@@ -282,7 +282,7 @@ void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::
 	}
 
 	// store kmerSize, hash seeds and bloom filter in a file
-	filter.writeToFile(output);
+	filter.writeToFile(output);// just return it! 
 }
 
 
