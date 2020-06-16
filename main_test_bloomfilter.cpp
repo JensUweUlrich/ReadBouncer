@@ -2,6 +2,9 @@
 How to run: (the output file of bloom filter is deleted)
 ./NanoLiveTk bloom -e 0.05 -k 31 Listeria_monocytogenes_ATCC_19115_.fasta
 ./NanoLiveTk minhash -q Listeria.fastq
+
+./NanoLiveTk bloom -e 0.05 -k 31 Listeria_monocytogenes_ATCC_19115_.fasta minhash -q Listeria.fastq
+
 Still in progress, this script use until now just one shape, to make the test faster, i am testing the script with just one shape! 
 This main file is just for testing the changing in output file of bloom filter, ToDo: 
 1) line 368 should be rewritten 
