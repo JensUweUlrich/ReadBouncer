@@ -1,5 +1,16 @@
-// still in progress (next step, change the output from Bloomfilter)
-// Seqan3::shape is not a global any more 
+/*
+
+******************************************************************************************************************************************************
+*      **********   How to run: (the output file of bloom filter is deleted)  ************                                                           
+*                                                                                                                                                    
+*     ********** ./NanoLiveTk bloom_minhash -e 0.05 -k 31 Listeria_monocytogenes_ATCC_19115_.fasta -q Listeria.fastq      **********                 
+*     **********./NanoLiveTk bloom_minhash -e 0.05 -k 31 -t 20 Listeria_monocytogenes_ATCC_19115_.fasta -q Listeria.fastq **********
+*
+******************************************************************************************************************************************************
+ToDo: 
+1) Changing the ThreadPool from the Source: https://github.com/mtrebi/thread-pool
+2) Pass the number of minimizer
+*/
 #include <string>
 #include <vector>
 #include <math.h>
@@ -49,7 +60,8 @@ using namespace seqan3;
 
 
 
-double Minimizer::NumberOfMinimizer = 0.0;// for counting Minimizer
+double Minimizer::NumberOfMinimizer = 0.0;
+
 //seqan3::shape s{seqan3::bin_literal{33554431}};//shape with length 25
 //seqan3::shape s{seqan3::bin_literal{63}};//shape with length 6
 std::vector<seqan3::shape> shapes_vector;// as global variabel
@@ -59,8 +71,8 @@ struct cmd_arguments
 {
 		std::vector<std::filesystem::path> sequence_files
 		{ };
-		std::filesystem::path bloom_filter_output_path
-		{ };
+		//std::filesystem::path bloom_filter_output_path
+		//{ };
 		std::filesystem::path query_read_file
 		{ };
 		std::string mode
@@ -69,6 +81,8 @@ struct cmd_arguments
 		{ 31 };
 		float error_rate
 		{ 0.05 };
+		//uint8_t threads
+		//{};
 };
 
 
@@ -106,10 +120,8 @@ void shape_generator_seqan(seqan3::shape s, unsigned long long i)
     s[i] = ones;
     shape_generator_seqan(s, i + 1);
 
-
-
-
 }
+
 void initialize_main_argument_parser(argument_parser &parser, cmd_arguments &args)
 {
 	// TODO refine parser information
@@ -125,13 +137,13 @@ void initialize_main_argument_parser(argument_parser &parser, cmd_arguments &arg
 	parser.info.description = description;
 
 	std::vector<std::string> synopsis
-	{ "[bloom, minhash] [OPTIONS]" };
+	{ "[bloom_minhash] [OPTIONS]" };
 	parser.info.synopsis = synopsis;
 	//TODO refine examples
 	//parser.info.examples = "mhc bloom ";
 
 	parser.add_positional_option(args.mode, "Modus to run NanoLiveTk : ", value_list_validator
-	{ "bloom", "minhash"});
+	{ "bloom_minhash"});
 
 	//TODO add all working modes as options and provide all additional information
 }
@@ -145,14 +157,18 @@ void initialize_bloom_argument_parser(argument_parser &parser, cmd_arguments &ar
 	parser.info.date = "03-March-2020";
 	parser.info.email = "jens-uwe.ulrich@hpi.de";
 
-	parser.add_option(args.bloom_filter_output_path, 'b', "bloom-output", "output file path to bloom filter", option_spec::REQUIRED);
+	//parser.add_option(args.bloom_filter_output_path, 'b', "bloom-output", "output file path to bloom filter", option_spec::REQUIRED);
 	parser.add_option(args.error_rate, 'e', "false-positive-rate", "target false positive rate for bloom filter construction [default: 0.05]");
 	parser.add_option(args.size_k, 'k', "kmer-size", "k-mer size used for bottom up sketching reads", option_spec::DEFAULT, arithmetic_range_validator
 	{ 1, 31 });
+	//parser.add_option(args.threads, 't', "Number of Threads", "using ThreadPool", option_spec::DEFAULT, arithmetic_range_validator
+	//{ 2, 25 });
 	parser.add_positional_option(args.sequence_files, "reference file(s) to create bloom filter for");
+	parser.add_option(args.query_read_file, 'q', "query", "query read file");
 }
 
-void initialize_read_until_argument_parser(argument_parser &parser, cmd_arguments &args)
+
+/*void initialize_read_until_argument_parser(argument_parser &parser, cmd_arguments &args)
 {
 	// TODO refine parser information
 	parser.info.author = "Jens-Uwe Ulrich";
@@ -164,16 +180,16 @@ void initialize_read_until_argument_parser(argument_parser &parser, cmd_argument
 	// only for debugging
 	// TODO delete after implementing client architecture
 	parser.add_option(args.query_read_file, 'q', "query", "query read file");
-	parser.add_option(args.bloom_filter_output_path, 'b', "bloom-filter", "path to bloom filter file", option_spec::REQUIRED);
+	//parser.add_option(args.bloom_filter_output_path, 'b', "bloom-filter", "path to bloom filter file", option_spec::REQUIRED);
 
-}
+}*/
 
 /**
  * check write access for given filepath
  * @param file : file path to write/create
  * return true if file could be created, false otherwise
  */
-bool checkWriteAccessRights(std::filesystem::path &file)
+/*bool checkWriteAccessRights(std::filesystem::path &file)
 {
 	::std::ofstream fout;
 	fout.exceptions(std::ofstream::failbit | std::ofstream::badbit);
@@ -190,13 +206,14 @@ bool checkWriteAccessRights(std::filesystem::path &file)
 	}
 
 	return true;
-}
+}*/
 
 /**
  **
  **/
 uint64_t computeMinimizer(const std::vector<std::filesystem::path> &refFilePaths, const uint16_t &kMerSize, std::vector<std::vector<uint64_t>> &sketch_vector, seqan3::shape s)
 {
+	
 	Minimizer minimizer // Minimizer stay as local variabel, because the code use it 25 times
 	{ };
 	minimizer.setKmerSize(kMerSize);
@@ -240,13 +257,13 @@ Nihct die Funkt setGappedShape () irgendwas gespeichert wird */
 	return minimizer_number;
 }
 
-void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::filesystem::path &output, const float error_rate, uint16_t kMerSize,seqan3::shape s)
+CustomBloomFilter create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, const float error_rate, uint16_t kMerSize, seqan3::shape s)
 {
-	if (!checkWriteAccessRights(output))
+	/*if (!checkWriteAccessRights(output))
 	{
 		std::cerr << "ERROR: No access right to create or write to " << output.u8string() << std::endl;
 		return;
-	}
+	}*/
 
 	std::vector<std::vector<uint64_t>> sketch_vector
 	{ };
@@ -272,17 +289,19 @@ void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::
 	parameters.compute_optimal_parameters();
 
 	//Instantiate Bloom Filter
-	CustomBloomFilter filter(parameters, kMerSize);
+	//CustomBloomFilter filter(parameters, kMerSize);
+	CustomBloomFilter bf(parameters, kMerSize);
 	//std::cout << "Open Bloom Filter size in bits: " << filter.size() << std::endl;
 	//std::cout << "Open Bloom Filter hash number: " << filter.hash_count() << std::endl;
 
 	for (std::vector<uint64_t> sketch : sketch_vector)
 	{
-		filter.insert(sketch.begin(), sketch.end());
+		bf.insert(sketch.begin(), sketch.end());
 	}
 
 	// store kmerSize, hash seeds and bloom filter in a file
-	filter.writeToFile(output);// just return it! 
+	//filter.writeToFile(output); // in CustomBloomFIlter stattdessen return den FIlter , muss nichts in Header geändert werden.
+ return bf;
 }
 
 
@@ -290,10 +309,13 @@ void create_bloom_filter(std::vector<std::filesystem::path> &refFilePaths, std::
 
 bool bottom_up_sketching(dna4_vector &read, CustomBloomFilter &bf,seqan3::shape s)
 {
-
+	
+	//double Minimizer::NumberOfMinimizer;// for counting Minimizer
+	//double Minimizer::NumberOfMinimizer = 0.0;
 	//	CustomBloomFilter bf;
 	//	dna4_vector read;
-
+    //double NumberOfMinimizer = 0.0;// for counting Minimizer
+	//Minimizer NumberOfMinimizer;
 	std::chrono::high_resolution_clock::time_point begin, end;
 	begin = std::chrono::high_resolution_clock::now();
 	Minimizer minimizer
@@ -343,6 +365,11 @@ bool bottom_up_sketching(dna4_vector &read, CustomBloomFilter &bf,seqan3::shape 
 
 
 
+    //NumberOfMinimizer= NumberOfMinimizer+ NbMinimizer;
+	//debug_stream<<"The number of minimizer is  : " <<NumberOfMinimizer<<"\n";
+
+
+
 	return (double(num_containments) / double(sketch.size())) > 0.15;
 	//});
 	}
@@ -354,16 +381,19 @@ bool bottom_up_sketching(dna4_vector &read, CustomBloomFilter &bf,seqan3::shape 
 
 void run_program(cmd_arguments &args,seqan3::shape s)
 {
-	if (std::string("bloom").compare(args.mode) == 0)
+	/*if (std::string("bloom").compare(args.mode) == 0)
 	{
 		create_bloom_filter(args.sequence_files, args.bloom_filter_output_path, args.error_rate, args.size_k,s);
 	}
 	else if (std::string("minhash").compare(args.mode) == 0)
+	{*/
+	if(std::string("bloom_minhash").compare(args.mode) == 0)
 	{
+		//ThreadPool pool (args.threads);
 		debug_stream << "run program..." << std::endl;
-		CustomBloomFilter bf
-		{ };
-		try
+		CustomBloomFilter bf = create_bloom_filter(args.sequence_files, args.error_rate, args.size_k,s);
+
+		/*try
 		{
 			bf.readFromFile(args.bloom_filter_output_path);
 		}
@@ -377,7 +407,7 @@ void run_program(cmd_arguments &args,seqan3::shape s)
 		// TODO Exchange this method when implementing client architecture for pulling reads from the event sampler
 		// method only used for debugging with provided sequence file
 
-		// TODO compute bottom up minhash sketch for every read provided
+		// TODO compute bottom up minhash sketch for every read provided*/
 		int num_contained_reads
 		{ 0 };
 		int num_query_reads
@@ -418,14 +448,21 @@ void run_program(cmd_arguments &args,seqan3::shape s)
 int main(int argc, char const **argv)
 {
 
+	
+	//pool.threading([]{
+	seqan3::shape s{seqan3::bin_literal{2147483647}}; //31
+	shape_generator_seqan(s,0);
+	//int argc;//
+	//char const **argv;//
 	argument_parser parser("mhc", argc, argv);
 	cmd_arguments args
 	{ };
+	
 	initialize_main_argument_parser(parser, args);
-	if (std::string(argv[1]).compare("bloom") == 0)
+	if (std::string(argv[1]).compare("bloom_minhash") == 0)
 	{
-		args.mode = "bloom";
-		argument_parser bloom_parser("bloom", --argc, argv + 1);
+		args.mode = "bloom_minhash";
+		argument_parser bloom_parser("bloom_minhash", --argc, argv + 1);
 		initialize_bloom_argument_parser(bloom_parser, args);
 
 		try
@@ -437,8 +474,8 @@ int main(int argc, char const **argv)
 			std::cerr << "[PARSER ERROR] " << ext.what() << '\n';
 			return -1;
 		}
-	}
-	else if (std::string(argv[1]).compare("minhash") == 0)
+
+	/*else if (std::string(argv[1]).compare("minhash") == 0)
 	{
 		args.mode = "minhash";
 		argument_parser read_until_parser("minhash", --argc, argv + 1);
@@ -452,7 +489,7 @@ int main(int argc, char const **argv)
 		{
 			std::cerr << "[PARSER ERROR] " << ext.what() << '\n';
 			return -1;
-		}
+		}*/
 	}
 	else
 	{
@@ -467,17 +504,15 @@ int main(int argc, char const **argv)
 		}
 	}
 
-		ThreadPool pool {25};
-	  pool.threading([]{
-			seqan3::shape s{seqan3::bin_literal{2147483647}}; //31
-			shape_generator_seqan(s,0);
-			cmd_arguments args
-			{ };
-			for (seqan3::shape s : shapes_vector)
-			{
+
+
+  for (seqan3::shape s : shapes_vector)
+  {
+	  //Minimizer NumberOfMinimizer {};
+	  //~Minimizer() { NumberOfMinimizer = 0;}
       run_program(args,s);
-			}
-	   });
+  }
+//	   });
 	//run_program(args,s);
 	return 0;
 }
