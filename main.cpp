@@ -60,8 +60,8 @@ using namespace seqan3;
 
 
 
-double Minimizer::NumberOfMinimizer = 0.0;
-
+//double Minimizer::NumberOfMinimizer = 0.0;
+Minimizer Nb_Minimizer;
 //seqan3::shape s{seqan3::bin_literal{33554431}};//shape with length 25
 //seqan3::shape s{seqan3::bin_literal{63}};//shape with length 6
 std::vector<seqan3::shape> shapes_vector;// as global variabel
@@ -360,8 +360,11 @@ bool bottom_up_sketching(dna4_vector &read, CustomBloomFilter &bf,seqan3::shape 
 
 // The number of minimizer for sensitivity
 	double NbMinimizer = (double(num_containments) / double(sketch.size()));
-	Minimizer::NumberOfMinimizer= Minimizer::NumberOfMinimizer+ NbMinimizer;
-	debug_stream<<"The number of minimizer is  : " <<Minimizer::NumberOfMinimizer<<"\n";
+	/*Minimizer::NumberOfMinimizer= Minimizer::NumberOfMinimizer+ NbMinimizer;
+	debug_stream<<"The number of minimizer is  : " <<Minimizer::NumberOfMinimizer<<"\n";*/
+	Nb_Minimizer.NumberOfMinimizer= Nb_Minimizer.NumberOfMinimizer+ NbMinimizer;
+	debug_stream<<"The number of minimizer is  : " <<Nb_Minimizer.NumberOfMinimizer<<"\n";
+	debug_stream<<"The used shape is : " <<s<<"\n";
 
 
 
@@ -510,6 +513,8 @@ int main(int argc, char const **argv)
   {
 	  //Minimizer NumberOfMinimizer {};
 	  //~Minimizer() { NumberOfMinimizer = 0;}
+	  Nb_Minimizer.NumberOfMinimizer = 0.0;
+
       run_program(args,s);
   }
 //	   });
