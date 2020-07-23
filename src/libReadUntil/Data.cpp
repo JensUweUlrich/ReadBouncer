@@ -170,6 +170,18 @@ namespace readuntil
         data_logger->debug("leaving action request thread");
     }
 
+    void Data::adaptActionBatchSize()
+    {
+        if(reads.size() > 0)
+        {
+            actionBatchSize += reads.size();
+        }
+        else
+        {
+            actionBatchSize *= 0.8; 
+        }
+    }
+
     bool Data::isRunning()
     {
         return runs;
@@ -361,8 +373,10 @@ namespace readuntil
                 }
        		}
             std::stringstream ss2;
-            ss2 << "ReadCacheSize : " << reads.size();
-            data_logger->debug(ss2.str());  
+            ss2 << "ReadCacheSize : " << reads.size() << "; ActionBatchSize : " << (int)actionBatchSize;
+            data_logger->debug(ss2.str());
+
+            adaptActionBatchSize();  
        }
        data_logger->debug("leaving signals thread");
        runs = false;

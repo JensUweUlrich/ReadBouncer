@@ -72,13 +72,14 @@ namespace readuntil
             bool runs = false;
             uint8_t unblockChannels;
             uint8_t unblockReads;
-            uint8_t actionBatchSize;
+            uint8_t actionBatchSize = 50;
             void createSetupMessage();
             void getLiveSignals();
             void addActions();
             void addUnblockAction(GetLiveReadsRequest_Actions *actionList, ReadCache &read, const double unblock_duration);
             void addStopReceivingDataAction(GetLiveReadsRequest_Actions *actionList, ReadCache &read);
             void printResponseData();
+            void adaptActionBatchSize();
         public:
             Data() = default;
             Data(std::shared_ptr<::grpc::Channel> channel);
