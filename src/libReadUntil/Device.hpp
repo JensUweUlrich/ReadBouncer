@@ -7,13 +7,13 @@
 
 #include <string>
 #include <grpcpp/grpcpp.h>
-#include <minknow/rpc/device.grpc.pb.h>
+#include <minknow_api/device.grpc.pb.h>
 
 #include "MinKnowService.hpp"
 #include "DeviceServiceException.hpp"
 #include "../debug_messages.hpp"
 
-using namespace ::ont::rpc::device;
+using namespace ::minknow_api::device;
 
 #ifndef LIBREADUNTIL_DEVICE_HPP_
 #define LIBREADUNTIL_DEVICE_HPP_

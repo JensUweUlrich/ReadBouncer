@@ -16,8 +16,8 @@
 #include <unistd.h>
 #include <grpcpp/grpcpp.h>
 #include <google/protobuf/map.h>
-#include <minknow/rpc/data.grpc.pb.h>
-#include <minknow/rpc/data.pb.h>
+#include <minknow_api/data.grpc.pb.h>
+#include <minknow_api/data.pb.h>
 
 #include "spdlog/spdlog.h"
 
@@ -25,7 +25,7 @@
 #include "MinKnowService.hpp"
 #include "DataServiceException.hpp"
 
-using namespace ::ont::rpc::data;
+using namespace ::minknow_api::data;
 using namespace ::google::protobuf;
 
 #ifndef LIBREADUNTIL_DATA_HPP_
@@ -70,6 +70,7 @@ namespace readuntil
             std::mutex respQueueMutex;
             std::shared_ptr<spdlog::logger> data_logger;
             bool runs = false;
+            bool unblock_all = false;
             uint8_t unblockChannels;
             uint8_t unblockReads;
             uint8_t actionBatchSize = 50;
@@ -121,6 +122,11 @@ namespace readuntil
             inline void setActionBatchSize(const uint8_t &size)
             {
                 actionBatchSize = size;
+            }
+
+            inline void setUnblockAll(const bool &unblock)
+            {
+                unblock_all = unblock;
             }
     };
 

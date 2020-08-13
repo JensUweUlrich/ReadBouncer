@@ -16,8 +16,8 @@ namespace readuntil
 
 	std::string Instance::get_version_info()
 	{
-		::ont::rpc::instance::GetVersionInfoRequest request;
-		::ont::rpc::instance::GetVersionInfoResponse response;
+		GetVersionInfoRequest request;
+		GetVersionInfoResponse response;
 		::grpc::ClientContext context;
 		::grpc::Status status = stub->get_version_info(&context, request, &response);
 		if (status.ok())

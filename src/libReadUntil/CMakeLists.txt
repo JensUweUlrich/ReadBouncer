@@ -36,27 +36,27 @@ set(Protobuf_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/protobuf/include")
 set(Protobuf_LIBRARY "${CMAKE_CURRENT_BINARY_DIR}/protobuf/lib")
 
 # Proto file
-get_filename_component(reads_proto "${CMAKE_CURRENT_BINARY_DIR}/minknow/minknow/reads.proto" ABSOLUTE)
-get_filename_component(reads_proto_path "${reads_proto}" PATH)
+#get_filename_component(reads_proto "${CMAKE_CURRENT_BINARY_DIR}/minknow/minknow/reads.proto" ABSOLUTE)
+#get_filename_component(reads_proto_path "${reads_proto}" PATH)
 
 # Generated sources
-set(reads_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/minknow/minknow/reads.pb.cc")
-set(reads_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/minknow/minknow/reads.pb.h")
-set(reads_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/minknow/minknow/reads.grpc.pb.cc")
-set(reads_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/minknow/minknow/reads.grpc.pb.h")
-add_custom_command(
-      OUTPUT "${reads_proto_srcs}" "${reads_proto_hdrs}" "${reads_grpc_srcs}" "${reads_grpc_hdrs}"
-      COMMAND ${_PROTOBUF_PROTOC}
-      ARGS --grpc_out "${CMAKE_CURRENT_BINARY_DIR}/minknow/minknow"
-        --cpp_out "${CMAKE_CURRENT_BINARY_DIR}/minknow/minknow"
-        -I "${reads_proto_path}"
-        --plugin=protoc-gen-grpc=${_GRPC_CPP_PLUGIN_EXECUTABLE}
-        "${reads_proto}"
-      DEPENDS "${reads_proto}")
+#set(reads_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/minknow/minknow/reads.pb.cc")
+#set(reads_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/minknow/minknow/reads.pb.h")
+#set(reads_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/minknow/minknow/reads.grpc.pb.cc")
+#set(reads_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/minknow/minknow/reads.grpc.pb.h")
+#add_custom_command(
+#      OUTPUT "${reads_proto_srcs}" "${reads_proto_hdrs}" "${reads_grpc_srcs}" "${reads_grpc_hdrs}"
+#      COMMAND ${_PROTOBUF_PROTOC}
+#      ARGS --grpc_out "${CMAKE_CURRENT_BINARY_DIR}/minknow/minknow"
+#        --cpp_out "${CMAKE_CURRENT_BINARY_DIR}/minknow/minknow"
+#        -I "${reads_proto_path}"
+#        --plugin=protoc-gen-grpc=${_GRPC_CPP_PLUGIN_EXECUTABLE}
+#        "${reads_proto}"
+#      DEPENDS "${reads_proto}")
  
 # Include generated *.pb.h files
-list(APPEND minknow_srcs ${reads_proto_srcs} ${reads_grpc_srcs})
-file(GLOB protofiles "${CMAKE_CURRENT_BINARY_DIR}/minknow/minknow/rpc/*.proto")
+#list(APPEND minknow_srcs ${reads_proto_srcs} ${reads_grpc_srcs})
+file(GLOB protofiles "${CMAKE_CURRENT_BINARY_DIR}/minknow/proto/minknow_api/*.proto")
 
 foreach(proto ${protofiles})
   get_filename_component(protofilepath ${proto} PATH)
@@ -64,9 +64,9 @@ foreach(proto ${protofiles})
   add_custom_command(
       OUTPUT "${protofilepath}/${fname}.pb.cc" "${protofilepath}/${fname}.pb.h" "${protofilepath}/${fname}.grpc.pb.cc" "${protofilepath}/${fname}.grpc.pb.h"
       COMMAND ${_PROTOBUF_PROTOC}
-      ARGS --grpc_out "${CMAKE_CURRENT_BINARY_DIR}/minknow"
-        --cpp_out "${CMAKE_CURRENT_BINARY_DIR}/minknow"
-        -I "${CMAKE_CURRENT_BINARY_DIR}/minknow"
+      ARGS --grpc_out "${CMAKE_CURRENT_BINARY_DIR}/minknow/proto"
+        --cpp_out "${CMAKE_CURRENT_BINARY_DIR}/minknow/proto"
+        -I "${CMAKE_CURRENT_BINARY_DIR}/minknow/proto"
         -I "${CMAKE_CURRENT_BINARY_DIR}/protobuf/src"
         --plugin=protoc-gen-grpc=${_GRPC_CPP_PLUGIN_EXECUTABLE}
         "${proto}"
@@ -92,12 +92,12 @@ find_package(spdlog REQUIRED)
 #file(GLOB flappie_srcs "${CMAKE_CURRENT_BINARY_DIR}/flappie/src/*.c")
 #file(GLOB flappie_hdrs "${CMAKE_CURRENT_BINARY_DIR}/flappie/src/*.h")
 
-include_directories("${CMAKE_CURRENT_BINARY_DIR}/minknow/minknow" "${CMAKE_CURRENT_BINARY_DIR}/minknow")
+include_directories("${CMAKE_CURRENT_BINARY_DIR}/minknow/proto")
 
 #add_library (ReadUntil STATIC ${READUNTILSOURCES} ${minknow_srcs} ${flappie_srcs})
 add_library (ReadUntil STATIC ${READUNTILSRCS} ${READUNTILHDRS} ${minknow_srcs})
 #target_include_directories (ReadUntil PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} "${CMAKE_CURRENT_BINARY_DIR}/minknow" "${CMAKE_CURRENT_BINARY_DIR}/flappie")
-target_include_directories (ReadUntil PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} "${CMAKE_CURRENT_BINARY_DIR}/minknow")
+target_include_directories (ReadUntil PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} "${CMAKE_CURRENT_BINARY_DIR}/minknow/proto")
 target_link_libraries (ReadUntil  ${_GRPC_GRPCPP_UNSECURE} ${_PROTOBUF_LIBPROTOBUF} spdlog::spdlog)
 
 install(TARGETS ReadUntil DESTINATION lib COMPONENT libraries)

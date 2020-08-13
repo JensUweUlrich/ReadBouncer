@@ -8,13 +8,13 @@
  */
 #include <string>
 #include <grpcpp/grpcpp.h>
-#include <minknow/rpc/instance.grpc.pb.h>
+#include <minknow_api/instance.grpc.pb.h>
 
 #include "MinKnowService.hpp"
 #include "ReadUntilClientException.hpp"
 #include "../debug_messages.hpp"
 
-using namespace ::ont::rpc::instance;
+using namespace ::minknow_api::instance;
 
 #ifndef LIBREADUNTIL_INSTANCE_HPP_
 #define LIBREADUNTIL_INSTANCE_HPP_

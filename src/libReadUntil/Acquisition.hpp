@@ -8,15 +8,15 @@
 #include <sstream>
 #include <grpcpp/grpcpp.h>
 #include <google/protobuf/map.h>
-#include <minknow/rpc/acquisition.grpc.pb.h>
-#include <minknow/rpc/acquisition.pb.h>
+#include <minknow_api/acquisition.grpc.pb.h>
+#include <minknow_api/acquisition.pb.h>
 
 #include "spdlog/spdlog.h"
 
 #include "MinKnowService.hpp"
 #include "ReadUntilClientException.hpp"
 
-using namespace ::ont::rpc::acquisition;
+using namespace ::minknow_api::acquisition;
 using namespace ::google::protobuf;
 
 #ifndef LIBREADUNTIL_ACQUISITION_HPP_

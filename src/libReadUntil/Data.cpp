@@ -85,72 +85,81 @@ namespace readuntil
                 if (hasElement)
                 {
                     // 
-                    switch(read.channelNr % 4)
+                    if (unblock_all)
                     {
-                        case 0:
+                        addUnblockAction(actionList, read, 0.1);
+                        addStopReceivingDataAction(actionList, read);
+                        counter+=2;
+                    }
+                    else
+                    {
+                        switch(read.channelNr % 4)
                         {
-                            //channel numbers with mod 4 == 0 are sequenced as usual
-                            std::stringstream buf;
-                            buf << read.channelNr << "_" << read.readNr;
-                            responseMutex.lock();
-                            std::map<string, ReadResponse>::iterator it = responseCache.find(buf.str());
-                            if (it != responseCache.end())
+                            case 0:
                             {
-                                (*it).second.unblock_duration = -1.0;
-                            }
-                            responseMutex.unlock();
-                            addStopReceivingDataAction(actionList, read);
-                            counter++;
-                            break;
-                        }
-                        case 1:
-                        {
-                            // unblock odd numbered reads with duration 1 sec 
-                            if (read.readNr % 2 == 1)
-                            {
-                                addUnblockAction(actionList, read, 1.0);
-                                counter++;
-                            }
-                            else
-                            {
+                                //channel numbers with mod 4 == 0 are sequenced as usual
+                                std::stringstream buf;
+                                buf << read.channelNr << "_" << read.readNr;
+                                responseMutex.lock();
+                                std::map<string, ReadResponse>::iterator it = responseCache.find(buf.str());
+                                if (it != responseCache.end())
+                                {
+                                    (*it).second.unblock_duration = -1.0;
+                                }
+                                responseMutex.unlock();
                                 addStopReceivingDataAction(actionList, read);
                                 counter++;
+                                break;
                             }
-                            break;
+                            case 1:
+                            {
+                                // unblock odd numbered reads with duration 1 sec 
+                                if (read.readNr % 2 == 1)
+                                {
+                                    addUnblockAction(actionList, read, 1.0);
+                                    counter++;
+                                }
+                                else
+                                {
+                                    addStopReceivingDataAction(actionList, read);
+                                    counter++;
+                                }
+                                break;
+                            }
+                            case 2:
+                            {
+                                // unblock odd numbered reads with duration 0.1 sec
+                                if (read.readNr % 2 == 1)
+                                {
+                                    addUnblockAction(actionList, read, 0.1);
+                                    counter++;
+                                }
+                                else
+                                {
+                                    addStopReceivingDataAction(actionList, read);
+                                    counter++;
+                                }
+                                break;
+                            }
+                            case 3:
+                            {
+                                // unblock every fourth read with duration 0.1 sec
+                                if (read.readNr % 4 == 0)
+                                {
+                                    addUnblockAction(actionList, read, 0.1);
+                                    counter++;
+                                }
+                                else
+                                {
+                                    addStopReceivingDataAction(actionList, read);
+                                    counter++;
+                                }
+                                break;
+                            }
+                            default:
+                                // do nothing
+                                break;
                         }
-                        case 2:
-                        {
-                            // unblock odd numbered reads with duration 0.1 sec
-                            if (read.readNr % 2 == 1)
-                            {
-                                addUnblockAction(actionList, read, 0.1);
-                                counter++;
-                            }
-                            else
-                            {
-                                addStopReceivingDataAction(actionList, read);
-                                counter++;
-                            }
-                            break;
-                        }
-                        case 3:
-                        {
-                            // unblock every fourth read with duration 0.1 sec
-                            if (read.readNr % 4 == 0)
-                            {
-                                addUnblockAction(actionList, read, 0.1);
-                                counter++;
-                            }
-                            else
-                            {
-                                addStopReceivingDataAction(actionList, read);
-                                counter++;
-                            }
-                            break;
-                        }
-                        default:
-                            // do nothing
-                            break;
                     }
                 }
             }
@@ -317,7 +326,7 @@ namespace readuntil
             
             
             respQueueMutex.lock();
-        	for (GetLiveReadsResponse_ActionResponse actResponse : response.action_reponses())
+        	for (GetLiveReadsResponse_ActionResponse actResponse : response.action_responses())
             {
                 responseQueue.push(actResponse);
                 actNr++;
