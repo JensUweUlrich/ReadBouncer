@@ -92,6 +92,8 @@ namespace readuntil
 		{
 			case ACQUISITION:
 				return new Acquisition(channel);
+			case ANALYSIS_CONFIGURATION:
+				return new AnalysisConfiguration(channel);
 			case INSTANCE:
 				return new Instance(channel);
 			case DATA:

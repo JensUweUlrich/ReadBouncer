@@ -19,7 +19,22 @@ namespace readuntil
     {
         stub = DataService::NewStub(channel);
         acq = new readuntil::Acquisition(channel);
+        conf = new readuntil::AnalysisConfiguration(channel);
         data_logger = spdlog::get("RUClientLog");
+        resolveFilterClasses();
+    }
+
+    void Data::resolveFilterClasses()
+    {
+        Map<int32, string> classes = conf->getReadClassifications();
+		for (MapPair<int32, string> p : classes)
+		{
+			if (p.second=="strand" || p.second=="adapter")
+            {
+                filterClasses.insert(p.first);
+                std::cout<<p.first<<std::endl;
+            }
+		}
     }
 
     void Data::addUnblockAction(GetLiveReadsRequest_Actions *actionList, ReadCache &read, const double unblock_duration)
@@ -175,6 +190,7 @@ namespace readuntil
             {
                 std::this_thread::sleep_for(std::chrono::milliseconds(100 - elapsed_milliseconds));
             }
+            
         }
         data_logger->debug("leaving action request thread");
     }
@@ -347,8 +363,26 @@ namespace readuntil
             data_logger->info(ss.str());
             
        		Map<uint32, GetLiveReadsResponse_ReadData> readData = response.channels();
+            int f = 0;
        		for (MapPair<uint32, GetLiveReadsResponse_ReadData> entry : readData)
         	{
+                // only process read chunks from filter classes (e.g. strand or adapter)
+                bool filtered = true;
+                for (int32 cl : entry.second.chunk_classifications())
+                {
+                    if (filterClasses.find(cl) != filterClasses.end())
+                    {
+                        filtered = false;
+                        break;
+                    }
+                }
+
+                if (filtered)
+                {
+                    f++;
+                    continue;
+                }
+
                 // only add reads we did not already see to processing queue
                 if (std::find(uniqueReadIds.begin(), uniqueReadIds.end(), entry.second.id()) == uniqueReadIds.end())
                 {
@@ -381,6 +415,7 @@ namespace readuntil
                     uniqueReadIds.push_back(entry.second.id());
                 }
        		}
+            std::cout<<"filtered signals: "<<f<<std::endl;
             std::stringstream ss2;
             ss2 << "ReadCacheSize : " << reads.size() << "; ActionBatchSize : " << (int)actionBatchSize;
             data_logger->debug(ss2.str());

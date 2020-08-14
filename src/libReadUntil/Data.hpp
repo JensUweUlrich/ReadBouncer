@@ -22,6 +22,7 @@
 #include "spdlog/spdlog.h"
 
 #include "Acquisition.hpp"
+#include "Analysis_Configuration.hpp"
 #include "MinKnowService.hpp"
 #include "DataServiceException.hpp"
 
@@ -61,10 +62,12 @@ namespace readuntil
             std::unique_ptr<DataService::Stub> stub;
             std::unique_ptr<grpc::ClientReaderWriter<GetLiveReadsRequest, GetLiveReadsResponse>> stream;
             readuntil::Acquisition *acq;
+            readuntil::AnalysisConfiguration *conf;
             std::queue<ReadCache> reads;
             std::queue<GetLiveReadsResponse_ActionResponse> responseQueue;
             std::map<string, ReadResponse> responseCache;
             std::vector<std::string> uniqueReadIds;
+            std::set<int32> filterClasses;
             std::mutex readMutex;
             std::mutex responseMutex;
             std::mutex respQueueMutex;
@@ -81,6 +84,7 @@ namespace readuntil
             void addStopReceivingDataAction(GetLiveReadsRequest_Actions *actionList, ReadCache &read);
             void printResponseData();
             void adaptActionBatchSize();
+            void resolveFilterClasses();
         public:
             Data() = default;
             Data(std::shared_ptr<::grpc::Channel> channel);

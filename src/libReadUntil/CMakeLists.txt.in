@@ -67,7 +67,7 @@ message(STATUS "Protobuf directory : ${CMAKE_CURRENT_BINARY_DIR}")
 ExternalProject_Add(grpc
   PREFIX grpc
   GIT_REPOSITORY    https://github.com/grpc/grpc.git
-  GIT_TAG           v1.30.2
+  GIT_TAG           v1.30.0
   SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/grpc"
   CMAKE_CACHE_ARGS
         -DgRPC_INSTALL:BOOL=ON

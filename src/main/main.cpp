@@ -410,8 +410,6 @@ void run_program(cmd_arguments &args)
 		{
 			std::cerr << "Could not establish connection to MinKNOW or MinION device" << std::endl;
 		}
-		
-       	
 	}
 }
 
