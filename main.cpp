@@ -562,13 +562,12 @@ int main(int argc, char const ** argv)
           
 		 pool.enqueue([s, &args]
 		 {
-			 std::mutex mtx;
-			 mtx.lock();
+
 			 Nb_Minimizer.NumberOfMinimizer = 0.0;
 			 sum_num_containments = 0;
 			 sketch_size =0;
 			 run_program(args,s);
-			 mtx.unlock();
+
 			 
 		});
         
