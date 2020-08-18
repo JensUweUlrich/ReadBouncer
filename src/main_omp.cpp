@@ -7,6 +7,14 @@
 *     **********./NanoLiveTk bloom_minhash -o results.txt -t 2 -e 0.05 -k 31 Listeria_monocytogenes_ATCC_19115_.fasta -q Listeria.fastq **********
 *
 ******************************************************************************************************************************************************
+How to run: 
+1- change the name to main.cpp
+2- set a name for the output file 
+3- -t n : n is the number of threads, can be between 1-25, by using a bigger number of threads you should change the maxumum number of threads by line 182
+
+Note: 
+The output's shape is reversed, for change to the normal form you can use the terminal (I used sed)
+sed -e 'G;:1' -e 's/\(.\)\(.*\n\)/\2\1/;t1' -e 's/.//' filename | awk '{print $3}'
 
 */
 
