@@ -32,7 +32,6 @@ namespace readuntil
 			if (p.second=="strand" || p.second=="adapter")
             {
                 filterClasses.insert(p.first);
-                std::cout<<p.first<<std::endl;
             }
 		}
     }
@@ -45,8 +44,10 @@ namespace readuntil
         *data = action->unblock();
         data->set_duration(unblock_duration);
         action->set_number(read.readNr);
+        //action->set_id(read.id);
         std::stringstream buf;
-        buf << "unblock_" << read.channelNr << "_" << read.readNr;
+        std::chrono::milliseconds ms = std::chrono::duration_cast< std::chrono::milliseconds >(std::chrono::system_clock::now().time_since_epoch());
+        buf << "unblock_" << read.channelNr << "_" << read.readNr << "_" << ms.count();
         responseMutex.lock();
         std::map<string, ReadResponse>::iterator it = responseCache.find(buf.str().substr(8));
         if (it != responseCache.end())
@@ -103,8 +104,8 @@ namespace readuntil
                     if (unblock_all)
                     {
                         addUnblockAction(actionList, read, 0.1);
-                        addStopReceivingDataAction(actionList, read);
-                        counter+=2;
+                        //addStopReceivingDataAction(actionList, read);
+                        counter++;
                     }
                     else
                     {
@@ -363,7 +364,6 @@ namespace readuntil
             data_logger->info(ss.str());
             
        		Map<uint32, GetLiveReadsResponse_ReadData> readData = response.channels();
-            int f = 0;
        		for (MapPair<uint32, GetLiveReadsResponse_ReadData> entry : readData)
         	{
                 // only process read chunks from filter classes (e.g. strand or adapter)
@@ -379,13 +379,13 @@ namespace readuntil
 
                 if (filtered)
                 {
-                    f++;
                     continue;
                 }
 
                 // only add reads we did not already see to processing queue
-                if (std::find(uniqueReadIds.begin(), uniqueReadIds.end(), entry.second.id()) == uniqueReadIds.end())
-                {
+                // TODO: test without this => send unblock again if it didn't work initially
+                //if (std::find(uniqueReadIds.begin(), uniqueReadIds.end(), entry.second.id()) == uniqueReadIds.end())
+                //{
 
                     // store read data for csv printing
                     ReadResponse respData{};
@@ -409,13 +409,13 @@ namespace readuntil
                     ReadCache r{};
                     r.channelNr = channel;
                     r.readNr = readNr;
+                    r.id = entry.second.id();
                     readMutex.lock();
                     reads.push(r);
                     readMutex.unlock();
-                    uniqueReadIds.push_back(entry.second.id());
-                }
+                    //uniqueReadIds.push_back(entry.second.id());
+                //}
        		}
-            std::cout<<"filtered signals: "<<f<<std::endl;
             std::stringstream ss2;
             ss2 << "ReadCacheSize : " << reads.size() << "; ActionBatchSize : " << (int)actionBatchSize;
             data_logger->debug(ss2.str());
