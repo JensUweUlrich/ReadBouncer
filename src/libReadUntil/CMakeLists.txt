@@ -8,7 +8,7 @@ if(result)
   message(FATAL_ERROR "Generator step for gRPC failed: ${result}")
 endif()
 
-execute_process(COMMAND ${CMAKE_COMMAND} -D_WIN32_WINNT=0x600 --build .
+execute_process(COMMAND ${CMAKE_COMMAND} --build .
   RESULT_VARIABLE result
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/gRPC-build)
 if(result)

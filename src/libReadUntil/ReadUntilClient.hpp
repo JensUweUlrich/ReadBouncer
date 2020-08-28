@@ -34,7 +34,8 @@ namespace readuntil
 
 			std::shared_ptr<::grpc::Channel> channel;
 			std::string mk_host{ "127.0.0.1" };
-			uint16_t mk_port{ 8000 };
+			uint16_t mk_port{9501};
+			bool connected{false};
 			//std::shared_ptr<spdlog::sinks::daily_file_sink_mt> daily_sink = std::make_shared<spdlog::sinks::daily_file_sink_mt>("RUClientLog", 23, 59);
 			std::shared_ptr<spdlog::logger> connection_logger;
 			ReadUntilClient() = default;
@@ -63,7 +64,7 @@ namespace readuntil
 				mk_port = newPort;
 			}
 
-			bool connect();
+			bool connect(std::string device);
 
 			MinKnowService* getMinKnowService(const MinKnowServiceType type);
 

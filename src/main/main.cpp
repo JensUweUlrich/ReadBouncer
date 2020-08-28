@@ -45,8 +45,9 @@ struct cmd_arguments
 		{ 31 };
 		float error_rate
 		{ 0.05 };
-		std::string host;
-		uint16_t port;
+		std::string host{"127.0.0.1"};
+		uint16_t port{9501};
+		std::string device{};
 		uint8_t unblock_channels{2};
 		uint8_t unblock_reads{2};
 		uint16_t batch_size{512};
@@ -68,13 +69,13 @@ void initialize_main_argument_parser(argument_parser &parser, cmd_arguments &arg
 	parser.info.description = description;
 
 	std::vector<std::string> synopsis
-	{ "[bloom, minhash, poretest, connectiontest] [OPTIONS]" };
+	{ "[bloom, minhash, unblock, connectiontest] [OPTIONS]" };
 	parser.info.synopsis = synopsis;
 	//TODO refine examples
 	//parser.info.examples = "mhc bloom ";
 
 	parser.add_positional_option(args.mode, "Modus to run NanoLiveTk : ", value_list_validator
-	{ "bloom", "minhash", "poretest", "connectiontest" });
+	{ "bloom", "minhash", "unblock", "connectiontest" });
 
 	//TODO add all working modes as options and provide all additional information
 }
@@ -111,21 +112,22 @@ void initialize_read_until_argument_parser(argument_parser &parser, cmd_argument
 
 }
 
-void initialize_poretest_argument_parser(argument_parser &parser, cmd_arguments &args)
+void initialize_unblock_argument_parser(argument_parser &parser, cmd_arguments &args)
 {
 	// TODO refine parser information
 	parser.info.author = "Jens-Uwe Ulrich";
-	parser.info.short_description = "start a client to communicate with ONT's MinKNOW software";
-	parser.info.version = "0.0.2";
-	parser.info.date = "03-March-2020";
+	parser.info.short_description = "unblock reads streamed from a ONT device";
+	parser.info.version = "0.0.3";
+	parser.info.date = "27-August-2020";
 	parser.info.email = "jens-uwe.ulrich@hpi.de";
 
 	// only for debugging
-	parser.add_option(args.host, 'c', "host", "host IP address");
-	parser.add_option(args.port, 'p', "port", "port on which to communicate with host");
-	parser.add_option(args.unblock_channels, 'u',"unblock-channels", "channels to unblock",option_spec::DEFAULT);
-	parser.add_option(args.unblock_reads, 'r',"unblock-reads","unblock every r-th read of an unblock channel",option_spec::DEFAULT);
-	parser.add_option(args.batch_size, 'b', "batch-size", "number of actions send in one response to MinKNOW", option_spec::DEFAULT);
+	parser.add_option(args.device, 'd', "device", "device used for unblocking", option_spec::REQUIRED);
+	parser.add_option(args.host, 'c', "host", "ip address of machine hosting MinKNOW application", option_spec::DEFAULT);
+	parser.add_option(args.port, 'p', "port", "port on which to communicate with host", option_spec::DEFAULT);
+	//parser.add_option(args.unblock_channels, 'u',"unblock-channels", "channels to unblock",option_spec::DEFAULT);
+	//parser.add_option(args.unblock_reads, 'r',"unblock-reads","unblock every r-th read of an unblock channel",option_spec::DEFAULT);
+	//parser.add_option(args.batch_size, 'b', "batch-size", "number of actions send in one response to MinKNOW", option_spec::DEFAULT);
 	parser.add_flag(args.unblock_all, 'a', "unblock-all", "unblock all reads in all channels", option_spec::DEFAULT);
 
 }
@@ -140,8 +142,9 @@ void initialize_connectiontest_argument_parser(argument_parser &parser, cmd_argu
 	parser.info.email = "jens-uwe.ulrich@hpi.de";
 
 	// only for debugging
-	parser.add_option(args.host, 'c', "host", "host IP address");
-	parser.add_option(args.port, 'p', "port", "port on which to communicate with host");
+	parser.add_option(args.host, 'c', "host", "host IP address", option_spec::DEFAULT);
+	parser.add_option(args.port, 'p', "port", "port on which to communicate with host", option_spec::DEFAULT);
+	parser.add_option(args.device, 'd', "device", "device used for unblocking", option_spec::REQUIRED);
 }
 
 /**
@@ -348,12 +351,12 @@ void run_program(cmd_arguments &args)
 		debug_stream << "Number of contained reads: " << num_contained_reads << "/" << num_query_reads;
 		// TODO calculate containment of sketches in reference bloom filter
 	}
-	else if (std::string("poretest").compare(args.mode) == 0)
+	else if (std::string("unblock").compare(args.mode) == 0)
 	{
         readuntil::ReadUntilClient &client = readuntil::ReadUntilClient::getClient();
 		client.setHost(args.host);
 		client.setPort(args.port);
-		if (client.connect())
+		if (client.connect(args.device))
 		{
 			std::cout << "Connection successfully established!" << ::std::endl;
 		}
@@ -385,7 +388,7 @@ void run_program(cmd_arguments &args)
 				(*data).setUnblockChannels(args.unblock_channels);		
 				(*data).setUnblockReads(args.unblock_reads);
 			}
-			(*data).setActionBatchSize(args.batch_size);
+			//(*data).setActionBatchSize(args.batch_size);
 			(*data).getLiveReads();
 		}
 		catch (readuntil::DataServiceException ex)
@@ -402,7 +405,7 @@ void run_program(cmd_arguments &args)
         readuntil::ReadUntilClient &client = readuntil::ReadUntilClient::getClient();
 		client.setHost(args.host);
 		client.setPort(args.port);
-		if (client.connect())
+		if (client.connect(args.device))
 		{
 			std::cout << "Connection successfully established!" << ::std::endl;
 		}
@@ -463,11 +466,11 @@ int main(int argc, char const **argv)
 			return -1;
 		}
 	}
-	else if (std::string(argv[1]).compare("poretest") == 0)
+	else if (std::string(argv[1]).compare("unblock") == 0)
 	{
-		args.mode = "poretest";
-		argument_parser client_parser("poretest", --argc, argv + 1);
-		initialize_poretest_argument_parser(client_parser, args);
+		args.mode = "unblock";
+		argument_parser client_parser("unblock", --argc, argv + 1);
+		initialize_unblock_argument_parser(client_parser, args);
 
 		try
 		{

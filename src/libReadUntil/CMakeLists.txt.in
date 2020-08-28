@@ -8,7 +8,7 @@ include(ExternalProject)
 # Builds c-ares project from the git submodule.
 ExternalProject_Add(c-ares
   GIT_REPOSITORY    https://github.com/c-ares/c-ares.git
-  GIT_TAG           master
+  GIT_TAG           cares-1_16_1
   SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/c-ares"
   CMAKE_CACHE_ARGS
         -DCARES_SHARED:BOOL=OFF
@@ -22,7 +22,7 @@ ExternalProject_Add(c-ares
 ExternalProject_Add(protobuf
   PREFIX protobuf
   GIT_REPOSITORY    https://github.com/protocolbuffers/protobuf.git
-  GIT_TAG           master
+  GIT_TAG           v3.12.4
   SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/protobuf"
   SOURCE_SUBDIR cmake
   CMAKE_CACHE_ARGS
