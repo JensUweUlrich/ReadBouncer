@@ -13,7 +13,7 @@ namespace readuntil
     Acquisition::Acquisition(std::shared_ptr<::grpc::Channel> channel)
     {
         stub = AcquisitionService::NewStub(channel);
-        acquisition_logger = spdlog::get("RUClientLog");
+//        acquisition_logger = spdlog::get("RUClientLog");
     }
 
     bool Acquisition::hasStarted()
@@ -23,7 +23,7 @@ namespace readuntil
 
         stream = stub->watch_for_status_change(&context);
         // first write setup the stream
-        acquisition_logger->debug("reading Minknow status");
+//        acquisition_logger->debug("reading Minknow status");
         while (stream->Read(&response))
         {
             if(response.status() == MinknowStatus::PROCESSING)
@@ -37,7 +37,7 @@ namespace readuntil
                 stream->WritesDone();
             }
         }
-        acquisition_logger->debug("Minknow status changed to PROCESSING");
+//        acquisition_logger->debug("Minknow status changed to PROCESSING");
 	    context.TryCancel();
         status = stream->Finish();
 

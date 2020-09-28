@@ -52,6 +52,18 @@ endif()
 
 set(Protobuf_DIR ${_FINDPACKAGE_PROTOBUF_CONFIG_DIR})
 
+ExternalProject_Add(openssl
+  PREFIX openssl
+  GIT_REPOSITORY    https://github.com/janbar/openssl-cmake.git
+  GIT_TAG           1.1.1g-20200510
+  SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/openssl"
+  CMAKE_CACHE_ARGS
+        -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/openssl
+)
+
+
+
+
 # if OPENSSL_ROOT_DIR is set, propagate that hint path to the external projects with OpenSSL dependency.
 #set(_CMAKE_ARGS_OPENSSL_ROOT_DIR "${CMAKE_CURRENT_BINARY_DIR}/../openssl)
 if (OPENSSL_ROOT_DIR)
@@ -75,15 +87,19 @@ ExternalProject_Add(grpc
         -D_WIN32_WINNT:STRING=0x600
         -DgRPC_PROTOBUF_PROVIDER:STRING=package
         -DgRPC_PROTOBUF_PACKAGE_TYPE:STRING=CONFIG
-        -DProtobuf_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/gRPC-build/protobuf/src/protobuf-build/lib/cmake/protobuf
+        -DProtobuf_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/protobuf/cmake
         -DgRPC_CARES_PROVIDER:STRING=package
         -Dc-ares_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/c-ares/lib/cmake/c-ares
         -DgRPC_ZLIB_PROVIDER:STRING=package
         -DZLIB_ROOT:STRING=${CMAKE_CURRENT_BINARY_DIR}/zlib
         -DgRPC_SSL_PROVIDER:STRING=package
-        ${_CMAKE_ARGS_OPENSSL_ROOT_DIR}
+        -DOPENSSL_ROOT_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/openssl
+        -DOPENSSL_USE_STATIC_LIBS:BOOL=ON
+        -DOPENSSL_INCLUDE_DIR=${CMAKE_CURRENT_BINARY_DIR}/openssl/include
+        -DOPENSSL_CRYPTO_LIBRARY=${CMAKE_CURRENT_BINARY_DIR}/openssl/lib/libcrypto.lib
+        -DOPENSSL_SSL_LIBRARY=${CMAKE_CURRENT_BINARY_DIR}/openssl/lib/libssl.lib
         -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/grpc
-  DEPENDS c-ares protobuf zlib)
+  DEPENDS c-ares protobuf zlib openssl)
 
 
 

@@ -10,9 +10,9 @@
 namespace readuntil
 {
 
-    void processSignals()
+    void Data::processSignals()
     {
-		
+	    ;
     }
 
     Data::Data(std::shared_ptr<::grpc::Channel> channel)
@@ -22,6 +22,7 @@ namespace readuntil
         conf = new readuntil::AnalysisConfiguration(channel);
         data_logger = spdlog::get("RUClientLog");
         resolveFilterClasses();
+        
     }
 
     void Data::resolveFilterClasses()
@@ -48,13 +49,6 @@ namespace readuntil
         std::stringstream buf;
         std::chrono::milliseconds ms = std::chrono::duration_cast< std::chrono::milliseconds >(std::chrono::system_clock::now().time_since_epoch());
         buf << "unblock_" << read.channelNr << "_" << read.readNr << "_" << ms.count();
-        responseMutex.lock();
-        std::map<string, ReadResponse>::iterator it = responseCache.find(buf.str().substr(8));
-        if (it != responseCache.end())
-        {
-            (*it).second.unblock_duration = unblock_duration;
-        }
-        responseMutex.unlock();
         action->set_action_id(buf.str());
     }
 
@@ -70,11 +64,27 @@ namespace readuntil
         action->set_action_id(buf.str());
     }
 
+    std::vector<float> Data::string_to_float(std::string const & s)
+    {
+        assert(s.size() % sizeof(float) == 0);
+
+        std::vector<float> result(s.size() / sizeof(float));
+
+        if (!result.empty())
+        {
+            std::copy(s.data(), s.data() + s.size(),
+                  reinterpret_cast<char *>(&result.front()));
+        }
+
+        return result;
+    }
+
     void Data::addActions()
     {
         data_logger->debug("start action request thread");
         // as long as signals are received from MinKnow
         // iterate over received data and stop further data allocation for every odd read on every odd channel
+        
         while (isRunning())
         {
             std::chrono::time_point<std::chrono::system_clock> start, end;
@@ -93,6 +103,7 @@ namespace readuntil
                 {
                     read.channelNr = reads.front().channelNr;
                     read.readNr = reads.front().readNr;
+                    read.raw_data = reads.front().raw_data;
                     hasElement = true;
                     reads.pop();
                 }
@@ -101,14 +112,28 @@ namespace readuntil
                 if (hasElement)
                 {
                     // 
-                    if (unblock_all)
-                    {
+                    //if (unblock_all)
+                    //{
+                       
+                        std::vector<float> sig = string_to_float(read.raw_data);
+                        char* sequence = call_raw_signal(caller, sig.data(), sig.size());
+                        std::stringstream buf;
+                        buf << read.channelNr << "_" << read.readNr;
+                        responseMutex.lock();
+                        std::map<string, ReadResponse>::iterator it = responseCache.find(buf.str());
+                        if (it != responseCache.end())
+                        {
+                            (*it).second.sequence = std::string(sequence);
+                        }
+                        responseMutex.unlock();
                         addUnblockAction(actionList, read, 0.1);
-                        //addStopReceivingDataAction(actionList, read);
+                        addStopReceivingDataAction(actionList, read);
                         counter++;
+                    /*
                     }
                     else
                     {
+                        
                         switch(read.channelNr % 4)
                         {
                             case 0:
@@ -176,7 +201,9 @@ namespace readuntil
                                 // do nothing
                                 break;
                         }
+                        
                     }
+                    */
                 }
             }
 
@@ -221,7 +248,7 @@ namespace readuntil
         GetLiveReadsRequest_StreamSetup *setup = setupRequest.mutable_setup();
         setup->set_first_channel(1);
         setup->set_last_channel(512);
-        setup->set_raw_data_type(GetLiveReadsRequest_RawDataType_UNCALIBRATED);
+        setup->set_raw_data_type(GetLiveReadsRequest_RawDataType_CALIBRATED);
         setup->set_sample_minimum_chunk_size(0);
 
         if (!stream->Write(setupRequest))
@@ -235,7 +262,7 @@ namespace readuntil
     void Data::printResponseData()
     {
         std::ofstream ofs("readMetaData.csv", std::ofstream::out);
-        ofs << "read_id\tchannel_nr\tread_nr\tresponse\tunblock_duration\tsamples_since_start\tseconds_since_start\tstart_sample\tchunk_start_sample\tchunk_length\n"; 
+        ofs << "read_id\tchannel_nr\tread_nr\tresponse\tsequence\tsamples_since_start\tseconds_since_start\tstart_sample\tchunk_start_sample\tchunk_length\n"; 
         while (isRunning())
         {
             
@@ -275,32 +302,29 @@ namespace readuntil
                 std::map<string, ReadResponse>::iterator it = responseCache.find(id);
                 if (it != responseCache.end())
                 {
-                    ofs << (*it).second.id << "\t" << (*it).second.channelNr << "\t" << (*it).second.readNr << "\t" << success << "\t" << (*it).second.unblock_duration << "\t" << (*it).second.samples_since_start << "\t" << (*it).second.start_sample << "\t" << (*it).second.chunk_start_sample << "\t" << (*it).second.chunk_length << "\n";
+                    ofs << (*it).second.id << "\t" << (*it).second.channelNr << "\t" << (*it).second.readNr << "\t" << success << "\t" << (*it).second.sequence << "\t" << (*it).second.samples_since_start << "\t" << (*it).second.start_sample << "\t" << (*it).second.chunk_start_sample << "\t" << (*it).second.chunk_length << "\n";
                     responseCache.erase(it);
                 }
                 responseMutex.unlock();
             }
 
-
+            /*
             responseMutex.lock();
             if (!responseCache.empty())
             {
                 std::map<string,ReadResponse>::iterator it = responseCache.begin();
-                if((*it).second.unblock_duration < 0)
-                {
-                    ofs << (*it).second.id << "\t" << (*it).second.channelNr << "\t" << (*it).second.readNr << "\t none\t" << (*it).second.unblock_duration << "\t" << (*it).second.samples_since_start << "\t" << (*it).second.start_sample << "\t" << (*it).second.chunk_start_sample << "\t" << (*it).second.chunk_length << "\n";
-                    responseCache.erase(it);
-                }
+                ofs << (*it).second.id << "\t" << (*it).second.channelNr << "\t" << (*it).second.readNr << "\t none\t" << (*it).second.sequence << "\t" << (*it).second.samples_since_start << "\t" << (*it).second.start_sample << "\t" << (*it).second.chunk_start_sample << "\t" << (*it).second.chunk_length << "\n";
+                responseCache.erase(it);
             }
             responseMutex.unlock();
-
+            */
         }
 
         responseMutex.lock();
         
         for (std::map<string,ReadResponse>::iterator it = responseCache.begin(); it != responseCache.end(); ++it)
         {
-            ofs << (*it).second.id << "\t" << (*it).second.channelNr << "\t" << (*it).second.readNr << "\tnone\t" << (*it).second.unblock_duration << "\t" << (*it).second.samples_since_start << "\t" << (*it).second.start_sample << "\t" << (*it).second.chunk_start_sample << "\t" << (*it).second.chunk_length << "\n";
+            ofs << (*it).second.id << "\t" << (*it).second.channelNr << "\t" << (*it).second.readNr << "\tnone\t" << (*it).second.sequence << "\t" << (*it).second.samples_since_start << "\t" << (*it).second.start_sample << "\t" << (*it).second.chunk_start_sample << "\t" << (*it).second.chunk_length << "\n";
         }
         responseMutex.unlock();
         ofs.close();
@@ -410,6 +434,7 @@ namespace readuntil
                     r.channelNr = channel;
                     r.readNr = readNr;
                     r.id = entry.second.id();
+                    r.raw_data = entry.second.raw_data();
                     readMutex.lock();
                     reads.push(r);
                     readMutex.unlock();
@@ -422,14 +447,16 @@ namespace readuntil
 
             adaptActionBatchSize();  
        }
-       data_logger->debug("leaving signals thread");
+//       data_logger->debug("leaving signals thread");
        runs = false;
     }
 
-    void Data::getLiveReads()
+    void Data::getLiveReads(std::string &weights)
     {
         runs = true;
         grpc::Status status;
+
+        caller = create_caller("48", weights.c_str(), 5, 0.01);
 
         stream = stub->get_live_reads(&context);
         // first write setup the stream
@@ -452,9 +479,9 @@ namespace readuntil
 
         printThread.join();
 
-        data_logger->debug(status.error_code());
-        data_logger->debug(status.error_message());
-        data_logger->debug(status.error_details());
+//        data_logger->debug(status.error_code());
+//        data_logger->debug(status.error_message());
+//        data_logger->debug(status.error_details());
 
     }
 

@@ -1,6 +1,16 @@
 
 configure_file(CMakeLists.txt.in gRPC-build/CMakeLists.txt)
 
+#set(OPENSSL_ROOT_DIR "C:/openssl")
+#set(OPENSSL_INCLUDE_DIR "C:/openssl/include")
+#set(OPENSSL_LIBRARIES "C:/openssl/lib")
+#set(OPENSSL_USE_STATIC_LIBS TRUE)
+#find_package(OpenSSL)
+
+#set(_CMAKE_ARGS_OPENSSL_ROOT_DIR "-DOPENSSL_ROOT_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/openssl/src/openssl-build")
+#set(OPENSSL_ROOT_DIR "${CMAKE_CURRENT_BINARY_DIR}/openssl/src/openssl-build")
+#set(OPENSSL_CRYPTO_LIBRARY "${OPENSSL_ROOT_DIR}/crypto/Release/libcrypto-1_1-x64.lib")
+
 execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
   RESULT_VARIABLE result
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/gRPC-build)
@@ -8,7 +18,7 @@ if(result)
   message(FATAL_ERROR "Generator step for gRPC failed: ${result}")
 endif()
 
-execute_process(COMMAND ${CMAKE_COMMAND} --build .
+execute_process(COMMAND ${CMAKE_COMMAND} --build . --config Release
   RESULT_VARIABLE result
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/gRPC-build)
 if(result)
@@ -75,30 +85,18 @@ foreach(proto ${protofiles})
   list(APPEND minknow_srcs "${protofilepath}/${fname}.pb.cc" "${protofilepath}/${fname}.grpc.pb.cc")
 endforeach()
 
-# flappie build parameters
-# include hdf5 source directory for ubuntu linux
-#include_directories("/usr/include/hdf5/serial/")
-
-#set(flappie_dir "${CMAKE_CURRENT_BINARY_DIR}/flappie")
-
-#configure_file (
-#    "${flappie_dir}/src/version.h.in"
-#    "${flappie_dir}/include/version.h"
-#)
 
 set(spdlog_DIR ${CMAKE_CURRENT_BINARY_DIR}/../spdlog/spdlog/lib/cmake/spdlog)
 find_package(spdlog REQUIRED)
 
-#file(GLOB flappie_srcs "${CMAKE_CURRENT_BINARY_DIR}/flappie/src/*.c")
-#file(GLOB flappie_hdrs "${CMAKE_CURRENT_BINARY_DIR}/flappie/src/*.h")
 
-include_directories("${CMAKE_CURRENT_BINARY_DIR}/minknow/proto")
+FIND_PATH(DEEPNANO_INCLUDE_DIR DeepNano2.h "${CMAKE_CURRENT_SOURCE_DIR}/../libBaseCaller" DOC "Deepnano2 includes")
 
-#add_library (ReadUntil STATIC ${READUNTILSOURCES} ${minknow_srcs} ${flappie_srcs})
+include_directories("${CMAKE_CURRENT_BINARY_DIR}/minknow/proto" ${DEEPNANO_INCLUDE_DIR})
+
 add_library (ReadUntil STATIC ${READUNTILSRCS} ${READUNTILHDRS} ${minknow_srcs})
-#target_include_directories (ReadUntil PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} "${CMAKE_CURRENT_BINARY_DIR}/minknow" "${CMAKE_CURRENT_BINARY_DIR}/flappie")
-target_include_directories (ReadUntil PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} "${CMAKE_CURRENT_BINARY_DIR}/minknow/proto")
-target_link_libraries (ReadUntil  ${_GRPC_GRPCPP_UNSECURE} ${_PROTOBUF_LIBPROTOBUF} spdlog::spdlog)
+target_include_directories (ReadUntil PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} "${CMAKE_CURRENT_BINARY_DIR}/minknow/proto" ${CMAKE_CURRENT_SOURCE_DIR}/../libBaseCaller)
+target_link_libraries (ReadUntil  ${_GRPC_GRPCPP_UNSECURE} ${_PROTOBUF_LIBPROTOBUF} mklcore mklseq mkllp64 deepnano2 spdlog::spdlog_header_only)
 
 install(TARGETS ReadUntil DESTINATION lib COMPONENT libraries)
 
