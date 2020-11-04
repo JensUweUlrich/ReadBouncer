@@ -6,8 +6,12 @@ project (NanoLiveTk CXX C)
 #add_compile_options(-DDEBUG)
 #add_compile_options(-DBUILD_SHARED_LIBS=ON)
 #add_compile_options(-Wno-format)
+
 add_compile_options(-D_WIN32_WINNT=0x600)
-add_definitions(-D_WIN32_WINNT=0x600)
+add_compile_options("/MT")
+add_compile_options("/std:c++17")
+#add_compile_options("/std:c++latest")
+#add_definitions(-D_WIN32_WINNT=0x600)
 
 #set(CMAKE_GENERATORS "MinGW Makefiles")
 set(CMAKE_BUILD_TYPE Release)
@@ -27,12 +31,11 @@ endif()
 # add all subdirectories
 add_subdirectory(spdlog)
 add_subdirectory(seqan)
-#add_subdirectory(libBaseCaller)
+add_subdirectory(libBaseCaller)
 add_subdirectory(libReadUntil)
-add_subdirectory(libMinimizer)
-add_subdirectory(libBloomFilter)
+add_subdirectory(lyra)
 add_subdirectory(main)
-add_subdirectory(test)
+#add_subdirectory(test)
 
 # now pack everything into an installer
 
