@@ -40,10 +40,14 @@ public:
 
     void push( T t )
     {
+        // accquire mutex to modify queue
         std::unique_lock< std::mutex > lock( m );
+        // wait for the mutex
         while ( q.size() >= max_size )
             cv_push.wait( lock );
+        // push t on the queue
         q.push( t );
+        // notify other thread that something can be popped from the queue
         cv_pop.notify_one();
     }
 

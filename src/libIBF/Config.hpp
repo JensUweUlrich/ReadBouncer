@@ -13,7 +13,7 @@
 namespace ibf
 {
 
-    struct Config
+    class Config
     {
 
         public:
@@ -23,13 +23,15 @@ namespace ibf
             std::string                directory_reference_files = "";
             std::string                extension                 = "";
 
-            std::string seqid_bin_file     = "";
+            
             std::string output_filter_file = "";
             std::string update_filter_file = "";
             bool        update_complete    = false;
 
             uint32_t filter_size      = 0;
             uint64_t filter_size_bits = 0;
+
+            uint64_t fragment_length  = 0;
 
             uint16_t kmer_size      = 19;
             uint16_t hash_functions = 3;
@@ -56,15 +58,16 @@ namespace ibf
 
             bool validate()
             {
-
-                if ( seqid_bin_file.empty() || output_filter_file.empty() )
+            // both are not mandatory anymore
+            /*if ( seqid_bin_file.empty() || output_filter_file.empty() )
                 {
                     std::cerr << "--seqid-bin-file and --output-filter-file are mandatory" << std::endl;
                     return false;
                 }
-
+            */
                 // add references from folder
-                if ( !directory_reference_files.empty() && !extension.empty() )
+                // TODO: move this part to global config
+            /*    if ( !directory_reference_files.empty() && !extension.empty() )
                 {
                     struct dirent* entry = nullptr;
                     DIR*           dp    = nullptr;
@@ -79,7 +82,7 @@ namespace ibf
                     }
                     closedir( dp );
                 }
-
+            
                 if ( reference_files.empty() )
                 {
                     std::cerr << "Please provide reference sequence files with the parameters --reference-files or/and with "
@@ -87,7 +90,7 @@ namespace ibf
                             << std::endl;
                     return false;
                 }
-
+            */
                 if ( threads <= 2 )
                 {
                     threads_build = 1;

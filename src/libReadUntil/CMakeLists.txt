@@ -1,16 +1,6 @@
 
 configure_file(CMakeLists.txt.in gRPC-build/CMakeLists.txt)
 
-#set(OPENSSL_ROOT_DIR "C:/openssl")
-#set(OPENSSL_INCLUDE_DIR "C:/openssl/include")
-#set(OPENSSL_LIBRARIES "C:/openssl/lib")
-#set(OPENSSL_USE_STATIC_LIBS TRUE)
-#find_package(OpenSSL)
-
-#set(_CMAKE_ARGS_OPENSSL_ROOT_DIR "-DOPENSSL_ROOT_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/openssl/src/openssl-build")
-#set(OPENSSL_ROOT_DIR "${CMAKE_CURRENT_BINARY_DIR}/openssl/src/openssl-build")
-#set(OPENSSL_CRYPTO_LIBRARY "${OPENSSL_ROOT_DIR}/crypto/Release/libcrypto-1_1-x64.lib")
-
 execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
   RESULT_VARIABLE result
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/gRPC-build)

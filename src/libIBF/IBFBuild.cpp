@@ -5,7 +5,16 @@ namespace ibf
 {
 
 
-
+/*
+    parse tsv file with information about reference sequences
+    seqid <tab> seqstart <tab> seqend <tab> binid
+    sequences with same binid will be put in same bloom filter ???
+    sometimes only specific parts of the reference should be added to the IBF
+    these fragments can be specified in seq_id_bin file
+    eg
+    NC12345 1       1938    1
+    NC12345 2561    7145    1
+*/
 void IBF::parse_seqid_bin( const std::string& seqid_bin_file, TSeqBin& seq_bin, std::set< uint64_t >& bin_ids )
 {
     std::string   line;
@@ -19,11 +28,88 @@ void IBF::parse_seqid_bin( const std::string& seqid_bin_file, TSeqBin& seq_bin, 
             fields.push_back( field );
         // seqid <tab> seqstart <tab> seqend <tab> binid
         uint32_t binid = std::stoul( fields[3] );
+        // add fragmentbin to seq_bins
         seq_bin[fields[0]].push_back( FragmentBin{ std::stoul( fields[1] ), std::stoul( fields[2] ), binid } );
         bin_ids.insert( binid );
     }
 }
 
+
+void IBF::parse_ref_seqs(SafeQueue< Seqs > &queue_refs, std::mutex &mtx, Config &config, Stats &stats)
+{
+    std::future< void > read_task( std::async( std::launch::async, [=, &queue_refs, &mtx, &stats] {
+        // iterate over all reference sequence input files stated in config file
+        for ( std::string const& reference_file : config.reference_files )
+        {
+            seqan::SeqFileIn seqFileIn;
+            // open input file in first iteration
+            if ( !seqan::open( seqFileIn, seqan::toCString( reference_file ) ) )
+            {
+                std::cerr << "ERROR: Unable to open the file: " << reference_file << std::endl;
+                continue;
+            }
+            // read current input file
+            while ( !seqan::atEnd( seqFileIn ) )
+            {
+
+                seqan::StringSet< seqan::CharString > ids;
+                seqan::StringSet< seqan::CharString > seqs;
+                // read all sequences from the current file
+                try
+                {
+                    seqan::readRecords( ids, seqs, seqFileIn, config.n_refs );
+                }
+                catch ( seqan::Exception const& e )
+                {
+                    std::scoped_lock lock( mtx );
+                    std::cerr << "ERROR: Problems parsing the file: " << reference_file << "[" << e.what() << "]"
+                              << std::endl;
+                }
+
+                // iterate over all sequences loaded into the sequence bin
+                for ( uint64_t i = 0; i < seqan::length( ids ); ++i )
+                {
+                    stats.totalSeqsFile += 1;
+                    // sequence with length < kmer size is invalid and will not be added to the queue
+                    if ( seqan::length( seqs[i] ) < config.kmer_size )
+                    {
+                        if ( config.verbose )
+                        {
+                            std::scoped_lock lock( mtx );
+                            std::cerr << "WARNING: sequence smaller than k-mer size"
+                                      << " [" << ids[i] << "]" << std::endl;
+                        }
+                        stats.invalidSeqs += 1;
+                        continue;
+                    }
+                    std::string cid   = seqan::toCString( ids[i] );
+                    // delete everything after first space in seq identifier
+                    std::string seqid = cid.substr( 0, cid.find( ' ' ) );
+                    // don't add sequences whose id is not in the seq_bin
+                    // DEPRECATED: since we build seq_bin based on input reference sequences
+                    /*if ( seq_bin.count( seqid ) == 0 )
+                    {
+                        if ( config.verbose )
+                        {
+                            std::scoped_lock lock( mtx );
+                            std::cerr << "WARNING: sequence not defined on seqid-bin-file"
+                                      << " [" << seqid << "]" << std::endl;
+                        }
+                        stats.invalidSeqs += 1;
+                        continue;
+                    }
+                    */
+                    stats.sumSeqLen += seqan::length( seqs[i] );
+                    // add reference sequences to the queue
+                    queue_refs.push( Seqs{ seqid, seqs[i] } );
+                }
+            }
+            seqan::close( seqFileIn );
+        }
+        // notify all threads that the last ref sequences were pushed into the queue
+        queue_refs.notify_push_over();
+    } ) );
+}
 
 void IBF::load_filter( Config& config, const std::set< uint64_t >& bin_ids, Stats& stats )
 {
@@ -77,7 +163,7 @@ void IBF::load_filter( Config& config, const std::set< uint64_t >& bin_ids, Stat
 
 }
 
-void print_time( const GanonBuild::Config& config,
+void print_time( const ibf::Config& config,
                  const StopClock&          timeGanon,
                  const StopClock&          timeLoadFiles,
                  const StopClock&          timeLoadSeq,
@@ -148,7 +234,7 @@ bool IBF::build( Config config )
     Stats stats;
 
     // not needed here
-
+/*
     timeLoadFiles.start();
     // parse seqid bin
     TSeqBin      seq_bin;
@@ -157,7 +243,7 @@ bool IBF::build( Config config )
     stats.totalSeqsBinId = seq_bin.size();
     stats.totalBinsBinId = bin_ids.size();
     timeLoadFiles.stop();
- 
+ */
     //////////////////////////////
 
     std::mutex                mtx;
@@ -166,69 +252,12 @@ bool IBF::build( Config config )
 
     // Start extra thread for reading the input
     timeLoadSeq.start();
-    std::future< void > read_task( std::async( std::launch::async, [=, &seq_bin, &queue_refs, &mtx, &stats] {
-        for ( auto const& reference_file : config.reference_files )
-        {
-            seqan::SeqFileIn seqFileIn;
-            if ( !seqan::open( seqFileIn, seqan::toCString( reference_file ) ) )
-            {
-                std::cerr << "ERROR: Unable to open the file: " << reference_file << std::endl;
-                continue;
-            }
-            while ( !seqan::atEnd( seqFileIn ) )
-            {
+    parse_ref_seqs(queue_refs, mtx, config.reference_files, stats);
 
-                seqan::StringSet< seqan::CharString > ids;
-                seqan::StringSet< seqan::CharString > seqs;
+    // divide ref seqs in fragments, that will be placed in different bins of the ibf
+    build_fragment_bin();
 
-                try
-                {
-                    seqan::readRecords( ids, seqs, seqFileIn, config.n_refs );
-                }
-                catch ( seqan::Exception const& e )
-                {
-                    std::scoped_lock lock( mtx );
-                    std::cerr << "ERROR: Problems parsing the file: " << reference_file << "[" << e.what() << "]"
-                              << std::endl;
-                }
-
-                for ( uint64_t i = 0; i < seqan::length( ids ); ++i )
-                {
-                    stats.totalSeqsFile += 1;
-                    if ( seqan::length( seqs[i] ) < config.kmer_size )
-                    {
-                        if ( config.verbose )
-                        {
-                            std::scoped_lock lock( mtx );
-                            std::cerr << "WARNING: sequence smaller than k-mer size"
-                                      << " [" << ids[i] << "]" << std::endl;
-                        }
-                        stats.invalidSeqs += 1;
-                        continue;
-                    }
-                    std::string cid   = seqan::toCString( ids[i] );
-                    std::string seqid = cid.substr( 0, cid.find( ' ' ) );
-                    if ( seq_bin.count( seqid ) == 0 )
-                    {
-                        if ( config.verbose )
-                        {
-                            std::scoped_lock lock( mtx );
-                            std::cerr << "WARNING: sequence not defined on seqid-bin-file"
-                                      << " [" << seqid << "]" << std::endl;
-                        }
-                        stats.invalidSeqs += 1;
-                        continue;
-                    }
-                    stats.sumSeqLen += seqan::length( seqs[i] );
-                    queue_refs.push( Seqs{ seqid, seqs[i] } );
-                }
-            }
-            seqan::close( seqFileIn );
-        }
-        queue_refs.notify_push_over();
-    } ) );
-
-    // load new or given filter
+    // load new or given ibf
     timeLoadFilter.start();
     load_filter( config, bin_ids, stats );
     timeLoadFilter.stop();
@@ -241,12 +270,16 @@ bool IBF::build( Config config )
         tasks.emplace_back( std::async( std::launch::async, [=, &seq_bin, &filter, &queue_refs] {
             while ( true )
             {
+                // take ref seq from the queue
                 Seqs val = queue_refs.pop();
                 if ( val.seqid != "" )
                 {
+                    // add all fragments of the current reference to the IBF
                     for ( uint64_t i = 0; i < seq_bin.at( val.seqid ).size(); i++ )
                     {
+
                         auto [fragstart, fragend, binid] = seq_bin.at( val.seqid )[i];
+                        // fragment of the reference is defined as infix
                         // For infixes, we have to provide both the including start and the excluding end position.
                         // fragstart -1 to fix offset
                         // fragend -1+1 to fix offset and not exclude last position
