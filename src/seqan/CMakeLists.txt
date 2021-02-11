@@ -9,25 +9,41 @@ if(result)
   message(FATAL_ERROR "CMake step for seqan failed: ${result}")
 endif()
 
-execute_process(COMMAND ${CMAKE_COMMAND} --build .
+execute_process(COMMAND ${CMAKE_COMMAND} --build . --config Release
   RESULT_VARIABLE result
   #WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/seqan3-download )
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/seqan2-download)
-if(result)
-  message(FATAL_ERROR "Build step for seqan failed: ${result}")
-endif()
+#if(result)
+#  message(FATAL_ERROR "Build step for seqan failed: ${result}")
+#endif()
+
+add_library(sdsl STATIC IMPORTED GLOBAL)
+set_target_properties(sdsl PROPERTIES 
+    IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/seqan2-download/sdsl-lite-prefix/src/sdsl-lite-build/lib/Release/sdsl.lib"
+)
+target_include_directories( sdsl SYSTEM INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/sdsl-lite/include )
 
 #set(SeqAn3_DIR ${CMAKE_CURRENT_BINARY_DIR}/seqan3/seqan3-src/build_system)
 #find_package (SeqAn3 REQUIRED)
-
+set(CMAKE_PREFIX_PATH ${CMAKE_CURRENT_BINARY_DIR}/seqan2/seqan2-src/util/cmake)
+set(SEQAN_INCLUDE_PATH ${CMAKE_CURRENT_BINARY_DIR}/seqan2/seqan2-src/include)
 set(SeqAn_DIR ${CMAKE_CURRENT_BINARY_DIR}/seqan2/seqan2-src/util/cmake)
-find_package (SeqAn REQUIRED)
+#find_package (SeqAn REQUIRED)
 
 # ----------------------------------------------------------------------------
 # Build Setup
 # ----------------------------------------------------------------------------
 
+
+find_package( SeqAn CONFIG REQUIRED PATHS ${SeqAn_DIR} )
+
+add_library( seqan INTERFACE )
+target_include_directories( seqan SYSTEM INTERFACE ${SEQAN_INCLUDE_DIRS} )
+target_link_libraries( seqan INTERFACE ${SEQAN_LIBRARIES} )
+
 # Add include directories.
+
+#message(FATAL_ERROR ${SEQAN_INCLUDE_DIRS})
 include_directories (${SEQAN_INCLUDE_DIRS})
 
 # Add definitions set by find_package (SeqAn).

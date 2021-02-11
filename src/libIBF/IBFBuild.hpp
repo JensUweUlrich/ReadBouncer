@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Config.hpp"
-#include <utils/SafeQueue.hpp>
-#include <utils/StopClock.hpp>
+#include "SafeQueue.hpp"
+#include "StopClock.hpp"
 
 #include <seqan/binning_directory.h>
 
@@ -18,7 +18,10 @@
 #include <tuple>
 #include <vector>
 
-namespace ibf
+#ifndef INTERLEAVE_IBFBUILD_HPP_
+#define INTERLEAVE_IBFBUILD_HPP_
+
+namespace interleave
 {
 
     struct Seqs
@@ -37,7 +40,8 @@ namespace ibf
         , totalBinsFile{ 0 }
         , invalidSeqs{ 0 }
         , newBins{ 0 }
-        
+        {
+        }
         
 
         uint64_t sumSeqLen;
@@ -66,17 +70,24 @@ namespace ibf
     {
 
         private:
-            Tfilter filter;
+            Tfilter filter{};
 
+            // parse reference sequences
+            std::future< void > parse_ref_seqs(SafeQueue< Seqs > &queue_refs, std::mutex &mtx, interleave::Config &config, Stats &stats);
             void parse_seqid_bin( const std::string& seqid_bin_file, TSeqBin& seq_bin, std::set< uint64_t >& bin_ids );
+            std::vector< std::future< void > > add_sequences_to_filter(Config &config, uint64_t &binid, SafeQueue< Seqs > &queue_refs);
 
         public:
+            IBF(){}
+			~IBF(){}
             void load_filter( Config& config, const std::set< uint64_t >& bin_ids, Stats& stats );
             bool build( Config config );
-            void store_filer();
+            void store_filter();
         
 
-    }
+    };
 
 
 } // namespace GanonBuild
+
+#endif /* INTERLEAVE_IBFBUILD_HPP_ */

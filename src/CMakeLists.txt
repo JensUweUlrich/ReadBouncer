@@ -10,8 +10,10 @@ project (NanoLiveTk CXX C)
 add_compile_options(-D_WIN32_WINNT=0x600)
 add_compile_options("/MT")
 add_compile_options("/std:c++17")
+#add_compile_options(-DMSVC_COMPILER)
 #add_compile_options("/std:c++latest")
 #add_definitions(-D_WIN32_WINNT=0x600)
+
 
 #set(CMAKE_GENERATORS "MinGW Makefiles")
 set(CMAKE_BUILD_TYPE Release)
@@ -31,6 +33,7 @@ endif()
 # add all subdirectories
 add_subdirectory(spdlog)
 add_subdirectory(seqan)
+add_subdirectory(libIBF)
 add_subdirectory(libBaseCaller)
 add_subdirectory(libReadUntil)
 add_subdirectory(lyra)

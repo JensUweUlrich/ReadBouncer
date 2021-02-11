@@ -6,9 +6,12 @@
 #include <iostream>
 #include <fstream>
 
-
+// ReadUntil library
 #include "ReadUntilClient.hpp"
 #include "Data.hpp"
+// IBF library
+#include "Config.hpp"
+#include "IBFBuild.hpp"
 
 #include <lyra/lyra.hpp>
 
@@ -278,9 +281,20 @@ int main(int argc, char const **argv)
 			return -1;
 		}
 	}
+	
+*/
 
-	*/
+	interleave::Config config{};
+	config.reference_files.emplace_back("C:\\NanoLiveTk\\testData\\phiX_reference.fasta");
+	config.output_filter_file = "C:\\NanoLiveTk\\testData\\phiX.ibf";
+	config.fragment_length = 500;
+	config.filter_size = 128;
+	config.verbose = true;
+	interleave::IBF filter {};
+	filter.build(config);
 
+	std::cout<<"hier 295"<<std::endl;
+	
 	auto cli = lyra::cli();
 	std::string command;
 	bool show_help = false;

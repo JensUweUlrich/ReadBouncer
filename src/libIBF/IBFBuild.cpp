@@ -1,11 +1,11 @@
 
 #include "IBFBuild.hpp"
 
-namespace ibf
+namespace interleave
 {
 
 
-/*
+/*  @DEPRECATED
     parse tsv file with information about reference sequences
     seqid <tab> seqstart <tab> seqend <tab> binid
     sequences with same binid will be put in same bloom filter ???
@@ -34,8 +34,11 @@ void IBF::parse_seqid_bin( const std::string& seqid_bin_file, TSeqBin& seq_bin, 
     }
 }
 
+/**
+    read reference sequences from files and store them in reference sequence queue
+*/
 
-void IBF::parse_ref_seqs(SafeQueue< Seqs > &queue_refs, std::mutex &mtx, Config &config, Stats &stats)
+std::future< void > IBF::parse_ref_seqs(SafeQueue< Seqs > &queue_refs, std::mutex &mtx, interleave::Config &config, Stats &stats)
 {
     std::future< void > read_task( std::async( std::launch::async, [=, &queue_refs, &mtx, &stats] {
         // iterate over all reference sequence input files stated in config file
@@ -100,6 +103,7 @@ void IBF::parse_ref_seqs(SafeQueue< Seqs > &queue_refs, std::mutex &mtx, Config 
                     }
                     */
                     stats.sumSeqLen += seqan::length( seqs[i] );
+                    stats.totalBinsBinId += (seqan::length( seqs[i] ) / config.fragment_length) + 1;
                     // add reference sequences to the queue
                     queue_refs.push( Seqs{ seqid, seqs[i] } );
                 }
@@ -109,6 +113,53 @@ void IBF::parse_ref_seqs(SafeQueue< Seqs > &queue_refs, std::mutex &mtx, Config 
         // notify all threads that the last ref sequences were pushed into the queue
         queue_refs.notify_push_over();
     } ) );
+
+    return read_task;
+}
+
+
+std::vector< std::future< void > > IBF::add_sequences_to_filter(Config &config, uint64_t &binid, SafeQueue< Seqs > &queue_refs)
+{
+    std::vector< std::future< void > > tasks;
+    Tfilter filter = this->filter;
+    for ( uint16_t taskNo = 0; taskNo < config.threads_build; ++taskNo )
+    {
+        tasks.emplace_back( std::async( std::launch::async, [=, &filter, &queue_refs, &binid] {
+            while ( true )
+            {
+                // take ref seq from the queue
+                Seqs val = queue_refs.pop();
+                if ( val.seqid != "" )
+                {
+                    // add all fragments of the current reference to the IBF
+                    for ( uint64_t i = 0; (i * config.fragment_length - config.kmer_size + 1) < length(val.seq) - 1; i++ )
+                    {
+                        // consecutive fragments need to overlap by kmer_size-1 nts
+                        // otherwise we would miss to include kmers spanning the borders of the fragments
+                        uint64_t fragstart = i * config.fragment_length - config.kmer_size + 1;
+                        // first fragment starts at sequence index 0
+                        if (fragstart < 0) fragstart = 0;
+                        uint64_t fragend = (i+1) * config.fragment_length;
+                        // make sure that last fragment ends at last position of the reference sequence
+                        if (fragend > length(val.seq)) fragend = length(val.seq);
+                        //auto [fragstart, fragend, binid] = seq_bin.at( val.seqid )[i];
+                        // fragment of the reference is defined as infix
+                        // For infixes, we have to provide both the including start and the excluding end position.
+                        // fragstart -1 to fix offset
+                        // fragend -1+1 to fix offset and not exclude last position
+                        seqan::Infix< seqan::Dna5String >::Type fragment = seqan::infix( val.seq, fragstart, fragend );
+                        std::cout<<fragment<<::std::endl;
+                        seqan::insertKmer( filter, fragment, ++binid );
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
+        } ) );
+    }
+    return tasks;
 }
 
 void IBF::load_filter( Config& config, const std::set< uint64_t >& bin_ids, Stats& stats )
@@ -119,10 +170,10 @@ void IBF::load_filter( Config& config, const std::set< uint64_t >& bin_ids, Stat
     if ( !config.update_filter_file.empty() )
     {
         // load filter
-        seqan::retrieve( this.filter, seqan::toCString( config.update_filter_file ) );
+        seqan::retrieve( this->filter, seqan::toCString( config.update_filter_file ) );
         // totalBinsFile account for all bins, even empty
-        stats.totalBinsFile = seqan::getNumberOfBins( this.filter );
-        config.kmer_size    = seqan::getKmerSize( this.filter );
+        stats.totalBinsFile = seqan::getNumberOfBins( this->filter );
+        config.kmer_size    = seqan::getKmerSize( this->filter );
         // config.hash_functions = seqan::get...( filter ); // not avail.
         // config.filter_size_bits = seqan::get...( filter ); // not avail.
 
@@ -133,7 +184,7 @@ void IBF::load_filter( Config& config, const std::set< uint64_t >& bin_ids, Stat
         {
             // just resize if number of bins is bigger than amount on IBF
             // when updating an IBF with empty bins or removing the last bins, this will not be true
-            filter.resizeBins( number_new_bins );
+            this->filter.resizeBins( number_new_bins );
             stats.newBins = number_new_bins - stats.totalBinsFile;
         } // if new bins are smaller (less bins, sequences removed) IBF still keep all bins but empty
 
@@ -152,19 +203,19 @@ void IBF::load_filter( Config& config, const std::set< uint64_t >& bin_ids, Stat
                 updated_bins.emplace_back( binid );
                 // std::cerr << "Cleared: " << binid << std::endl;
             }
-            seqan::clear( filter, updated_bins, config.threads ); // clear modified bins
+            seqan::clear( this->filter, updated_bins, config.threads ); // clear modified bins
         }
     }
     else
     {
-        filter = Tfilter( stats.totalBinsBinId, config.hash_functions, config.kmer_size, config.filter_size_bits );
-        stats.totalBinsFile = seqan::getNumberOfBins( filter );
+        this->filter = Tfilter( stats.totalBinsBinId, config.hash_functions, config.kmer_size, config.filter_size_bits );
+        stats.totalBinsFile = seqan::getNumberOfBins( this->filter );
     }
 
 }
 
-void print_time( const ibf::Config& config,
-                 const StopClock&          timeGanon,
+void print_time( const interleave::Config& config,
+                 const StopClock&          timeIBF,
                  const StopClock&          timeLoadFiles,
                  const StopClock&          timeLoadSeq,
                  const StopClock&          timeBuild,
@@ -173,7 +224,7 @@ void print_time( const ibf::Config& config,
 {
     using ::operator<<;
 
-    std::cerr << "ganon-build       start time: " << timeGanon.begin() << std::endl;
+    std::cerr << "IBF-build         start time: " << timeIBF.begin() << std::endl;
     std::cerr << "Loading files     start time: " << timeLoadFiles.begin() << std::endl;
     std::cerr << "Loading files       end time: " << timeLoadFiles.end() << std::endl;
     std::cerr << "Loading sequences start time: " << timeLoadSeq.begin() << std::endl;
@@ -184,14 +235,14 @@ void print_time( const ibf::Config& config,
     std::cerr << "Building filter     end time: " << timeBuild.end() << std::endl;
     std::cerr << "Saving filter     start time: " << timeSaveFilter.begin() << std::endl;
     std::cerr << "Saving filter       end time: " << timeSaveFilter.end() << std::endl;
-    std::cerr << "ganon-build         end time: " << timeGanon.end() << std::endl;
+    std::cerr << "ganon-build         end time: " << timeIBF.end() << std::endl;
     std::cerr << std::endl;
     std::cerr << " - loading files: " << timeLoadFiles.elapsed() << std::endl;
     std::cerr << " - loading filter: " << timeLoadFilter.elapsed() << std::endl;
     std::cerr << " - loading sequences (1t): " << timeLoadSeq.elapsed() << std::endl;
     std::cerr << " - building filter (" << config.threads_build << "t): " << timeBuild.elapsed() << std::endl;
     std::cerr << " - saving filter: " << timeSaveFilter.elapsed() << std::endl;
-    std::cerr << " - total: " << timeGanon.elapsed() << std::endl;
+    std::cerr << " - total: " << timeIBF.elapsed() << std::endl;
     std::cerr << std::endl;
 }
 
@@ -199,7 +250,7 @@ void print_stats( Stats& stats, const StopClock& timeBuild )
 {
     double   elapsed_build = timeBuild.elapsed();
     uint64_t validSeqs     = stats.totalSeqsFile - stats.invalidSeqs;
-    std::cerr << "ganon-build processed " << validSeqs << " sequences (" << stats.sumSeqLen / 1000000.0 << " Mbp) in "
+    std::cerr << "IBF-build processed " << validSeqs << " sequences (" << stats.sumSeqLen / 1000000.0 << " Mbp) in "
               << elapsed_build << " seconds (" << ( validSeqs / 1000.0 ) / ( elapsed_build / 60.0 ) << " Kseq/m, "
               << ( stats.sumSeqLen / 1000000.0 ) / ( elapsed_build / 60.0 ) << " Mbp/m)" << std::endl;
     if ( stats.invalidSeqs > 0 )
@@ -218,8 +269,8 @@ bool IBF::build( Config config )
     if ( !config.validate() )
         return false;
 
-    StopClock timeGanon;
-    timeGanon.start();
+    StopClock timeIBF;
+    timeIBF.start();
     StopClock timeLoadFiles;
     StopClock timeLoadFilter;
     StopClock timeLoadSeq;
@@ -233,17 +284,6 @@ bool IBF::build( Config config )
 
     Stats stats;
 
-    // not needed here
-/*
-    timeLoadFiles.start();
-    // parse seqid bin
-    TSeqBin      seq_bin;
-    std::set< uint64_t > bin_ids;
-    parse_seqid_bin( config.seqid_bin_file, seq_bin, bin_ids );
-    stats.totalSeqsBinId = seq_bin.size();
-    stats.totalBinsBinId = bin_ids.size();
-    timeLoadFiles.stop();
- */
     //////////////////////////////
 
     std::mutex                mtx;
@@ -252,51 +292,23 @@ bool IBF::build( Config config )
 
     // Start extra thread for reading the input
     timeLoadSeq.start();
-    parse_ref_seqs(queue_refs, mtx, config.reference_files, stats);
+    std::future< void > read_task = parse_ref_seqs(queue_refs, mtx, config, stats);
 
     // divide ref seqs in fragments, that will be placed in different bins of the ibf
-    build_fragment_bin();
-
+    read_task.get();
     // load new or given ibf
     timeLoadFilter.start();
+    std::set< uint64_t > bin_ids;
     load_filter( config, bin_ids, stats );
     timeLoadFilter.stop();
-
+    
     // Start execution threads to add kmers
+    
     timeBuild.start();
-    std::vector< std::future< void > > tasks;
-    for ( uint16_t taskNo = 0; taskNo < config.threads_build; ++taskNo )
-    {
-        tasks.emplace_back( std::async( std::launch::async, [=, &seq_bin, &filter, &queue_refs] {
-            while ( true )
-            {
-                // take ref seq from the queue
-                Seqs val = queue_refs.pop();
-                if ( val.seqid != "" )
-                {
-                    // add all fragments of the current reference to the IBF
-                    for ( uint64_t i = 0; i < seq_bin.at( val.seqid ).size(); i++ )
-                    {
+    uint64_t binid = 0;
+    std::vector< std::future< void > > tasks = add_sequences_to_filter(config, binid, queue_refs);
 
-                        auto [fragstart, fragend, binid] = seq_bin.at( val.seqid )[i];
-                        // fragment of the reference is defined as infix
-                        // For infixes, we have to provide both the including start and the excluding end position.
-                        // fragstart -1 to fix offset
-                        // fragend -1+1 to fix offset and not exclude last position
-                        seqan::Infix< seqan::Dna5String >::Type fragment = infix( val.seq, fragstart - 1, fragend );
-                        seqan::insertKmer( filter, fragment, binid );
-                    }
-                }
-                else
-                {
-                    break;
-                }
-            }
-        } ) );
-    }
-    //////////////////////////////
-
-    read_task.get();
+    
     timeLoadSeq.stop();
 
     for ( auto&& task : tasks )
@@ -312,19 +324,19 @@ bool IBF::build( Config config )
     timeSaveFilter.stop();
     //////////////////////////////
 
-    timeGanon.stop();
+    timeIBF.stop();
 
     if ( !config.quiet )
     {
         std::cerr << std::endl;
         if ( config.verbose )
         {
-            detail::print_time(
-                config, timeGanon, timeLoadFiles, timeLoadSeq, timeLoadFiles, timeLoadFilter, timeSaveFilter );
+            print_time(
+                config, timeIBF, timeLoadFiles, timeLoadSeq, timeLoadFiles, timeLoadFilter, timeSaveFilter );
         }
-        detail::print_stats( stats, timeBuild );
+        print_stats( stats, timeBuild );
     }
     return true;
 }
 
-} // namespace ibf
+} // namespace interleave

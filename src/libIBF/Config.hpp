@@ -7,10 +7,10 @@
 #include <string>
 #include <vector>
 
-#include <dirent.h>
+//#include <dirent.h>
 #include <stdio.h>
 
-namespace ibf
+namespace interleave
 {
 
     class Config
@@ -121,8 +121,9 @@ namespace ibf
                     filter_size      = 0;
                     filter_size_bits = 0;
                 }
+                
                 else
-                {
+                {   
                     if ( filter_size_bits == 0 )
                     {
                         if ( filter_size == 0 )
@@ -140,7 +141,7 @@ namespace ibf
                         filter_size = filter_size_bits / MBinBits;
                     }
                 }
-
+                
                 return true;
             }
     };
@@ -156,7 +157,7 @@ namespace ibf
         {
             stream << "                      " << file << newl;
         }
-        stream << "--seqid-bin-file      " << config.seqid_bin_file << newl;
+        //stream << "--seqid-bin-file      " << config.seqid_bin_file << newl;
         stream << "--output-filter-file  " << config.output_filter_file << newl;
         stream << "--update-filter-file  " << config.update_filter_file << newl;
         stream << "--update-complete     " << config.update_complete << newl;
