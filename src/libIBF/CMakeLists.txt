@@ -1,4 +1,4 @@
-file(GLOB IBF_SRC "IBFBuild.cpp")
+file(GLOB IBF_SRC "*.cpp")
 file(GLOB IBF_HDRS "*.hpp")
 
 add_library (IBF STATIC ${IBF_SRC} ${IBF_HDRS})

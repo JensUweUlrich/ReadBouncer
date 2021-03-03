@@ -13,7 +13,7 @@
 namespace interleave
 {
 
-    class Config
+    class IBFConfig
     {
 
         public:
@@ -25,6 +25,7 @@ namespace interleave
 
             
             std::string output_filter_file = "";
+            std::string input_filter_file  = "";
             std::string update_filter_file = "";
             bool        update_complete    = false;
 
@@ -42,7 +43,7 @@ namespace interleave
             bool     verbose   = false;
             bool     quiet     = false;
 
-            uint16_t threads_build;
+            uint16_t threads_build = 1;
 
             bool hasEnding( std::string const& fullString, std::string const& ending )
             {
@@ -146,7 +147,7 @@ namespace interleave
             }
     };
 
-    inline std::ostream& operator<<( std::ostream& stream, const Config& config )
+    inline std::ostream& operator<<( std::ostream& stream, const IBFConfig& config )
     {
         constexpr auto newl{ "\n" };
         constexpr auto separator{ "----------------------------------------------------------------------" };
@@ -174,5 +175,6 @@ namespace interleave
 
         return stream;
     }
+    
 
 } // namespace ibf

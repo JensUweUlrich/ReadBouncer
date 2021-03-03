@@ -89,4 +89,4 @@ public:
     }
 };
 
-#endif /* SAFEQUEUE_HPP_ */
+#endif // SAFEQUEUE_HPP_

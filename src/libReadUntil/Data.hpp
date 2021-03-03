@@ -4,6 +4,9 @@
  *  Created on: 12.11.2019
  *      Author: jens-uwe.ulrich
  */
+
+#pragma once
+
 #include <algorithm>
 #include <chrono>
 #include <thread>
@@ -21,7 +24,8 @@
 
 #include "spdlog/spdlog.h"
 
-#include "DeepNano2.h"
+#include "SafeQueue.hpp"
+#include "StopClock.hpp"
 
 #include "Acquisition.hpp"
 #include "Analysis_Configuration.hpp"
@@ -31,31 +35,24 @@
 using namespace ::minknow_api::data;
 using namespace ::google::protobuf;
 
-#ifndef LIBREADUNTIL_DATA_HPP_
-#define LIBREADUNTIL_DATA_HPP_
 
 namespace readuntil
 {
-    struct ReadCache
+    struct SignalRead
     {
             uint32 channelNr{};
             uint32 readNr{};
             string id{};
-            std::string raw_data{};
+            std::vector<float> raw_signals{};
+
     };
 
-    struct ReadResponse
+    struct ActionResponse
     {
         uint32 channelNr{};
         uint32 readNr{};
         string id{};
-        uint8_t response{0};
-        std::string sequence;
-        uint64 samples_since_start{};
-        double seconds_since_start{};
-        uint64 start_sample{};
-        uint64 chunk_start_sample{};
-        uint64 chunk_length{};
+        bool response;
     };
 
 
@@ -64,30 +61,17 @@ namespace readuntil
         private:
             std::unique_ptr<DataService::Stub> stub;
             std::unique_ptr<grpc::ClientReaderWriter<GetLiveReadsRequest, GetLiveReadsResponse>> stream;
-            readuntil::Acquisition *acq;
-            readuntil::AnalysisConfiguration *conf;
-            std::queue<ReadCache> reads;
-            std::queue<GetLiveReadsResponse_ActionResponse> responseQueue;
-            std::map<string, ReadResponse> responseCache;
-            std::vector<std::string> uniqueReadIds;
+            readuntil::Acquisition* acq;
+            readuntil::AnalysisConfiguration* conf;
             std::set<int32> filterClasses;
-            std::mutex readMutex;
-            std::mutex responseMutex;
-            std::mutex respQueueMutex;
-            Caller *caller;
             std::shared_ptr<spdlog::logger> data_logger;
             bool runs = false;
             bool unblock_all = false;
-            uint8_t unblockChannels;
-            uint8_t unblockReads;
             uint8_t actionBatchSize = 50;
-            void createSetupMessage();
-            void getLiveSignals();
-            void addActions();
-            void addUnblockAction(GetLiveReadsRequest_Actions *actionList, ReadCache &read, const double unblock_duration);
-            void addStopReceivingDataAction(GetLiveReadsRequest_Actions *actionList, ReadCache &read);
-            void printResponseData();
-            void adaptActionBatchSize();
+            
+            void addUnblockAction(GetLiveReadsRequest_Actions* actionList, ActionResponse& response, const double unblock_duration);
+            void addStopReceivingDataAction(GetLiveReadsRequest_Actions* actionList, ActionResponse& response);
+            void adaptActionBatchSize(const int queue_size);
             void resolveFilterClasses();
             std::vector<float> string_to_float(std::string const & s);
         public:
@@ -97,6 +81,8 @@ namespace readuntil
             ~Data()
             {
                 stub.release();
+                delete acq;
+                delete conf;
                 //actionList.Clear();
             }
 
@@ -105,7 +91,6 @@ namespace readuntil
                 if (this != &other)
                 {
                     stub.reset(other.stub.get());
-                    //actionList.CopyFrom(other.actionList);
                 }
                 return *this;
             }
@@ -115,20 +100,13 @@ namespace readuntil
 		        return &context;
 	        }
 
-            void getLiveReads(std::string &weights);
+            void getLiveSignals(SafeQueue<SignalRead>& basecall_queue);
+            void sendActions(SafeQueue<readuntil::ActionResponse>& action_queue);
+            void startLiveStream();
+            void stopLiveStream();
+
             bool isRunning();
-            void processSignals();
             
-            inline void setUnblockChannels(const uint8_t &unblock)
-            {
-                unblockChannels = unblock;
-            }
-
-            inline void setUnblockReads(const uint8_t &unblock)
-            {
-                unblockReads = unblock;
-            }
-
             inline void setActionBatchSize(const uint8_t &size)
             {
                 actionBatchSize = size;
@@ -141,4 +119,3 @@ namespace readuntil
     };
 
 } //namespace
-#endif /* LIBREADUNTIL_DATA_HPP_ */

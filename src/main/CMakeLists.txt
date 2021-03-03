@@ -1,5 +1,6 @@
 set(Main_SRC "main.cpp")
-add_executable (${PROJECT_NAME} ${Main_SRC})
+file(GLOB MAIN_HDRS "*.hpp")
+add_executable (${PROJECT_NAME} ${MAIN_HDRS} ${Main_SRC})
 #find_package (Threads)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/../lyra/lyra/lyra-src/include)
