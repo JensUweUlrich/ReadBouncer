@@ -29,17 +29,20 @@ namespace interleave
             std::string update_filter_file = "";
             bool        update_complete    = false;
 
-            uint32_t filter_size      = 0;
+            uint64_t filter_size      = 0;
             uint64_t filter_size_bits = 0;
 
             uint64_t fragment_length  = 0;
 
             uint16_t kmer_size      = 19;
-            uint16_t hash_functions = 3;
+            uint16_t hash_functions = 4;
 
             uint16_t threads   = 2;
             uint32_t n_refs    = 400;
-            uint32_t n_batches = 1000;
+            uint32_t n_batches = 500000;
+
+            double   max_fp = 0.01;
+
             bool     verbose   = false;
             bool     quiet     = false;
 
@@ -125,21 +128,16 @@ namespace interleave
                 
                 else
                 {   
-                    if ( filter_size_bits == 0 )
+                    if (filter_size_bits != 0)
                     {
-                        if ( filter_size == 0 )
-                        {
-                            std::cerr << "--filter-size or --filter-size-bits are required" << std::endl;
-                            return false;
-                        }
-                        else
-                        {
-                            filter_size_bits = filter_size * MBinBits;
-                        }
+                        filter_size = filter_size_bits / MBinBits;
                     }
                     else
                     {
-                        filter_size = filter_size_bits / MBinBits;
+                        if ( filter_size != 0 )
+                        {
+                            filter_size_bits = filter_size * MBinBits;
+                        }
                     }
                 }
                 

@@ -23,9 +23,9 @@ namespace interleave
         // loop in map structure to avoid extra validations when map.size() < filter.ibf.noOfBins when ibf is updated and
         // sequences removed also avoid the error of spurius results from empty bins (bug reported)
        // std::cout<<"threshold : " << threshold <<std::endl;
-        for ( uint32_t binNo = 0; binNo < filter.noOfBins; ++binNo )
+        for ( uint32_t binNo = 0; binNo < filter.noOfBins; ++binNo ) 
         {
-            //std::cout<<selectedBins[binNo] << " , " << selectedBinsRev[binNo] <<std::endl;
+           // std::cout<<selectedBins[binNo] << " , " << selectedBinsRev[binNo] <<std::endl;
             // if kmer count is higher than threshold
             if ( selectedBins[binNo] >= threshold || selectedBinsRev[binNo] >= threshold )
             {

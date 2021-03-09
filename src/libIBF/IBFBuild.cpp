@@ -58,10 +58,18 @@ namespace interleave
                         std::string cid   = seqan::toCString( ids[i] );
                         // delete everything after first space in seq identifier
                         std::string seqid = cid.substr( 0, cid.find( ' ' ) );
-                        stats.sumSeqLen += seqan::length( seqs[i] );
+                        //stats.sumSeqLen += seqan::length( seqs[i] );
                         stats.totalBinsBinId += (seqan::length( seqs[i] ) / config.fragment_length) + 1;
                         // add reference sequences to the queue
-                        queue_refs.push( Seqs{ seqid, seqs[i] } );
+                        int counter = 1;
+                        for (std::string seq : cutOutNNNs(std::string(seqan::toCString(seqs[i])), seqan::length(seqs[i])))
+                        {
+                            std::stringstream buf;
+                            buf << seqid << "_" << counter++;
+                            queue_refs.push(Seqs{ buf.str(), ((seqan::Dna5String) seq) });
+                            stats.totalBinsBinId++;
+                            stats.sumSeqLen += seq.length();
+                        }
                     }
                 }
                 seqan::close( seqFileIn );
@@ -71,6 +79,34 @@ namespace interleave
         } ) );
 
         return read_task;
+    }
+
+    /**
+    * split underlying sequence based on stretches of N's
+    * @seq      : reference sequence as a string
+    * @seqlen   : length of the sequence
+    * @return   : vector of subsequences, that results from splitting the original sequence
+    */
+    std::vector<std::string> IBF::cutOutNNNs(std::string& seq, uint64_t seqlen)
+    {
+        std::vector<std::string> splittedStrings;
+        size_t start = 0;
+        size_t end = 0;
+
+        while ((start = seq.find_first_not_of("N", end)) != std::string::npos)
+        {
+            end = seq.find("N", start);
+            if (end > seqlen)
+            {
+                std::string s = seq.substr(start, seqlen - start - 1);
+                splittedStrings.push_back(s);
+                break;
+            }
+            std::string s = seq.substr(start, end - start);
+            
+            splittedStrings.push_back(s);
+        }
+        return splittedStrings;
     }
 
     /**
@@ -126,7 +162,7 @@ namespace interleave
                             }
                             catch (seqan::Exception const& e )
                             {
-                                throw InsertSequenceException("Error inserting the sequence of " + val.seqid + " tpo the IBF!");
+                                throw InsertSequenceException("Error inserting the sequence of " + val.seqid + " to the IBF!");
                             }
                             fragIdx++;
                             fragstart = fragIdx * config.fragment_length - config.kmer_size + 1;
@@ -309,6 +345,23 @@ namespace interleave
     }
 
     /**
+    *   caalculate optimal IBF size based on number of bins and maximum false positive rate
+    *   @config         : settings used to build the IBF (kmer size, fragment length etc.)
+    *   @numberOfBins   : Actual number of bins stored in the IBF
+    *   @return         : optimal size of the IBF in Bits
+    */
+    uint64_t IBF::calculate_filter_size_bits(IBFConfig& config, uint64_t numberOfBins)
+    {
+        uint64_t max_kmer_count = config.fragment_length - config.kmer_size + 1;
+        uint64_t optimalNumberOfBins = floor(((double) numberOfBins / 64.0) + 1) * 64;
+        uint64_t BinSizeBits = ceil(-1 / (pow(1 - pow((double) config.max_fp, 1.0 / (double) config.hash_functions),
+                                                        1.0 / ((double) (config.hash_functions * max_kmer_count))) - 1));
+        //std::cout << "OptimalNumberOfBins : " << optimalNumberOfBins << " , " << "BinSizeBits : " << BinSizeBits << std::endl;
+        
+        return BinSizeBits * optimalNumberOfBins;
+    }
+
+    /**
         create IBF based on given reference sequence files and other configuration settings
         @config:    settings used to build the IBF (reference files, number of threads, kmer size, fragment length etc.)
         @return:    all statistics describing the process of building this IBF
@@ -320,6 +373,7 @@ namespace interleave
             throw InvalidConfigException("Config not valid!");
 
         FilterStats stats;
+        
         stats.timeIBF.start();
 
         // config.n_batches*config.n_refs = max. amount of references in memory
@@ -337,6 +391,10 @@ namespace interleave
         {
             throw;
         }
+
+        config.filter_size_bits = calculate_filter_size_bits(config, stats.totalBinsBinId);
+        if (config.verbose)
+            std::cout << "Calculated size of the IBF : " << (double) config.filter_size_bits / (double) config.MBinBits << " MBytes" << std::endl;
 
         stats.timeBuild.start();
         this->filter = TIbf( stats.totalBinsBinId, config.hash_functions, config.kmer_size, config.filter_size_bits );
@@ -371,7 +429,7 @@ namespace interleave
         stats.timeSaveFilter.stop();
 
         stats.timeIBF.stop();
-
+        
         return stats;
     }
 

@@ -102,6 +102,8 @@ namespace interleave
             // parse reference sequences
             std::future< void > parse_ref_seqs(SafeQueue< Seqs > &queue_refs, interleave::IBFConfig &config, FilterStats &stats);
             void add_sequences_to_filter(std::vector< std::future< void > >& tasks, IBFConfig &config, uint64_t &binid, SafeQueue< Seqs > &queue_refs);
+            std::vector<std::string> cutOutNNNs(std::string& seq, uint64_t seqlen);
+            uint64_t calculate_filter_size_bits(IBFConfig& config, uint64_t numberOfBins);
 
         public:
             IBF(){}
@@ -109,6 +111,7 @@ namespace interleave
             FilterStats create_filter(IBFConfig& config);
             FilterStats load_filter( IBFConfig& config);
             FilterStats update_filter(IBFConfig& config);
+            //std::vector<std::string> cutOutNNNs(std::string& seq);
             inline TIbf getFilter()
             {
                 return filter;
@@ -126,6 +129,7 @@ namespace interleave
             uint16_t max_kmer_count = 0;
             uint16_t channelNr = 0;
             uint16_t readNr = 0;
+            TimeMeasures processingTimes{};
 
             uint32_t filter_matches(TMatches& matches,
                                     uint16_t  len,
@@ -147,12 +151,14 @@ namespace interleave
                 this->id    = id;
                 this->seq   = seq;
             }
-            Read(seqan::CharString id, seqan::Dna5String seq, uint16_t channelNr, uint16_t readNr)
+            Read(seqan::CharString id, seqan::Dna5String seq, 
+                 uint16_t channelNr, uint16_t readNr, TimeMeasures processTimes)
             {
                 this->id = id;
                 this->seq = seq;
                 this->channelNr = channelNr;
                 this->readNr = readNr;
+                this->processingTimes = processTimes;
             }
             ~Read(){}
             inline seqan::CharString getID()
@@ -178,6 +184,10 @@ namespace interleave
             inline uint16_t getReadNr()
             {
                 return readNr;
+            }
+            inline TimeMeasures getProcessingTimes()
+            {
+                return processingTimes;
             }
             bool classify(std::vector< TIbf >& filters, DepleteConfig& config);
         

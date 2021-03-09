@@ -80,13 +80,11 @@ set(spdlog_DIR ${CMAKE_CURRENT_BINARY_DIR}/../spdlog/spdlog/lib/cmake/spdlog)
 find_package(spdlog REQUIRED)
 
 
-FIND_PATH(DEEPNANO_INCLUDE_DIR DeepNano2.h "${CMAKE_CURRENT_SOURCE_DIR}/../libBaseCaller" DOC "Deepnano2 includes")
-
-include_directories("${CMAKE_CURRENT_BINARY_DIR}/minknow/proto" ${DEEPNANO_INCLUDE_DIR})
+include_directories("${CMAKE_CURRENT_BINARY_DIR}/minknow/proto" "${CMAKE_CURRENT_SOURCE_DIR}/../util")
 
 add_library (ReadUntil STATIC ${READUNTILSRCS} ${READUNTILHDRS} ${minknow_srcs})
-target_include_directories (ReadUntil PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} "${CMAKE_CURRENT_BINARY_DIR}/minknow/proto" ${CMAKE_CURRENT_SOURCE_DIR}/../libBaseCaller)
-target_link_libraries (ReadUntil  ${_GRPC_GRPCPP_UNSECURE} ${_PROTOBUF_LIBPROTOBUF} mklcore mklseq mkllp64 deepnano2 spdlog::spdlog_header_only)
+target_include_directories (ReadUntil PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} "${CMAKE_CURRENT_BINARY_DIR}/minknow/proto")
+target_link_libraries (ReadUntil  ${_GRPC_GRPCPP_UNSECURE} ${_PROTOBUF_LIBPROTOBUF} mklcore mklseq mkllp64 spdlog::spdlog_header_only)
 
 install(TARGETS ReadUntil DESTINATION lib COMPONENT libraries)
 

@@ -8,6 +8,7 @@
 #include <future>
 
 #include "SafeQueue.hpp"
+#include <StopClock.hpp>
 
 // ReadUntil library
 #include "ReadUntilClient.hpp"
@@ -20,27 +21,19 @@
 
 #include <lyra/lyra.hpp>
 
-/*
-#include <seqan3/alphabet/nucleotide/dna4.hpp>
-#include <seqan3/alphabet/nucleotide/dna5.hpp>
 
-#include <seqan3/argument_parser/argument_parser.hpp>
-#include <seqan3/argument_parser/validators.hpp>
-
-#include <seqan3/io/record.hpp>
-#include <seqan3/io/sequence_file/format_fasta.hpp>
-#include <seqan3/io/sequence_file/input.hpp>
-
-#include <seqan3/core/debug_stream.hpp>
-
-#include <seqan3/std/ranges>
-
-#include <seqan3/range/views/convert.hpp>
-
-using namespace seqan3;
-*/
+// global variables
+//-------------------------------------------------------------------
 readuntil::Data *data;
+double avgDurationCompleteClassifiedRead = 0;
+double avgDurationCompleteUnClassifiedRead = 0;
+double avgDurationBasecallRead = 0;
+double avgDurationClassifyRead = 0;
 
+//--------------------------------------------------------------------
+
+//command line parser
+//--------------------------------------------------------------------
 /**
 	class for generating the IBF build parser group
 */
@@ -111,7 +104,7 @@ struct ibf_build_parser
 					lyra::opt(filter_size, "filter-size")
 						.name("-s")
 						.name("--filter-size")
-						.required()
+						.optional()
 						.help("IBF size in MB"))
 		);
 				
@@ -335,6 +328,10 @@ struct live_depletion_parser
     }
 };
 
+
+// functions referenced as asynchronous tasks
+//----------------------------------------------------------------------------------------------------------
+
 /**
 *	take read from the basecalling queue, perform basecalling and push that read on the classification queue
 *	@basecall_queue			: safe queue with reads ready for basecalling
@@ -356,8 +353,10 @@ void basecall_live_reads(SafeQueue<readuntil::SignalRead>& basecall_queue,
 		if (!basecall_queue.empty())
 		{
 			readuntil::SignalRead read = basecall_queue.pop();
+			read.processingTimes.timeBasecallRead.start();
 			char* sequence = call_raw_signal(caller, read.raw_signals.data(), read.raw_signals.size());
-			classification_queue.push(interleave::Read(read.id, sequence, read.channelNr, read.readNr));
+			read.processingTimes.timeBasecallRead.stop();
+			classification_queue.push(interleave::Read(read.id, sequence, read.channelNr, read.readNr, read.processingTimes));
 		}
 
 		if (acq->isFinished())
@@ -389,33 +388,47 @@ void classify_live_reads(	SafeQueue<interleave::Read>& classification_queue,
 	uint16_t found = 0;
 	uint16_t failed = 0;
 
-	std::map<seqan::CharString, uint8_t> unclassified{};
+	// for unclassified read => store number of chunks that were unclassified
+	//							and Time for the first data chunk
+	std::map<seqan::CharString, std::pair<uint8_t, TimeMeasures> > unclassified{};
 
 	while (true)
 	{
 		if (!classification_queue.empty())
 		{
 			interleave::Read read = classification_queue.pop();
+			read.getProcessingTimes().timeClassifyRead.start();
 			try
 			{
 				if (read.classify(filters, deplConf))
 				{
-					action_queue.push(readuntil::ActionResponse{read.getChannelNr(), read.getReadNr(), seqan::toCString(read.getID()), true});
+					read.getProcessingTimes().timeClassifyRead.stop();
+					// store all read data and time measures for classified read
+					action_queue.push(readuntil::ActionResponse{read.getChannelNr(), read.getReadNr(), 
+										seqan::toCString(read.getID()), read.getProcessingTimes(), true});
 				}
 				else
 				{
 					// add readid entry to unclassified map
-					// if read was unclassified for the third time -> add to action_queue with stop_receiving_data
+					// if read was unclassified for the third time -> add to action_queue with stop_further_data
+					// store only processing times of the first chunk
+					// helps to calculate time from getting first chunk to sending stopFurtherData message
 					if (unclassified.find(read.getID()) == unclassified.end())
 					{
-						unclassified.insert({ read.getID() , 1 });
+						read.getProcessingTimes().timeClassifyRead.stop();
+						unclassified.insert({ read.getID() , std::pair(1, read.getProcessingTimes()) });
 					}
 					else
 					{
-						if (unclassified[read.getID()] == 2)
-							action_queue.push(readuntil::ActionResponse{ read.getChannelNr(), read.getReadNr(), seqan::toCString(read.getID()), false });
+						if (unclassified[read.getID()].first == 2)
+						{
+							// push read on action queue if unclassified for the third time
+							// using time measures from the first chunk of data
+							action_queue.push(readuntil::ActionResponse{ read.getChannelNr(), read.getReadNr(),
+												seqan::toCString(read.getID()), unclassified[read.getID()].second , false });
+						}
 						else
-							unclassified[read.getID()] += 1;
+							unclassified[read.getID()].first += 1;
 					}
 				}
 			}
@@ -430,6 +443,53 @@ void classify_live_reads(	SafeQueue<interleave::Read>& classification_queue,
 			break;
 
 	}
+}
+
+
+/**
+*	compute average duration for complete processing time, basecalling time and classification time per read
+*	using online average computation
+*	@duration_queue	:	safe queue elapsed time for reads that finished sequencing
+*	@acq			: Acquisition service checking if sequencing run is already finished
+*/
+void compute_average_durations(SafeQueue<Durations>& duration_queue, readuntil::Acquisition* acq)
+{
+	uint64_t classifiedReadCounter = 0;
+	uint64_t unclassifiedReadCounter = 0;
+	while (true)
+	{
+		if (!duration_queue.empty())
+		{
+			Durations dur = duration_queue.pop();
+			if (dur.completeClassified > -1)
+			{
+				classifiedReadCounter++;
+				avgDurationCompleteClassifiedRead += (dur.completeClassified - avgDurationCompleteClassifiedRead) / classifiedReadCounter;
+			}
+			else
+			{
+				unclassifiedReadCounter++;
+				avgDurationCompleteUnClassifiedRead += (dur.completeUnclassified - avgDurationCompleteUnClassifiedRead) / unclassifiedReadCounter;
+			}
+
+			avgDurationBasecallRead += (dur.basecalling - avgDurationBasecallRead) / (classifiedReadCounter + unclassifiedReadCounter);
+			avgDurationClassifyRead += (dur.classification - avgDurationClassifyRead) / (classifiedReadCounter + unclassifiedReadCounter);
+
+		}
+
+		if (acq->isFinished() && duration_queue.empty())
+			break;
+	}
+
+	// print average duration times 
+	std::cout << "---------------------------------------------------------------------------------------------------" << std::endl;
+	std::cout << "Number of classified reads						:	" << classifiedReadCounter << std::endl;
+	std::cout << "Number of unclassified reads						:	" << unclassifiedReadCounter << std::endl;
+	std::cout << "Average Processing Time for classified Reads		:	" << avgDurationCompleteClassifiedRead << std::endl;
+	std::cout << "Average Processing Time for unclassified Reads	:	" << avgDurationCompleteUnClassifiedRead << std::endl;
+	std::cout << "Average Processing Time Read Basecalling			:	" << avgDurationBasecallRead << std::endl;
+	std::cout << "Average Processing Time Read Classification		:	" << avgDurationClassifyRead << std::endl;
+	
 }
 
 /**
@@ -505,12 +565,17 @@ void live_read_depletion(live_depletion_parser& parser)
 	if (parser.unblock_all)
 		(*data).setUnblockAll(true);
 
+	// start live streaming of data
+	data->startLiveStream();
+
 	// thread safe queue storing reads ready for basecalling
 	SafeQueue<readuntil::SignalRead> basecall_queue{};
 	// thread safe queue storing basecalled reads ready for classification
 	SafeQueue<interleave::Read> classification_queue{};
 	// thread safe queue storing classified reads ready for action creation
 	SafeQueue<readuntil::ActionResponse> action_queue{};
+	// thread safe queue storing for every read the duration for the different tasks to complete
+	SafeQueue<Durations> duration_queue{};
 
 	// start live signal streaming from ONT MinKNOW
 	std::vector< std::future< void > > tasks;
@@ -525,7 +590,10 @@ void live_read_depletion(live_depletion_parser& parser)
 									std::ref(action_queue), std::ref(filters), acq));
 
 	// create thread/task for sending action messages back to MinKNOW
-	tasks.emplace_back(std::async(std::launch::async, &readuntil::Data::sendActions, data, std::ref(action_queue)));
+	tasks.emplace_back(std::async(std::launch::async, &readuntil::Data::sendActions, data, std::ref(action_queue), std::ref(duration_queue)));
+
+	// create task for calculating average times needed to complete the different tasks
+	tasks.emplace_back(std::async(std::launch::async, &compute_average_durations, std::ref(duration_queue), acq));
 
 	for (auto& task : tasks)
 	{
@@ -621,8 +689,16 @@ void buildIBF(ibf_build_parser& parser)
 	config.verbose = parser.verbose;
 
 	interleave::IBF filter {};
-	interleave::FilterStats stats = filter.create_filter(config);
-	interleave::print_stats(stats);
+	try
+	{
+		interleave::FilterStats stats = filter.create_filter(config);
+		interleave::print_stats(stats);
+	}
+	catch (const interleave::IBFBuildException& e)
+	{
+		throw;
+	}
+	
 }
 
 void classify_reads(read_classify_parser& parser)
@@ -639,10 +715,17 @@ void classify_reads(read_classify_parser& parser)
 	interleave::DepleteConfig deplConf{};
 	deplConf.strata_filter = -1;
 	deplConf.min_kmers = parser.min_kmers;
-	uint16_t found = 0;
+	uint64_t found = 0;
 	uint16_t failed = 0;
+	uint64_t readCounter = 0;
+	StopClock::Seconds avgClassifyduration = 0;
+	// start stop clock
+	StopClock::TimePoint begin = StopClock::Clock::now();
 	for (interleave::Read r : reads)
 	{
+		readCounter++;
+		StopClock classifyRead;
+		classifyRead.start();
 		try
 		{
 			if (r.classify(filters, deplConf))
@@ -654,6 +737,19 @@ void classify_reads(read_classify_parser& parser)
 			failed++;
 			std::cerr<<e.what()<<std::endl;
 		}
+		classifyRead.stop();
+		avgClassifyduration += (classifyRead.elapsed() - avgClassifyduration) / readCounter;
+		std::chrono::duration< StopClock::Seconds > elapsed = classifyRead.end() - begin;
+		if (elapsed.count() > 300.0)
+		{
+			std::cout << "------------------------------- Intermediate Results -------------------------------" << std::endl;
+			std::cout << "Number of classified reads						:	" << found << std::endl;
+			std::cout << "Number of all reads								:	" << readCounter << std::endl;
+			std::cout << "Average Processing Time Read Classification		:	" << avgClassifyduration << std::endl;
+			std::cout << "---------------------------------------------------------------------------------------------------" << std::endl;
+			begin = classifyRead.end();
+		}
+
 	}
 	std::cout<<found << "/" << reads.size()<<std::endl;
 	std::cout<<failed << "/" << reads.size()<<std::endl;
@@ -684,13 +780,19 @@ int main(int argc, char const **argv)
         exit(0);
     }
 
-	if (ibfbuild_parser.command)
-		buildIBF(ibfbuild_parser);
-	else if (classify_parser.command)
-		classify_reads(classify_parser);
-	else if (deplete_parser.command)
-		live_read_depletion(deplete_parser);
-		
+	try
+	{
+		if (ibfbuild_parser.command)
+			buildIBF(ibfbuild_parser);
+		else if (classify_parser.command)
+			classify_reads(classify_parser);
+		else if (deplete_parser.command)
+			live_read_depletion(deplete_parser);
+	}
+	catch (std::exception& e)
+	{
+		std::cerr << e.what() << std::endl;
+	}
 
 	return 0;
 }

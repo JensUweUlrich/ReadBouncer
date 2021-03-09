@@ -44,7 +44,7 @@ namespace readuntil
             uint32 readNr{};
             string id{};
             std::vector<float> raw_signals{};
-
+            TimeMeasures processingTimes{};
     };
 
     struct ActionResponse
@@ -52,6 +52,7 @@ namespace readuntil
         uint32 channelNr{};
         uint32 readNr{};
         string id{};
+        TimeMeasures processingTimes{};
         bool response;
     };
 
@@ -101,7 +102,7 @@ namespace readuntil
 	        }
 
             void getLiveSignals(SafeQueue<SignalRead>& basecall_queue);
-            void sendActions(SafeQueue<readuntil::ActionResponse>& action_queue);
+            void sendActions(SafeQueue<readuntil::ActionResponse>& action_queue, SafeQueue<Durations>& duration_queue);
             void startLiveStream();
             void stopLiveStream();
 

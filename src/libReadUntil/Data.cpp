@@ -139,7 +139,7 @@ namespace readuntil
     *   action to the action list and write action request to the bidirectional stream
     *   @action_queue   : safe queue with reads for which action messages shall be sent to MinKNOW
     */
-    void Data::sendActions(SafeQueue<readuntil::ActionResponse>& action_queue)
+    void Data::sendActions(SafeQueue<readuntil::ActionResponse>& action_queue, SafeQueue<Durations>& duration_queue)
     {
         data_logger->debug("start action request thread");
         // as long as signals are received from MinKnow
@@ -170,11 +170,33 @@ namespace readuntil
                     {
                         addUnblockAction(actionList, readResponse, 0.1);
                         counter++;
+                        
                     }
 
                     // add stop_receiving_data message for every read in the queue
                     addStopReceivingDataAction(actionList, readResponse);
                     counter++;
+
+                    readResponse.processingTimes.timeCompleteRead.stop();
+                    if (readResponse.response)
+                    {
+                        duration_queue.push(Durations{
+                            readResponse.processingTimes.timeCompleteRead.elapsed(),
+                            -1,
+                            readResponse.processingTimes.timeBasecallRead.elapsed(),
+                            readResponse.processingTimes.timeClassifyRead.elapsed(),
+                            });
+                    }
+                    else
+                    {
+                        duration_queue.push(Durations{
+                            -1,
+                            readResponse.processingTimes.timeCompleteRead.elapsed(),
+                            readResponse.processingTimes.timeBasecallRead.elapsed(),
+                            readResponse.processingTimes.timeClassifyRead.elapsed(),
+                            });
+                    }
+                    
                 }
                 else
                     break;
@@ -298,6 +320,8 @@ namespace readuntil
             Map<uint32, GetLiveReadsResponse_ReadData> readData = response.channels();
        		for (MapPair<uint32, GetLiveReadsResponse_ReadData> entry : readData)
         	{
+                TimeMeasures times;
+                times.timeCompleteRead.start();
                 // only process read chunks from filter classes (e.g. strand or adapter)
                 bool filtered = true;
                 for (int32 cl : entry.second.chunk_classifications())
@@ -318,7 +342,8 @@ namespace readuntil
                 basecall_queue.push(SignalRead{ entry.first,
                                                     entry.second.number(),
                                                     entry.second.id(),
-                                                    string_to_float(entry.second.raw_data()) });
+                                                    string_to_float(entry.second.raw_data()),
+                                                    times});
        		}
 
        }
