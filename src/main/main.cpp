@@ -4,11 +4,16 @@
 #include <chrono>
 #include <csignal>
 #include <iostream>
+#include <sstream>
 #include <fstream>
 #include <future>
 
 #include "SafeQueue.hpp"
 #include <StopClock.hpp>
+
+// spdlog library
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/rotating_file_sink.h"
 
 // ReadUntil library
 #include "ReadUntilClient.hpp"
@@ -24,7 +29,11 @@
 
 // global variables
 //-------------------------------------------------------------------
+
 readuntil::Data *data;
+
+std::shared_ptr<spdlog::logger> nanolive_logger;
+
 double avgDurationCompleteClassifiedRead = 0;
 double avgDurationCompleteUnClassifiedRead = 0;
 double avgDurationBasecallRead = 0;
@@ -147,7 +156,8 @@ struct read_classify_parser
 	std::string read_file{};
     bool command = false;
     bool show_help = false;
-	float min_kmers = 0.8;
+	double kmer_significance = 0.95;
+	double error_rate = 0.1;
 	int threads = 1;
 	bool verbose = false;
 
@@ -183,11 +193,17 @@ struct read_classify_parser
 						.required()
 						.help("Interleaved Bloom Filter file"))
 				.add_argument(
-					lyra::opt(min_kmers, "perc")
-						.name("-k")
-						.name("--min-kmers")
+					lyra::opt(kmer_significance, "probability")
+						.name("-s")
+						.name("--significance")
 						.optional()
-						.help("Minimum proportion of kmers that have to match between read and IBF bin"))
+						.help("significance level for confidence interval of number of errorneous kmers (default is 0.95"))
+				.add_argument(
+					lyra::opt(error_rate, "err")
+					.name("-e")
+					.name("--error-rate")
+					.optional()
+					.help("exepected per read sequencing error rate (default is 0.1"))
 				.add_argument(
 					lyra::opt(threads, "threads")
 						.name("-t")
@@ -216,7 +232,8 @@ struct read_classify_parser
             	std::cout << "Classify Reads                               : " << "verbose=" << (verbose ? "true" : "false") << std::endl;
             	std::cout << "Input read file                              : " << read_file << std::endl;
 				std::cout << "Input IBF file                               : " << ibf_input_file << std::endl;
-				std::cout << "Minimum proportion of matching Kmers per bin : " << min_kmers << std::endl;
+				std::cout << "Significance level for confidence interval   : " << kmer_significance << std::endl;
+				std::cout << "Expected sequencing error rate               : " << error_rate << std::endl;
 				std::cout << "Building threads                             : " << threads << std::endl;
 				std::cout << "---------------------------------------------------------------------------------------------------" << std::endl;
 			}
@@ -235,6 +252,8 @@ struct live_depletion_parser
 	std::string device{};
 	std::string weights{};
 	std::string ibf_input_file{ };
+	double kmer_significance = 0.95;
+	double error_rate = 0.1;
     bool command = false;
     bool show_help = false;
 	bool verbose = false;
@@ -264,7 +283,7 @@ struct live_depletion_parser
 						.name("-d")
 						.name("--device")
 						.required()
-						.help("Device or flowCell name for live analysis"))
+						.help("Device or FlowCell name for live analysis"))
 				.add_argument(
 					lyra::opt(host, "host")
 						.name("-c")
@@ -283,6 +302,18 @@ struct live_depletion_parser
 						.name("--ibf-file")
 						.required()
 						.help("Interleaved Bloom Filter file"))
+				.add_argument(
+					lyra::opt(kmer_significance, "probability")
+					.name("-s")
+					.name("--significance")
+					.optional()
+					.help("significance level for confidence interval of number of errorneous kmers (default is 0.95"))
+				.add_argument(
+					lyra::opt(error_rate, "err")
+					.name("-e")
+					.name("--error-rate")
+					.optional()
+					.help("exepected per read sequencing error rate (default is 0.1"))
 				.add_argument(
 					lyra::opt(weights, "weights")
 						.name("-w")
@@ -320,6 +351,8 @@ struct live_depletion_parser
 				std::cout << "MinKNOW communication port                   : " << port << std::endl;
 				std::cout << "Device or Flowcell name                      : " << device << std::endl;
 				std::cout << "Input IBF file                               : " << ibf_input_file << std::endl;
+				std::cout << "Significance level for confidence interval   : " << kmer_significance << std::endl;
+				std::cout << "Expected sequencing error rate               : " << error_rate << std::endl;
 				std::cout << "Unblock all live reads                       : " << (unblock_all ? "yes" : "no") << std::endl;
 				std::cout << "Weights file for Live Basecalling            : " << weights << std::endl;
 				std::cout << "---------------------------------------------------------------------------------------------------" << std::endl;
@@ -347,7 +380,8 @@ void basecall_live_reads(SafeQueue<readuntil::SignalRead>& basecall_queue,
 	// create DeepNano2 caller object
 	Caller* caller = create_caller("48", weights.c_str(), 5, 0.01);
 
-	// TODO: check for active sequencing
+	StopClock::TimePoint begin = StopClock::Clock::now();
+
 	while (true)
 	{
 		if (!basecall_queue.empty())
@@ -357,6 +391,14 @@ void basecall_live_reads(SafeQueue<readuntil::SignalRead>& basecall_queue,
 			char* sequence = call_raw_signal(caller, read.raw_signals.data(), read.raw_signals.size());
 			read.processingTimes.timeBasecallRead.stop();
 			classification_queue.push(interleave::Read(read.id, sequence, read.channelNr, read.readNr, read.processingTimes));
+			StopClock::TimePoint end = StopClock::Clock::now();
+			std::chrono::duration< StopClock::Seconds > elapsed = end - begin;
+			if (elapsed.count() > 60.0)
+			{
+				nanolive_logger->debug("Size of Basecall Queue       :	" + basecall_queue.size());
+				nanolive_logger->flush();
+				begin = end;
+			}
 		}
 
 		if (acq->isFinished())
@@ -376,36 +418,43 @@ void basecall_live_reads(SafeQueue<readuntil::SignalRead>& basecall_queue,
 *	@acq					: Acquisition service checking if sequencing run is already finished
 *	
 */
-void classify_live_reads(	SafeQueue<interleave::Read>& classification_queue, 
+void classify_live_reads(	SafeQueue<interleave::Read>& classification_queue,
 							SafeQueue<readuntil::ActionResponse>& action_queue,
 							std::vector<interleave::TIbf>& filters,
+							const double significance,
+							const double error_rate,
 							readuntil::Acquisition* acq)
 {
 	
 	interleave::DepleteConfig deplConf{};
 	deplConf.strata_filter = -1;
-	deplConf.min_kmers = 0.3;
+	deplConf.significance = significance;
+	deplConf.error_rate = error_rate;
 	uint16_t found = 0;
 	uint16_t failed = 0;
+	double avgReadLen = 0.0;
+	uint64_t rCounter = 0;
 
 	// for unclassified read => store number of chunks that were unclassified
 	//							and Time for the first data chunk
 	std::map<seqan::CharString, std::pair<uint8_t, TimeMeasures> > unclassified{};
-
+	StopClock::TimePoint begin = StopClock::Clock::now();
 	while (true)
 	{
 		if (!classification_queue.empty())
 		{
 			interleave::Read read = classification_queue.pop();
-			read.getProcessingTimes().timeClassifyRead.start();
+			TimeMeasures m = read.getProcessingTimes();
+			avgReadLen += ((double)read.getSeqLength() - avgReadLen) / (double) ++rCounter;
+			m.timeClassifyRead.start();
 			try
 			{
 				if (read.classify(filters, deplConf))
 				{
-					read.getProcessingTimes().timeClassifyRead.stop();
+					m.timeClassifyRead.stop();
 					// store all read data and time measures for classified read
 					action_queue.push(readuntil::ActionResponse{read.getChannelNr(), read.getReadNr(), 
-										seqan::toCString(read.getID()), read.getProcessingTimes(), true});
+										seqan::toCString(read.getID()), m, true});
 				}
 				else
 				{
@@ -415,8 +464,8 @@ void classify_live_reads(	SafeQueue<interleave::Read>& classification_queue,
 					// helps to calculate time from getting first chunk to sending stopFurtherData message
 					if (unclassified.find(read.getID()) == unclassified.end())
 					{
-						read.getProcessingTimes().timeClassifyRead.stop();
-						unclassified.insert({ read.getID() , std::pair(1, read.getProcessingTimes()) });
+						m.timeClassifyRead.stop();
+						unclassified.insert({ read.getID() , std::pair(1, m) });
 					}
 					else
 					{
@@ -434,9 +483,26 @@ void classify_live_reads(	SafeQueue<interleave::Read>& classification_queue,
 			}
 			catch (std::exception& e)
 			{
-				std::cerr << "Error classifying read : " << e.what() << std::endl;
+				std::stringstream estr;
+				estr << "Error classifying Read : " << read.getID() << "(Len=" << read.getSeqLength() << ")";
+				nanolive_logger->error(estr.str());
+				estr.str("");
+				estr << "Error message          : " << e.what();
+				nanolive_logger->error(estr.str());
+				nanolive_logger->flush();
 			}
-			
+
+			StopClock::TimePoint end = StopClock::Clock::now();
+			std::chrono::duration< StopClock::Seconds > elapsed = end - begin;
+			if (elapsed.count() > 60.0)
+			{
+				nanolive_logger->debug("Size of Classification Queue       :	" + classification_queue.size());
+				std::stringstream sstr;
+				sstr << "Average Read Length                :	" << avgReadLen;
+				nanolive_logger->debug(sstr.str());
+				nanolive_logger->flush();
+				begin = end;
+			}
 		}
 
 		if (acq->isFinished())
@@ -456,6 +522,7 @@ void compute_average_durations(SafeQueue<Durations>& duration_queue, readuntil::
 {
 	uint64_t classifiedReadCounter = 0;
 	uint64_t unclassifiedReadCounter = 0;
+	StopClock::TimePoint begin = StopClock::Clock::now();
 	while (true)
 	{
 		if (!duration_queue.empty())
@@ -474,6 +541,30 @@ void compute_average_durations(SafeQueue<Durations>& duration_queue, readuntil::
 
 			avgDurationBasecallRead += (dur.basecalling - avgDurationBasecallRead) / (classifiedReadCounter + unclassifiedReadCounter);
 			avgDurationClassifyRead += (dur.classification - avgDurationClassifyRead) / (classifiedReadCounter + unclassifiedReadCounter);
+
+			StopClock::TimePoint end = StopClock::Clock::now();
+			std::chrono::duration< StopClock::Seconds > elapsed = end - begin;
+			if (elapsed.count() > 60.0)
+			{
+				nanolive_logger->info("----------------------------- Intermediate Results -------------------------------------------------------");
+				nanolive_logger->info("Number of classified reads                        :	" + classifiedReadCounter);
+				nanolive_logger->info("Number of unclassified reads                      :	" + unclassifiedReadCounter);
+				std::stringstream sstr;
+				sstr << "Average Processing Time for classified Reads      :	" << avgDurationCompleteClassifiedRead;
+				nanolive_logger->info(sstr.str());
+				sstr.str("");
+				sstr << "Average Processing Time for unclassified Reads    :	" << avgDurationCompleteUnClassifiedRead;
+				nanolive_logger->info(sstr.str());
+				sstr.str("");
+				sstr << "Average Processing Time Read Basecalling          :	" << avgDurationBasecallRead;
+				nanolive_logger->info(sstr.str());
+				sstr.str("");
+				sstr << "Average Processing Time Read Classification       :	" << avgDurationClassifyRead;
+				nanolive_logger->info(sstr.str());
+				nanolive_logger->info("----------------------------------------------------------------------------------------------------------");
+				nanolive_logger->flush();
+				begin = end;
+			}
 
 		}
 
@@ -495,6 +586,7 @@ void compute_average_durations(SafeQueue<Durations>& duration_queue, readuntil::
 /**
  *	core method for live read depletion
  *	@parser: input from the command line
+ *  @throws: IBFBuildException
  */ 
 void live_read_depletion(live_depletion_parser& parser)
 {
@@ -514,8 +606,9 @@ void live_read_depletion(live_depletion_parser& parser)
 	}
 	catch (interleave::IBFBuildException& e)
 	{
-		std::cerr << "Could not load IBF File : " << e.what() << std::endl;
-		return;
+		nanolive_logger->error("Could not load IBF File : " + std::string(e.what()));
+		nanolive_logger->flush();
+		throw;
 	}
 	
 	std::vector<interleave::TIbf> filters{};
@@ -527,6 +620,14 @@ void live_read_depletion(live_depletion_parser& parser)
 		std::cout << "Trying to connect to MinKNOW" << std::endl;
 		std::cout << "Host : " << parser.host << std::endl;
 		std::cout << "Port : " << parser.port << std::endl;
+	}
+	else
+	{
+		nanolive_logger->info("Successfully loaded Interleaved Bloom Filter(s)!");
+		nanolive_logger->info("Trying to connect to MinKNOW");
+		nanolive_logger->info("Host : " + parser.host);
+		nanolive_logger->info("Port : " + parser.port);
+		nanolive_logger->flush();
 	}
 
 
@@ -540,21 +641,34 @@ void live_read_depletion(live_depletion_parser& parser)
 	{
 		if (parser.verbose)
 			std::cout << "Connection successfully established!" << ::std::endl;
+		else
+		{
+			nanolive_logger->info("Connection successfully established!");
+			nanolive_logger->flush();
+		}
 	}
 	else
 	{
 		std::cerr << "Could not establish connection to MinKNOW or MinION device" << std::endl;
+		nanolive_logger->error("Could not establish connection to MinKNOW or MinION device (" + parser.device + ")");
+		nanolive_logger->flush();
 	}
 
 	// wait until sequencing run has been started
 	if (parser.verbose)
 		std::cout << "Waiting for device to start sequencing!" << ::std::endl;
 
+	std::cout << "Please start the sequencing run now!" << ::std::endl;
+
 	readuntil::Acquisition *acq = (readuntil::Acquisition*) client.getMinKnowService(readuntil::MinKnowServiceType::ACQUISITION);
 	if (acq->hasStarted())
 	{
 		if (parser.verbose)
 			std::cout << "Sequencing has begun. Starting live signal processing!" << ::std::endl;
+
+		nanolive_logger->info("Sequencing has begun. Starting live signal processing!");
+		nanolive_logger->flush();
+		
 	}
 
 	// create Data Service object
@@ -566,7 +680,17 @@ void live_read_depletion(live_depletion_parser& parser)
 		(*data).setUnblockAll(true);
 
 	// start live streaming of data
-	data->startLiveStream();
+	try
+	{
+		data->startLiveStream();
+	}
+	catch (readuntil::DataServiceException& e)
+	{
+		nanolive_logger->error("Could not start streaming signals from device (" + parser.device + ")");
+		nanolive_logger->error("Error message : " + std::string(e.what()));
+		nanolive_logger->flush();
+		throw;
+	}
 
 	// thread safe queue storing reads ready for basecalling
 	SafeQueue<readuntil::SignalRead> basecall_queue{};
@@ -579,15 +703,27 @@ void live_read_depletion(live_depletion_parser& parser)
 
 	// start live signal streaming from ONT MinKNOW
 	std::vector< std::future< void > > tasks;
+
+	if (parser.verbose)
+	{
+		std::cout << "Start receiving live signals thread" << std::endl;
+		std::cout << "Start basecalling thread" << std::endl;
+		std::cout << "Start read classification thread" << std::endl;
+		std::cout << "Start sending unblock messages thread" << std::endl;
+	}
+
 	tasks.emplace_back(std::async(std::launch::async, &readuntil::Data::getLiveSignals, data, std::ref(basecall_queue)));
 
-	// start basecalling task/thread
-	tasks.emplace_back(std::async(std::launch::async, &basecall_live_reads, std::ref(basecall_queue), 
-									std::ref(classification_queue), std::ref(parser.weights), acq));
+	// start t basecalling tasks/threads
+	//for (uint8_t t = 0; t < 2; ++t)
+	//{
+		tasks.emplace_back(std::async(std::launch::async, &basecall_live_reads, std::ref(basecall_queue),
+			std::ref(classification_queue), std::ref(parser.weights), acq));
+	//}
 
 	// create thread/task for classification
 	tasks.emplace_back(std::async(std::launch::async, &classify_live_reads, std::ref(classification_queue), 
-									std::ref(action_queue), std::ref(filters), acq));
+									std::ref(action_queue), std::ref(filters), parser.kmer_significance, parser.error_rate, acq));
 
 	// create thread/task for sending action messages back to MinKNOW
 	tasks.emplace_back(std::async(std::launch::async, &readuntil::Data::sendActions, data, std::ref(action_queue), std::ref(duration_queue)));
@@ -676,6 +812,11 @@ void parse_reads( std::string const& 	reads_file,
 	seqan::close( seqFileIn );
 }
 
+/**
+*	initialize config for and build IBF
+*	@parser	: input from the command line for "build" command
+*	@throws	: IBFBuildException
+*/
 void buildIBF(ibf_build_parser& parser)
 {
 	interleave::IBFConfig config{};
@@ -696,11 +837,24 @@ void buildIBF(ibf_build_parser& parser)
 	}
 	catch (const interleave::IBFBuildException& e)
 	{
+		nanolive_logger->error("Error building IBF using the following parameters");
+		nanolive_logger->error("Input reference file                : " + parser.reference_file);
+		nanolive_logger->error("Output IBF file                     : " + parser.bloom_filter_output_path);
+		nanolive_logger->error("Kmer size                           : " + parser.size_k);
+		nanolive_logger->error("Size of reference fragments per bin : " + parser.fragment_size);
+		nanolive_logger->error("IBF file size in MegaBytes          : " + parser.filter_size);
+		nanolive_logger->error("Building threads                    : " + parser.threads);
+		nanolive_logger->error("Error message : " + std::string(e.what()));
+		nanolive_logger->error("---------------------------------------------------------------------------------------------------");
+		nanolive_logger->flush();
 		throw;
 	}
 	
 }
 
+/**
+* 
+*/
 void classify_reads(read_classify_parser& parser)
 {
 	interleave::IBFConfig config{};
@@ -714,7 +868,9 @@ void classify_reads(read_classify_parser& parser)
 	filters.emplace_back(filter.getFilter());
 	interleave::DepleteConfig deplConf{};
 	deplConf.strata_filter = -1;
-	deplConf.min_kmers = parser.min_kmers;
+
+	deplConf.significance = parser.kmer_significance; 
+	deplConf.error_rate = parser.error_rate;
 	uint64_t found = 0;
 	uint16_t failed = 0;
 	uint64_t readCounter = 0;
@@ -735,18 +891,31 @@ void classify_reads(read_classify_parser& parser)
 		catch (std::exception& e)
 		{
 			failed++;
-			std::cerr<<e.what()<<std::endl;
+			std::stringstream estr;
+			estr << "Error classifying Read : " << r.getID() << "(Len=" << r.getSeqLength() << ")";
+			nanolive_logger->error(estr.str());
+			estr.str("");
+			estr << "Error message          : " << e.what();
+			nanolive_logger->error(estr.str());
+			nanolive_logger->flush();
 		}
 		classifyRead.stop();
 		avgClassifyduration += (classifyRead.elapsed() - avgClassifyduration) / readCounter;
 		std::chrono::duration< StopClock::Seconds > elapsed = classifyRead.end() - begin;
-		if (elapsed.count() > 300.0)
+		if (elapsed.count() > 60.0)
 		{
-			std::cout << "------------------------------- Intermediate Results -------------------------------" << std::endl;
-			std::cout << "Number of classified reads						:	" << found << std::endl;
-			std::cout << "Number of all reads								:	" << readCounter << std::endl;
-			std::cout << "Average Processing Time Read Classification		:	" << avgClassifyduration << std::endl;
-			std::cout << "---------------------------------------------------------------------------------------------------" << std::endl;
+			std::stringstream sstr;
+			nanolive_logger->info("------------------------------- Intermediate Results -------------------------------");
+			sstr << "Number of classified reads                         :   " << found;
+			nanolive_logger->info(sstr.str());
+			sstr.str("");
+			sstr << "Number of all reads                                :   " << readCounter;
+			nanolive_logger->info(sstr.str());
+			sstr.str("");
+			sstr << "Average Processing Time Read Classification        :   " << avgClassifyduration;
+			nanolive_logger->info(sstr.str());
+			nanolive_logger->info("-----------------------------------------------------------------------------------");
+			nanolive_logger->flush();
 			begin = classifyRead.end();
 		}
 
@@ -755,9 +924,24 @@ void classify_reads(read_classify_parser& parser)
 	std::cout<<failed << "/" << reads.size()<<std::endl;
 }
 
+void initializeLogger()
+{
+	try
+	{
+		nanolive_logger = spdlog::rotating_logger_mt("NanoLiveLog", "logs/NanoLiveLog.txt", 1048576 * 5, 100);
+		nanolive_logger->set_level(spdlog::level::debug);
+	}
+	catch (const spdlog::spdlog_ex& e)
+	{
+		std::cerr << "Log initialization failed: " << e.what() << std::endl;
+	}
+}
+
 int main(int argc, char const **argv)
 {
 	std::signal(SIGINT, signalHandler);	
+
+	initializeLogger();
 
 	auto cli = lyra::cli();
 	std::string command;
@@ -793,7 +977,7 @@ int main(int argc, char const **argv)
 	{
 		std::cerr << e.what() << std::endl;
 	}
-
+	
 	return 0;
 }
 

@@ -1,7 +1,7 @@
 
 cmake_minimum_required (VERSION 3.16)
 
-project (NanoLiveTk CXX C)
+project (NanoLive CXX C)
 
 #add_compile_options(-DDEBUG)
 #add_compile_options(-DBUILD_SHARED_LIBS=ON)
@@ -44,31 +44,35 @@ add_subdirectory(main)
 
 set(CPACK_SOURCE_GENERATOR "NSIS")
 set(CPACK_NSIS_EXECUTION_LEVEL "user")
-set(CPACK_PACKAGE_NAME "NanoLiveTk")
+set(CPACK_PACKAGE_NAME "NanoLive")
 set(CPACK_PACKAGE_VENDOR "Jens-Uwe Ulrich")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "NanoLiveTk - Installer")
-set(CPACK_PACKAGE_VERSION "0.2.0")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "NanoLive - Installer")
+set(CPACK_PACKAGE_VERSION "0.3.0")
 set(CPACK_PACKAGE_VERSION_MAJOR "0")
-set(CPACK_PACKAGE_VERSION_MINOR "2")
+set(CPACK_PACKAGE_VERSION_MINOR "3")
 set(CPACK_PACKAGE_VERSION_PATCH "0")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY ${PROJECT_NAME})
 
-set(CPACK_COMPONENTS_ALL applications libraries headers)
+set(CPACK_COMPONENTS_ALL applications libraries headers addfiles)
 
-set(CPACK_COMPONENT_APPLICATIONS_DISPLAY_NAME "NanoLiveTk App")
+set(CPACK_COMPONENT_APPLICATIONS_DISPLAY_NAME "NanoLive App")
 set(CPACK_COMPONENT_LIBRARIES_DISPLAY_NAME "Libraries")
 set(CPACK_COMPONENT_HEADERS_DISPLAY_NAME "C++ Headers")
+set(CPACK_COMPONENT_ADDFILES_DISPLAY_NAME "Additional Files")
 
 set(CPACK_COMPONENT_APPLICATIONS_DESCRIPTION
   "Application for real-time Oxford Nanopore Sequencing data analysis using MinKNOW API and ReadUntil")
 set(CPACK_COMPONENT_LIBRARIES_DESCRIPTION
-  "Static libraries used to build NanoLiveTk")
+  "Static libraries used to build NanoLive")
 set(CPACK_COMPONENT_HEADERS_DESCRIPTION
-  "C/C++ header files for use with NanoLiveTk")
+  "C/C++ header files for use with NanoLive")
+set(CPACK_COMPONENT_ADDFILES_DESCRIPTION
+  "Additional Files for Basecalling")
 
 set(CPACK_COMPONENT_HEADERS_DEPENDS libraries)
 
 set(CPACK_COMPONENT_APPLICATIONS_GROUP "Runtime")
+set(CPACK_COMPONENT_ADDFILES_GROUP "Runtime")
 set(CPACK_COMPONENT_LIBRARIES_GROUP "Development")
 set(CPACK_COMPONENT_HEADERS_GROUP "Development")
 
@@ -79,6 +83,7 @@ set(CPACK_ALL_INSTALL_TYPES Full Developer)
 set(CPACK_COMPONENT_LIBRARIES_INSTALL_TYPES Developer Full)
 set(CPACK_COMPONENT_HEADERS_INSTALL_TYPES Developer Full)
 set(CPACK_COMPONENT_APPLICATIONS_INSTALL_TYPES Full)
+set(CPACK_COMPONENT_ADDFILES_INSTALL_TYPES Full)
 
 
 

@@ -71,13 +71,18 @@ namespace interleave
                 std::vector< uint16_t > selectedBinsRev = seqan::count( filter, TSeqRevComp( this->seq ) );
 
                 // get calculated threshold for minimum number of kmers needed to report a match
-                uint16_t threshold = ( config.min_kmers > -1 )
+                /*uint16_t threshold = ( config.min_kmers > -1 )
                                     ? get_threshold_kmers( seqan::length( this->seq ),
                                                             filter.kmerSize,
                                                             config.min_kmers)
                                     : get_threshold_errors( seqan::length( this->seq ),
                                                             filter.kmerSize,
                                                             config.max_error );
+                */
+
+                TInterval ci = calculateCI(config.error_rate, filter.kmerSize, seqan::length(this->seq), config.significance);
+                uint16_t threshold = seqan::length(this->seq) - filter.kmerSize + 1 - ci.second;
+
                 // select matches above chosen threshold
                 select_matches( matches, selectedBins, selectedBinsRev, filter, threshold);
             }

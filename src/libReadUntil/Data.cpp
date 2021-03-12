@@ -176,7 +176,6 @@ namespace readuntil
                     // add stop_receiving_data message for every read in the queue
                     addStopReceivingDataAction(actionList, readResponse);
                     counter++;
-
                     readResponse.processingTimes.timeCompleteRead.stop();
                     if (readResponse.response)
                     {
@@ -257,10 +256,13 @@ namespace readuntil
     /**
     *   starts the bidirectional stream with MinKNOW
     *   sends setup message to MinKNOW, which is needed initially receiving data
+    *   @throws : DataServiceException
     */
     void Data::startLiveStream()
     {
         data_logger->debug("start setup message thread");
+
+        runs = true;
 
         // start streaming live nanopore signals
         stream = stub->get_live_reads(&context);
@@ -313,8 +315,6 @@ namespace readuntil
                 runs = false;
                 break;
             }
-
-            runs = true;
 
             // iterate over the read data from each channel
             Map<uint32, GetLiveReadsResponse_ReadData> readData = response.channels();

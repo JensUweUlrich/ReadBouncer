@@ -5,7 +5,11 @@
 #include "StopClock.hpp"
 #include "IBFExceptions.hpp"
 
+// seqan libraries
 #include <seqan/binning_directory.h>
+
+// spdlog
+#include "spdlog/spdlog.h"
 
 #include <cinttypes>
 #include <fstream>
@@ -77,7 +81,8 @@ namespace interleave
 
      struct DepleteConfig
     {
-        float       min_kmers;
+        double      significance;
+        double      error_rate;
         uint16_t    max_error;
         uint16_t    strata_filter;
     };
@@ -92,6 +97,8 @@ namespace interleave
         TSeqRevComp;
 
     typedef std::unordered_map< uint32_t, uint16_t > TMatches;
+
+    typedef std::pair<uint16_t, uint16_t> TInterval;
 
     class IBF
     {
@@ -226,6 +233,77 @@ namespace interleave
         return readLen + 1u > kmerSize * ( 1u + max_error )
                 ? readLen - kmerSize - max_error * kmerSize  + 1 
                 : 1u;
+    }
+
+    /**
+    *   Abramowitz-Stegun-Approximation for the inverse normal CDF
+    */
+    inline double RationalApproximation(double t)
+    {
+        // Abramowitz and Stegun formula 26.2.23.
+        // The absolute value of the error should be less than 4.5 e-4.
+        double c[] = { 2.515517, 0.802853, 0.010328 };
+        double d[] = { 1.432788, 0.189269, 0.001308 };
+        return t - ((c[2] * t + c[1]) * t + c[0]) /
+            (((d[2] * t + d[1]) * t + d[0]) * t + 1.0);
+    }
+
+    /**
+    *   approximates the value of the inverse normal cumulative distribution function
+    *   @p      : probability, has to be between 0 and 1
+    *   @return : z score
+    */
+    inline double NormalCDFInverse(double p)
+    {
+        if (p <= 0.0 || p >= 1.0)
+        {
+            std::stringstream os;
+            os << "Invalid input argument (" << p
+                << "); must be larger than 0 but less than 1.";
+            throw std::invalid_argument(os.str());
+        }
+
+        // See article above for explanation of this section.
+        if (p < 0.5)
+        {
+            // F^-1(p) = - G^-1(p)
+            return -RationalApproximation(sqrt(-2.0 * log(p)));
+        }
+        else
+        {
+            // F^-1(p) = G^-1(1-p)
+            return RationalApproximation(sqrt(-2.0 * log(1.0 - p)));
+        }
+    }
+
+    /**
+    *   calculate die confidence interval for the number of errorneous kmers based on read length, kmer size and error rate
+    *   based on "statistics of kmers from a sequence undergoing a simple mutation process without spurious matches" 
+    *   by Blanca, A., Harris, R., Koslicki, D. and Medvedev, P.
+    *   @r          : assumed sequencing error rate 
+    *   @kmer_size  : size of kmers used
+    *   @readlen    : length of the current read
+    *   @confidence : significance level, e.g. 0.95 for a 95% confidence interval
+    *   @return     : pair of integer values representing the boundaries of the confidence interval 
+    */
+    inline TInterval calculateCI(const double r, const uint8_t kmer_size, const uint32_t readlen, const double confidence)
+    {
+        double q = 1.0 - pow(1.0 - r, kmer_size);
+        // number of kmers in sequence of length readlen
+        double L = ((double)readlen - (double)kmer_size + 1.0);
+        // expected number of errorneous/mutated kmers in sequence of length readlen
+        double Nmut = L * q;
+        // compute variance
+        double varN = L * (1.0 - q) * (q * (2.0 * (double)kmer_size + (2.0 / r) - 1.0) - 2.0 * (double)kmer_size)
+                        + (double)kmer_size * ((double)kmer_size - 1.0) * pow((1.0 - q), 2.0)
+                        + (2.0 * (1.0 - q) / (pow(r, 2.0))) * ((1.0 + ((double)kmer_size - 1.0) * (1.0 - q)) * r - q);
+        double alpha = 1 - confidence;
+        
+        double z = NormalCDFInverse(1.0 - alpha / 2.0);
+        uint16_t low = (uint16_t) floor(L * q - z * sqrt(varN));
+        uint16_t high = (uint16_t)ceil(L * q + z * sqrt(varN));
+        TInterval ci{ low , high };
+        return ci;
     }
 
     void print_stats( interleave::FilterStats& stats);
