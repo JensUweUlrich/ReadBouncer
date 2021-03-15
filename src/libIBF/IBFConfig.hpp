@@ -10,8 +10,36 @@
 //#include <dirent.h>
 #include <stdio.h>
 
+// spdlog
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/rotating_file_sink.h"
+
 namespace interleave
 {
+
+    class DepleteConfig
+    {
+        public:
+            DepleteConfig()
+            {
+                try
+                {
+                    classification_logger = spdlog::rotating_logger_mt("ClassifyLog", "logs/IbfClassificationLog.txt", 1048576 * 5, 100);
+                }
+                catch (const spdlog::spdlog_ex& e)
+                {
+                    std::cerr << "Classification Log initialization failed: " << e.what() << std::endl;
+                }
+                classification_logger->set_level(spdlog::level::debug);
+                classification_logger->flush_on(spdlog::level::debug);
+            }
+            ~DepleteConfig() {};
+            double      significance;
+            double      error_rate;
+            uint16_t    max_error;
+            uint16_t    strata_filter;
+            std::shared_ptr<spdlog::logger> classification_logger;
+    };
 
     class IBFConfig
     {
@@ -140,7 +168,6 @@ namespace interleave
                         }
                     }
                 }
-                
                 return true;
             }
     };
@@ -174,5 +201,33 @@ namespace interleave
         return stream;
     }
     
+    inline void logIBFConfig(const IBFConfig& config)
+    {
+        constexpr auto newl{ "\n" };
+        constexpr auto separator{ "----------------------------------------------------------------------" };
+
+        std::shared_ptr<spdlog::logger> logger = spdlog::get("IbfLog");
+       
+        logger->debug("--reference-files     ");
+        for (const auto& file : config.reference_files)
+        {
+            logger->debug("                      " + file);
+        }
+        logger->debug("--output-filter-file  " + config.output_filter_file);
+        logger->debug("--update-filter-file  " + config.update_filter_file);
+        logger->debug("--update-complete     " + config.update_complete);
+        logger->debug("--filter-size         " + config.filter_size);
+        logger->debug("--filter-size-bits    " + config.filter_size_bits);
+        logger->debug("--hash-functions      " + config.hash_functions);
+        logger->debug("--kmer-size           " + config.kmer_size);
+        logger->debug("--threads             " + config.threads);
+        logger->debug("--n-refs              " + config.n_refs);
+        logger->debug("--n-batches           " + config.n_batches);
+        logger->debug("--verbose             " + config.verbose);
+        logger->debug("--quiet               " + config.quiet);
+        logger->debug(separator);
+        logger->flush();
+
+    }
 
 } // namespace ibf

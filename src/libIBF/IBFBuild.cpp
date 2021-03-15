@@ -13,18 +13,23 @@ namespace interleave
     */
     std::future< void > IBF::parse_ref_seqs(SafeQueue< Seqs > &queue_refs, interleave::IBFConfig &config, FilterStats &stats)
     {
+        ibf_logger->info("Starting to parse reference sequence files");
         if (config.reference_files.empty())
+        {
+            ibf_logger->error("No refernce file specified!");
             throw MissingReferenceFilesException("There were no reference files specified!");
-
+        }
 
         std::future< void > read_task( std::async( std::launch::async, [=, &queue_refs, &stats] {
             // iterate over all reference sequence input files stated in config file
             for ( std::string const& reference_file : config.reference_files )
             {
+                ibf_logger->info("Start parsing sequences from " + reference_file);
                 seqan::SeqFileIn seqFileIn;
                 // open input file in first iteration
                 if ( !seqan::open( seqFileIn, seqan::toCString( reference_file ) ) )
                 {
+                    ibf_logger->error("Could not open " + reference_file + ": Check existence or permissions!");
                     throw FileParserException("Unable to open the file: " + reference_file );
                 }
                 // read current input file
@@ -40,12 +45,14 @@ namespace interleave
                     }
                     catch ( seqan::Exception const& e )
                     {
+                        ibf_logger->error("Problems parsing the file : " + reference_file + "[" + e.what() + "]");
                         throw FileParserException( "ERROR: Problems parsing the file: " + reference_file + "[" + e.what() + "]");
                     }
 
                     //assert(seqan::length( ids ) == seqan::length( seq ) )
 
                     // iterate over all sequences loaded into the sequence bin
+                    ibf_logger->info("Fragment reference sequences based on NNNs");
                     for ( uint64_t i = 0; i < seqan::length( ids ); ++i )
                     {
                         stats.totalSeqsFile += 1;
@@ -73,11 +80,12 @@ namespace interleave
                     }
                 }
                 seqan::close( seqFileIn );
+                ibf_logger->info("Finished parsing sequences from " + reference_file);
             }
             // notify all threads that the last ref sequences were pushed into the queue
             queue_refs.notify_push_over();
         } ) );
-
+        ibf_logger->info("Finished to parse all reference sequence files");
         return read_task;
     }
 
@@ -123,6 +131,8 @@ namespace interleave
                                         uint64_t &binid,
                                         SafeQueue< Seqs > &queue_refs)
     {
+        ibf_logger->info("Start adding fragmented sequences to Interleaved Bloom Filter");
+        ibf_logger->info("Maximum fragment size stored in each bin " + config.fragment_length);
         for ( uint16_t taskNo = 0; taskNo < config.threads_build; ++taskNo )
         {
             tasks.emplace_back( std::async( std::launch::async, [=, &queue_refs, &binid] {
@@ -162,6 +172,10 @@ namespace interleave
                             }
                             catch (seqan::Exception const& e )
                             {
+                                ibf_logger->error("Error inserting the sequence of " + val.seqid + " to the IBF!");
+                                std::stringstream sstr;
+                                sstr << "Sequence Length=" << seqan::length(val.seq) << " , Fragment start=" << fragstart << " , Fragment end=" << fragend;
+                                ibf_logger->error(sstr.str());
                                 throw InsertSequenceException("Error inserting the sequence of " + val.seqid + " to the IBF!");
                             }
                             fragIdx++;
@@ -175,6 +189,7 @@ namespace interleave
                 }
             } ) );
         }
+        ibf_logger->info("Finished adding fragmented sequences to Interleaved Bloom Filter");
     }
 
     /**
@@ -185,8 +200,14 @@ namespace interleave
     */
     FilterStats IBF::update_filter(IBFConfig& config)
     {
+        ibf_logger->info("Start updating Interleaved Bloom Filter from file");
+
         if (!config.validate())
+        {
+            ibf_logger->error("Given IBFConfig is not valid");
+            logIBFConfig(config);
             throw InvalidConfigException("Config not valid!");
+        }
 
         FilterStats stats;
         stats.timeIBF.start();
@@ -216,6 +237,8 @@ namespace interleave
             throw;
         }    
 
+        ibf_logger->info("Re-sizing Interleaved Bloom Filter ");
+
         stats.timeBuild.start();
         // add new bins only if reference file is provided
         // number of bins calculated by length of input ref sequences and fragment length
@@ -231,27 +254,6 @@ namespace interleave
             // total number of all bins in the filter
             stats.totalBinsBinId = number_new_bins;
         } // if new bins are smaller (less bins, sequences removed) IBF still keep all bins but empty
-
-        // Reset bins if complete set of sequences is provided (re-create updated bins)
-        // actually not needed for the purpose of filtering only one ref organism by using IBF
-        /*
-        if ( config.update_complete )
-        {
-            std::vector< uint32_t > updated_bins;
-            // For all binids in the file provided, only clean bins for the old bins
-            // new bins are already cleared
-            for ( auto const& binid : bin_ids )
-            {
-                if ( binid >= stats.totalBinsFile - 1 )
-                {
-                    break;
-                }
-                updated_bins.emplace_back( binid );
-                // std::cerr << "Cleared: " << binid << std::endl;
-            }
-            seqan::clear( this->filter, updated_bins, config.threads ); // clear modified bins
-        }
-        */
 
         // Start execution threads to add kmers
         uint64_t binid = stats.totalBinsFile;
@@ -270,6 +272,7 @@ namespace interleave
         }
         stats.timeBuild.stop();
 
+        ibf_logger->info("Writing updated IBF to file : " + config.update_filter_file);
         // Store filter
         stats.timeSaveFilter.start();
         try
@@ -278,6 +281,9 @@ namespace interleave
         }
         catch (seqan::Exception const& e )
         {
+            std::stringstream sstr;
+            sstr << "Could not store updated IBF in " << config.update_filter_file << ":" << e.what();
+            ibf_logger->error(sstr.str());
             throw StoreFilterException("Could not store IBF to " + config.update_filter_file + ":" + e.what());
         }
         stats.timeSaveFilter.stop();
@@ -294,8 +300,7 @@ namespace interleave
     */
     FilterStats IBF::load_filter( IBFConfig& config)
     {
-        //if (!config.validate())
-        //    throw InvalidConfigException("Config not valid!");
+        ibf_logger->info("Start loading Interleaved Bloom Filter from file");
 
         FilterStats stats;
         // take time needed to load the filter
@@ -311,6 +316,9 @@ namespace interleave
             }
             catch(seqan::Exception const& e)
             {
+                std::stringstream sstr;
+                sstr << "Error parsing IBF update file " << config.update_filter_file << ": " << e.what();
+                ibf_logger->error(sstr.str());
                 throw ParseIBFFileException("Error parsing IBF update file " + config.update_filter_file + ": " + e.what());
             }
             
@@ -324,11 +332,15 @@ namespace interleave
             }
             catch(seqan::Exception const& e)
             {
+                std::stringstream sstr;
+                sstr << "Error parsing IBF input file " << config.input_filter_file << ": " << e.what();
+                ibf_logger->error(sstr.str());
                 throw ParseIBFFileException("Error parsing IBF input file " + config.input_filter_file + ": " + e.what());
             }
         }
         else
         {
+            ibf_logger->error("Error: Either update_filter_file or input_filter_file have to be specified.");
             throw MissingIBFFileException("Error: Either update_filter_file or input_filter_file have to be specified.");
         }
 
@@ -338,6 +350,10 @@ namespace interleave
         config.kmer_size    = seqan::getKmerSize( this->filter );
         // config.hash_functions = seqan::get...( filter ); // not avail.
         // config.filter_size_bits = seqan::get...( filter ); // not avail.
+
+        ibf_logger->info("Successfully loaded IBF from file");
+        ibf_logger->info("Kmer size      : " + config.kmer_size);
+        ibf_logger->info("Number of Bins : " + stats.totalBinsFile);
 
         stats.timeLoadFilter.stop();
         
@@ -369,9 +385,13 @@ namespace interleave
     */
     FilterStats IBF::create_filter(IBFConfig& config)
     {
+        ibf_logger->info("Start creating Interleaved Bloom Filter");
         if (!config.validate())
+        {
+            ibf_logger->error("Given IBFConfig is not valid");
+            logIBFConfig(config);
             throw InvalidConfigException("Config not valid!");
-
+        }
         FilterStats stats;
         
         stats.timeIBF.start();
@@ -392,14 +412,31 @@ namespace interleave
             throw;
         }
 
+        ibf_logger->info("Calculating Interleaved Bloom Filter size");
         config.filter_size_bits = calculate_filter_size_bits(config, stats.totalBinsBinId);
+        std::stringstream sstr;
+        sstr << "Calculated size of the IBF : " << (double)config.filter_size_bits / (double)config.MBinBits << " MBytes";
         if (config.verbose)
-            std::cout << "Calculated size of the IBF : " << (double) config.filter_size_bits / (double) config.MBinBits << " MBytes" << std::endl;
+            std::cout << sstr.str()  << std::endl;
 
+        ibf_logger->info(sstr.str());
         stats.timeBuild.start();
-        this->filter = TIbf( stats.totalBinsBinId, config.hash_functions, config.kmer_size, config.filter_size_bits );
-        stats.totalBinsFile = seqan::getNumberOfBins( this->filter );
-
+        try
+        {
+            this->filter = TIbf(stats.totalBinsBinId, config.hash_functions, config.kmer_size, config.filter_size_bits);
+            stats.totalBinsFile = seqan::getNumberOfBins(this->filter);
+        }
+        catch (seqan::Exception const& e)
+        {
+            ibf_logger->error("Could not instantiate IBF Filter");
+            sstr.str("");
+            sstr << "Number of Bins : " << stats.totalBinsBinId << ", Number of hash functions : " << config.hash_functions;
+            ibf_logger->error(sstr.str());
+            sstr.str("");
+            sstr << "Kmer size : " << config.kmer_size << ", IBF size in bits : " << config.filter_size_bits;
+            ibf_logger->error(sstr.str());
+            throw NullFilterException("Could not instantiate IBF Filter");
+        }
         // Start execution threads to add kmers
         uint64_t binid = 0;
         std::vector< std::future< void > > tasks;
@@ -417,6 +454,7 @@ namespace interleave
         }
         stats.timeBuild.stop();
 
+        ibf_logger->info("Writing IBF to file : " + config.output_filter_file);
         // Store filter
         stats.timeSaveFilter.start();
         try{
@@ -424,12 +462,16 @@ namespace interleave
         }
         catch (seqan::Exception const& e )
         {
+            sstr.str("");
+            sstr << "Could not store IBF to " << config.output_filter_file << ":" << e.what();
+            ibf_logger->error(sstr.str());
             throw StoreFilterException("Could not store IBF to " + config.output_filter_file + ":" + e.what());
         }
         stats.timeSaveFilter.stop();
 
         stats.timeIBF.stop();
-        
+        ibf_logger->info("Successfully stored IBF to file.");
+        ibf_logger->flush();
         return stats;
     }
 

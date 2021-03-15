@@ -884,9 +884,13 @@ void classify_reads(read_classify_parser& parser)
 		classifyRead.start();
 		try
 		{
-			if (r.classify(filters, deplConf))
+			if (r.getSeqLength() >= 250 && r.classify(filters, deplConf))
+			{
 				found++;
-			std::cout << r.getID() << "\t" << r.getMaxKmerCount() << "\t" << r.getSeqLength() - config.kmer_size + 1 << std::endl;
+				//std::cout << ">" << r.getID() << " kmers=" << r.getMaxKmerCount() << " len=" << r.getSeqLength() - config.kmer_size + 1 << std::endl;
+				//std::cout << r.getSeq() << std::endl;
+			}
+			
 		}
 		catch (std::exception& e)
 		{

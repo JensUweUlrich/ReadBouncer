@@ -74,7 +74,27 @@ namespace readuntil
             void addStopReceivingDataAction(GetLiveReadsRequest_Actions* actionList, ActionResponse& response);
             void adaptActionBatchSize(const int queue_size);
             void resolveFilterClasses();
-            std::vector<float> string_to_float(std::string const & s);
+
+            /**
+            *   converts a given string of signals into a vector of float signals
+            *   @signalString   : string of nanopore signals
+            *   @return         : vector of float nanopore signals
+            */
+            inline std::vector<float> Data::string_to_float(std::string const& signalString)
+            {
+                assert(signalString.size() % sizeof(float) == 0);
+
+                std::vector<float> result(signalString.size() / sizeof(float));
+
+                if (!result.empty())
+                {
+                    std::copy(signalString.data(), signalString.data() + signalString.size(),
+                        reinterpret_cast<char*>(&result.front()));
+                }
+
+                return result;
+            }
+
         public:
             Data() = default;
             Data(std::shared_ptr<::grpc::Channel> channel);
@@ -117,6 +137,7 @@ namespace readuntil
             {
                 unblock_all = unblock;
             }
+
     };
 
 } //namespace

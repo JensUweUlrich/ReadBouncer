@@ -59,6 +59,7 @@ namespace interleave
                                 std::vector< TIbf >& filters, 
                                 DepleteConfig& config )
     {
+        std::shared_ptr<spdlog::logger> logger = config.classification_logger;
         // iterate over all ibfs
         for ( TIbf& filter : filters )
         {
@@ -71,16 +72,9 @@ namespace interleave
                 std::vector< uint16_t > selectedBinsRev = seqan::count( filter, TSeqRevComp( this->seq ) );
 
                 // get calculated threshold for minimum number of kmers needed to report a match
-                /*uint16_t threshold = ( config.min_kmers > -1 )
-                                    ? get_threshold_kmers( seqan::length( this->seq ),
-                                                            filter.kmerSize,
-                                                            config.min_kmers)
-                                    : get_threshold_errors( seqan::length( this->seq ),
-                                                            filter.kmerSize,
-                                                            config.max_error );
-                */
-
+                // this is based on the confidence interval for mutated kmers in a read with expected error rate, kmer size
                 TInterval ci = calculateCI(config.error_rate, filter.kmerSize, seqan::length(this->seq), config.significance);
+                // minimum number of kmers = max number of kmer in read - upper bound of the CI
                 uint16_t threshold = seqan::length(this->seq) - filter.kmerSize + 1 - ci.second;
 
                 // select matches above chosen threshold
@@ -88,7 +82,10 @@ namespace interleave
             }
             catch (seqan::Exception const& e)
             {
-                throw CountKmerException("Error counting kmers of sequence from " + std::string(seqan::toCString(this->id))  + " in IBF bins: " + e.what());
+                std::stringstream sstr;
+                sstr << "Error counting kmers of sequence from " << this->id << " in IBF bins: " << e.what();
+                logger->error(sstr.str());
+                throw CountKmerException(sstr.str());
             }
         }
     }
@@ -139,10 +136,12 @@ namespace interleave
     */
     bool Read::classify(  std::vector< TIbf >& filters, DepleteConfig& config)
     {
-
+        std::shared_ptr<spdlog::logger> logger = config.classification_logger;
         if (filters.empty())
+        {
+            logger->error("No IBF provided to classify the read!");
             throw NullFilterException("No IBF provided to classify the read!");
-
+        }
         // k-mer sizes should be the same among filters
         uint16_t kmer_size = filters[0].kmerSize;
         TMatches matches;
@@ -169,6 +168,9 @@ namespace interleave
         }
         else
         {
+            std::stringstream sstr;
+            sstr << "Read " << this->id << " shorter than kmer size (" << kmer_size << ")";
+            logger->error(sstr.str());
             throw ShortReadException("Read " + std::string(seqan::toCString(this->id)) + " shorter than kmer size");
         }
         return false;

@@ -10,6 +10,7 @@
 
 // spdlog
 #include "spdlog/spdlog.h"
+#include "spdlog/sinks/rotating_file_sink.h"
 
 #include <cinttypes>
 #include <fstream>
@@ -79,13 +80,7 @@ namespace interleave
         uint64_t bin_id;
     };
 
-     struct DepleteConfig
-    {
-        double      significance;
-        double      error_rate;
-        uint16_t    max_error;
-        uint16_t    strata_filter;
-    };
+     
 
     typedef std::map< std::string, std::vector< FragmentBin > > TSeqBin;
 
@@ -111,14 +106,26 @@ namespace interleave
             void add_sequences_to_filter(std::vector< std::future< void > >& tasks, IBFConfig &config, uint64_t &binid, SafeQueue< Seqs > &queue_refs);
             std::vector<std::string> cutOutNNNs(std::string& seq, uint64_t seqlen);
             uint64_t calculate_filter_size_bits(IBFConfig& config, uint64_t numberOfBins);
+            std::shared_ptr<spdlog::logger> ibf_logger;
 
         public:
-            IBF(){}
+            IBF()
+            {
+                try
+                {
+                    ibf_logger = spdlog::rotating_logger_mt("IbfLog", "logs/InterleavedBloomFilterLog.txt", 1048576 * 5, 100);
+                }
+                catch (const spdlog::spdlog_ex& e)
+                {
+                    std::cerr << "IBF Log initialization failed: " << e.what() << std::endl;
+                }
+                ibf_logger->set_level(spdlog::level::debug);
+                ibf_logger->flush_on(spdlog::level::debug);
+            }
 			~IBF(){}
             FilterStats create_filter(IBFConfig& config);
             FilterStats load_filter( IBFConfig& config);
             FilterStats update_filter(IBFConfig& config);
-            //std::vector<std::string> cutOutNNNs(std::string& seq);
             inline TIbf getFilter()
             {
                 return filter;
@@ -137,6 +144,7 @@ namespace interleave
             uint16_t channelNr = 0;
             uint16_t readNr = 0;
             TimeMeasures processingTimes{};
+            std::shared_ptr<spdlog::logger> depletion_logger;
 
             uint32_t filter_matches(TMatches& matches,
                                     uint16_t  len,
@@ -172,6 +180,10 @@ namespace interleave
             {
                 return id;
             }
+            inline seqan::Dna5String getSeq()
+            {
+                return seq;
+            }
             inline std::vector< ReadMatch > getMatches()
             {
                 return matches;
@@ -205,6 +217,7 @@ namespace interleave
 
      /**
          Return threshold (number of kmers) based on an percentage of kmers. 0 for anything with at least 1 k-mer
+         @DEPRECATED
      */
     inline uint16_t get_threshold_kmers( uint16_t readLen, uint16_t kmerSize, float min_kmers )
     {
@@ -215,6 +228,7 @@ namespace interleave
 
      /**
          Return the optimal number of errors for a certain sequence based on the kmer_count
+         @DEPRECATED
     */
     inline uint16_t get_error( uint16_t readLen, uint16_t kmerSize, uint16_t kmer_count)
     {
@@ -227,6 +241,7 @@ namespace interleave
         minimum number of matching kmers of a read given max_error are allowed
         1 instead of 0 - meaning that if a higher number of errors are allowed the threshold here is
         just one kmer match (0 would match every read everywhere)
+        @DEPRECATED
     */
     inline uint16_t get_threshold_errors( uint16_t readLen, uint16_t kmerSize, uint16_t max_error )
     {

@@ -115,33 +115,14 @@ namespace readuntil
     }
 
     /**
-    *   converts a given string of signals into a vector of float signals
-    *   @signalString   : string of nanopore signals
-        @return         : vector of float nanopore signals
-    */
-    std::vector<float> Data::string_to_float(std::string const & signalString)
-    {
-        assert(signalString.size() % sizeof(float) == 0);
-
-        std::vector<float> result(signalString.size() / sizeof(float));
-
-        if (!result.empty())
-        {
-            std::copy(signalString.data(), signalString.data() + signalString.size(),
-                  reinterpret_cast<char *>(&result.front()));
-        }
-
-        return result;
-    }
-
-    /**
     *   take read action responses from the queue and add unblock and/or stop_receiving_data
     *   action to the action list and write action request to the bidirectional stream
     *   @action_queue   : safe queue with reads for which action messages shall be sent to MinKNOW
     */
     void Data::sendActions(SafeQueue<readuntil::ActionResponse>& action_queue, SafeQueue<Durations>& duration_queue)
     {
-        data_logger->debug("start action request thread");
+        data_logger->info("Start sending unblock actions to MinKNOW");
+        data_logger->flush();
         // as long as signals are received from MinKnow
         // iterate over received data and stop further data allocation for every odd read on every odd channel
         
@@ -206,11 +187,22 @@ namespace readuntil
             adaptActionBatchSize(action_queue.size());
 
             // write action request to the stream -> send message to MinKNOW
-            // throw exception if that was nut successful
-            if (!stream->Write(actionRequest))
+            // try 5 times to send message
+            // throw exception if that was not successfull
+            for (uint8_t i = 1; i <= 5; ++i)
             {
-                // TODO : throw more specific exception
-                throw DataServiceException("Unable to add action to a live read stream!");
+                if (stream->Write(actionRequest))
+                    break;
+                if (i == 5)
+                {
+                    data_logger->error("Failed sending action request to MinKNOW");
+                    data_logger->flush();
+                    throw FailedActionRequestException("Could not send unblock actions to MinKNOW!");
+                }
+                data_logger->warn("Failed sending action request number " + i);
+                data_logger->flush();
+                // wait for 0.4 seconds before trying to send the request again
+                std::this_thread::sleep_for(std::chrono::milliseconds(400));
             }
 
             // there should be at least 100 ms between two separate action requests
@@ -223,7 +215,8 @@ namespace readuntil
             }
             
         }
-        data_logger->debug("leaving action request thread");
+        data_logger->info("Finished sending unblock actions to MinKNOW");
+        data_logger->flush();
     }
     
     /**
@@ -256,11 +249,12 @@ namespace readuntil
     /**
     *   starts the bidirectional stream with MinKNOW
     *   sends setup message to MinKNOW, which is needed initially receiving data
-    *   @throws : DataServiceException
+    *   @throws : FailedSetupMessageException
     */
     void Data::startLiveStream()
     {
-        data_logger->debug("start setup message thread");
+        data_logger->info("Trying to send setup message to MinKNOW");
+        data_logger->flush();
 
         runs = true;
 
@@ -283,15 +277,18 @@ namespace readuntil
         // zero means no limitation
         // TODO: Try to find out if other parameter like e.g. 4 is better
         setup->set_sample_minimum_chunk_size(0);
+        setup->set_max_unblock_read_length_samples(0);
 
         // write setup message to stream and throw exception if that was not successful
         if (!stream->Write(setupRequest))
         {
-            // TODO: create more specific exception
-            throw DataServiceException("Unable to setup a live read stream!");
+            data_logger->error("Failed starting live stream : Could not send setup message!");
+            data_logger->flush();
+            throw FailedSetupMessageException("Failed starting live stream : Could not send setup message!");
         }
 
-        data_logger->debug("leaving setup message thread");
+        data_logger->info("Setup message successfully send to MinKNOW.");
+        data_logger->flush();
     }
 
 	/**
@@ -302,8 +299,15 @@ namespace readuntil
     */
     void Data::getLiveSignals(SafeQueue<SignalRead>& basecall_queue)
     {
-        data_logger->debug("start getting signals thread");
+        data_logger->info("Live signal receiving thread started");
+        data_logger->flush();
         GetLiveReadsResponse response;
+
+        uint32_t success = 0;
+        uint32_t finished = 0;
+        uint32_t too_long = 0;
+
+        StopClock::TimePoint begin = StopClock::Clock::now();
 
         // as long as there is incoming data on the stream we read it and store
         // temporary data in response variable
@@ -314,6 +318,16 @@ namespace readuntil
             {
                 runs = false;
                 break;
+            }
+
+            for (GetLiveReadsResponse_ActionResponse actResp : response.action_responses())
+            {
+                if (actResp.response() == GetLiveReadsResponse_ActionResponse_Response_SUCCESS)
+                    success++;
+                else  if (actResp.response() == GetLiveReadsResponse_ActionResponse_Response_FAILED_READ_FINISHED)
+                    finished++;
+                else
+                    too_long++;
             }
 
             // iterate over the read data from each channel
@@ -346,6 +360,18 @@ namespace readuntil
                                                     times});
        		}
 
+            StopClock::TimePoint end = StopClock::Clock::now();
+            std::chrono::duration< StopClock::Seconds > elapsed = end - begin;
+            if (elapsed.count() > 60.0)
+            {
+                data_logger->info("----------------------------- Intermediate Results -------------------------------------------------------");
+                data_logger->info("Number of successfully unblocked reads    : " + success);
+                data_logger->info("Number of failed finished reads           : " + finished);
+                data_logger->info("Number of failed finished reads           : " + too_long);
+                data_logger->info("----------------------------------------------------------------------------------------------------------");
+                data_logger->flush();
+                begin = end;
+            }
        }
        runs = false;
     }
