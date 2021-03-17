@@ -13,7 +13,7 @@ namespace readuntil
     AnalysisConfiguration::AnalysisConfiguration(std::shared_ptr<::grpc::Channel> channel)
     {
         stub = AnalysisConfigurationService::NewStub(channel);
-        Analysis_Configuration_logger = spdlog::get("RUClientLog");
+//        Analysis_Configuration_logger = spdlog::get("RUClientLog");
     }
 
     Map<int32, string> AnalysisConfiguration::getReadClassifications()

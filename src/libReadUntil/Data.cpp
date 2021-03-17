@@ -10,25 +10,46 @@
 namespace readuntil
 {
 
-    void processSignals()
-    {
-		
-    }
-
+    /**
+    *   Constructor of Data class
+    *   @channel:   shared pointer to already opened GRPC channel for communication with MinKNOW
+    */
     Data::Data(std::shared_ptr<::grpc::Channel> channel)
     {
         stub = DataService::NewStub(channel);
         acq = new readuntil::Acquisition(channel);
         conf = new readuntil::AnalysisConfiguration(channel);
+        // TODO: better usage of logging
         data_logger = spdlog::get("RUClientLog");
         resolveFilterClasses();
+        
     }
 
+    /**
+        load all possible read classifications
+        only reads classified as strand or adapter should be used
+        adds corresponding integer code of the two classifications to the filterClasses set
+        Possible read classifications by MinKNOW:
+        83: "strand",
+        67: "strand1",
+        77: "multiple",
+        90: "zero",
+        65: "adapter",
+        66: "mux_uncertain",
+        70: "user2",
+        68: "user1",
+        69: "event",
+        80: "pore",
+        85: "unavailable",
+        84: "transition",
+        78: "unclassed",
+    */
     void Data::resolveFilterClasses()
     {
         Map<int32, string> classes = conf->getReadClassifications();
 		for (MapPair<int32, string> p : classes)
 		{
+            // we are currently only interested in reads classified as 'strand' or 'adapter'
 			if (p.second=="strand" || p.second=="adapter")
             {
                 filterClasses.insert(p.first);
@@ -36,155 +57,156 @@ namespace readuntil
 		}
     }
 
-    void Data::addUnblockAction(GetLiveReadsRequest_Actions *actionList, ReadCache &read, const double unblock_duration)
+    /**
+    *   creates an unblock action for a given read and adds the action to the action list
+    *   @actionList         : List of action messages
+    *   @response           : action response object storing infos like read number and channel number
+    *   @unblock_duration   : unblock duration in seconds
+    */
+    void Data::addUnblockAction(GetLiveReadsRequest_Actions* actionList, ActionResponse& response, const double unblock_duration)
     {
-        GetLiveReadsRequest_Action *action = actionList->add_actions();
-        action->set_channel(read.channelNr);
-        GetLiveReadsRequest_UnblockAction *data = action->mutable_unblock();
+        // create an action message and add it to the action list
+        GetLiveReadsRequest_Action* action = actionList->add_actions();
+        // FlowCell channel number on which we call the action
+        action->set_channel(response.channelNr);
+
+        // define action as unblock action
+        GetLiveReadsRequest_UnblockAction* data = action->mutable_unblock();
         *data = action->unblock();
+
+        // duration in seconds for which we reverse the current on that channel to unblock the pore
         data->set_duration(unblock_duration);
-        action->set_number(read.readNr);
-        //action->set_id(read.id);
+
+        // specify read number that shall be unblocked -> avoids unblock of consecutive read
+        action->set_number(response.readNr);
+
+        // create unique action id by using a timestamp
         std::stringstream buf;
         std::chrono::milliseconds ms = std::chrono::duration_cast< std::chrono::milliseconds >(std::chrono::system_clock::now().time_since_epoch());
-        buf << "unblock_" << read.channelNr << "_" << read.readNr << "_" << ms.count();
-        responseMutex.lock();
-        std::map<string, ReadResponse>::iterator it = responseCache.find(buf.str().substr(8));
-        if (it != responseCache.end())
-        {
-            (*it).second.unblock_duration = unblock_duration;
-        }
-        responseMutex.unlock();
+        buf << "unblock_" << response.channelNr << "_" << response.readNr << "_" << ms.count();
         action->set_action_id(buf.str());
     }
 
-    void Data::addStopReceivingDataAction(GetLiveReadsRequest_Actions *actionList, ReadCache &read)
+    /**
+    *   creates an action message for not receiving more data for tha read
+    *   adds the action to the action list
+    *   @actionList : List of action messages
+    *   @response   : action response object storing infos like read number and channel number
+    */
+    void Data::addStopReceivingDataAction(GetLiveReadsRequest_Actions* actionList, ActionResponse& response)
     {
-        GetLiveReadsRequest_Action *action = actionList->add_actions();
-        action->set_channel(read.channelNr);
-        GetLiveReadsRequest_StopFurtherData *data = action->mutable_stop_further_data();
+        // create an action message and add it to the action list
+        GetLiveReadsRequest_Action* action = actionList->add_actions();
+        // FlowCell channel number on which we call the action
+        action->set_channel(response.channelNr);
+
+        // define action as stop_further_data action
+        GetLiveReadsRequest_StopFurtherData* data = action->mutable_stop_further_data();
         *data = action->stop_further_data();
-        action->set_number(read.readNr);
+
+        // specify read number for which we don't want to receive more data
+        // but only for this read, for the next one we want to get live signals
+        action->set_number(response.readNr);
+
+        // create unique action id by using a timestamp
         std::stringstream buf;
-        buf << "stop_receiving_" << read.channelNr << "_" << read.readNr;
+        buf << "stop_receiving_" << response.channelNr << "_" << response.readNr;
         action->set_action_id(buf.str());
     }
 
-    void Data::addActions()
+    /**
+    *   take read action responses from the queue and add unblock and/or stop_receiving_data
+    *   action to the action list and write action request to the bidirectional stream
+    *   @action_queue   : safe queue with reads for which action messages shall be sent to MinKNOW
+    */
+    void Data::sendActions(SafeQueue<readuntil::ActionResponse>& action_queue, SafeQueue<Durations>& duration_queue)
     {
-        data_logger->debug("start action request thread");
+        data_logger->info("Start sending unblock actions to MinKNOW");
+        data_logger->flush();
         // as long as signals are received from MinKnow
         // iterate over received data and stop further data allocation for every odd read on every odd channel
+        
+        // only send action messages while sequencing is still ongoing
         while (isRunning())
         {
+            // we want take the time between creation of first and last action message
             std::chrono::time_point<std::chrono::system_clock> start, end;
             start = std::chrono::system_clock::now();
+
+            // create an action request that will be written on the stream later
             GetLiveReadsRequest actionRequest{};
-            GetLiveReadsRequest_Actions *actionList = actionRequest.mutable_actions();
+            // list of actions is attribute of an action request object
+            GetLiveReadsRequest_Actions* actionList = actionRequest.mutable_actions();
             
             int counter = 0;
+            // only actionBatchSize is the number of action messages that are send in one request
             while (counter < actionBatchSize)
             {
-                ReadCache read{};
-                bool hasElement = false;
-                readMutex.lock();
-                // take read out of the queue if it's not empty
-                if (!reads.empty())
+                if (!action_queue.empty())
                 {
-                    read.channelNr = reads.front().channelNr;
-                    read.readNr = reads.front().readNr;
-                    hasElement = true;
-                    reads.pop();
-                }
-                readMutex.unlock();
-
-                if (hasElement)
-                {
-                    // 
-                    if (unblock_all)
+                    // take read from the queue and add unblock message for that read to the queue
+                    // if read is classified as host read
+                    ActionResponse readResponse = action_queue.pop();
+                    if (readResponse.response)
                     {
-                        addUnblockAction(actionList, read, 0.1);
-                        //addStopReceivingDataAction(actionList, read);
+                        addUnblockAction(actionList, readResponse, 0.1);
                         counter++;
+                        
+                    }
+
+                    // add stop_receiving_data message for every read in the queue
+                    addStopReceivingDataAction(actionList, readResponse);
+                    counter++;
+                    readResponse.processingTimes.timeCompleteRead.stop();
+                    if (readResponse.response)
+                    {
+                        duration_queue.push(Durations{
+                            readResponse.processingTimes.timeCompleteRead.elapsed(),
+                            -1,
+                            readResponse.processingTimes.timeBasecallRead.elapsed(),
+                            readResponse.processingTimes.timeClassifyRead.elapsed(),
+                            });
                     }
                     else
                     {
-                        switch(read.channelNr % 4)
-                        {
-                            case 0:
-                            {
-                                //channel numbers with mod 4 == 0 are sequenced as usual
-                                std::stringstream buf;
-                                buf << read.channelNr << "_" << read.readNr;
-                                responseMutex.lock();
-                                std::map<string, ReadResponse>::iterator it = responseCache.find(buf.str());
-                                if (it != responseCache.end())
-                                {
-                                    (*it).second.unblock_duration = -1.0;
-                                }
-                                responseMutex.unlock();
-                                addStopReceivingDataAction(actionList, read);
-                                counter++;
-                                break;
-                            }
-                            case 1:
-                            {
-                                // unblock odd numbered reads with duration 1 sec 
-                                if (read.readNr % 2 == 1)
-                                {
-                                    addUnblockAction(actionList, read, 1.0);
-                                    counter++;
-                                }
-                                else
-                                {
-                                    addStopReceivingDataAction(actionList, read);
-                                    counter++;
-                                }
-                                break;
-                            }
-                            case 2:
-                            {
-                                // unblock odd numbered reads with duration 0.1 sec
-                                if (read.readNr % 2 == 1)
-                                {
-                                    addUnblockAction(actionList, read, 0.1);
-                                    counter++;
-                                }
-                                else
-                                {
-                                    addStopReceivingDataAction(actionList, read);
-                                    counter++;
-                                }
-                                break;
-                            }
-                            case 3:
-                            {
-                                // unblock every fourth read with duration 0.1 sec
-                                if (read.readNr % 4 == 0)
-                                {
-                                    addUnblockAction(actionList, read, 0.1);
-                                    counter++;
-                                }
-                                else
-                                {
-                                    addStopReceivingDataAction(actionList, read);
-                                    counter++;
-                                }
-                                break;
-                            }
-                            default:
-                                // do nothing
-                                break;
-                        }
+                        duration_queue.push(Durations{
+                            -1,
+                            readResponse.processingTimes.timeCompleteRead.elapsed(),
+                            readResponse.processingTimes.timeBasecallRead.elapsed(),
+                            readResponse.processingTimes.timeClassifyRead.elapsed(),
+                            });
                     }
+                    
                 }
+                else
+                    break;
             }
 
-            if (!stream->Write(actionRequest))
+            // increase number of action messages in one request if queue is too full
+            // decrease otherwise
+            adaptActionBatchSize(action_queue.size());
+
+            // write action request to the stream -> send message to MinKNOW
+            // try 5 times to send message
+            // throw exception if that was not successfull
+            for (uint8_t i = 1; i <= 5; ++i)
             {
-                throw DataServiceException("Unable to add action to a live read stream!");
+                if (stream->Write(actionRequest))
+                    break;
+                if (i == 5)
+                {
+                    data_logger->error("Failed sending action request to MinKNOW");
+                    data_logger->flush();
+                    throw FailedActionRequestException("Could not send unblock actions to MinKNOW!");
+                }
+                data_logger->warn("Failed sending action request number " + i);
+                data_logger->flush();
+                // wait for 0.4 seconds before trying to send the request again
+                std::this_thread::sleep_for(std::chrono::milliseconds(400));
             }
 
+            // there should be at least 100 ms between two separate action requests
+            // otherwise MinKNOW action request queue is overflooded and drops requests
             end = std::chrono::system_clock::now();
             int elapsed_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
             if(elapsed_milliseconds < 100)
@@ -193,14 +215,21 @@ namespace readuntil
             }
             
         }
-        data_logger->debug("leaving action request thread");
+        data_logger->info("Finished sending unblock actions to MinKNOW");
+        data_logger->flush();
     }
-
-    void Data::adaptActionBatchSize()
+    
+    /**
+    *   automatically adapt the number of action messages sent in one action request via the stream
+    *   @queue_size : size of the action response queue
+    * 
+    *   TODO: evaluate if porportion of increase and decrease in size is ok
+    */
+    void Data::adaptActionBatchSize(const int queue_size)
     {
-        if(reads.size() > 0)
+        if(queue_size > 0)
         {
-            actionBatchSize += reads.size();
+            actionBatchSize += queue_size;
         }
         else
         {
@@ -208,164 +237,105 @@ namespace readuntil
         }
     }
 
+    /**
+    *   checks whether there are still read signals arriving from MinKNOW
+    *   @return: true, if sequencig is ongoing and false otherwise
+    */
     bool Data::isRunning()
     {
         return runs;
     }
 
-    void Data::createSetupMessage()
+    /**
+    *   starts the bidirectional stream with MinKNOW
+    *   sends setup message to MinKNOW, which is needed initially receiving data
+    *   @throws : FailedSetupMessageException
+    */
+    void Data::startLiveStream()
     {
-        data_logger->debug("start setup message thread");
+        data_logger->info("Trying to send setup message to MinKNOW");
+        data_logger->flush();
 
+        runs = true;
+
+        // start streaming live nanopore signals
+        stream = stub->get_live_reads(&context);
+
+        // create setup messae
         GetLiveReadsRequest setupRequest{};
-        GetLiveReadsRequest_StreamSetup *setup = setupRequest.mutable_setup();
+        GetLiveReadsRequest_StreamSetup* setup = setupRequest.mutable_setup();
+
+        // we want to receive signals from all 512 channels of the MinION
+        // has to be changed in case Flongle or PromethION is used
+        // TODO: set last channel based on device type
         setup->set_first_channel(1);
         setup->set_last_channel(512);
-        setup->set_raw_data_type(GetLiveReadsRequest_RawDataType_UNCALIBRATED);
-        setup->set_sample_minimum_chunk_size(0);
 
+        // we only want to receive calibrated data
+        setup->set_raw_data_type(GetLiveReadsRequest_RawDataType_CALIBRATED);
+        // minimum number of signals for part of a read to be sent via the stream
+        // zero means no limitation
+        // TODO: Try to find out if other parameter like e.g. 4 is better
+        setup->set_sample_minimum_chunk_size(4);
+        setup->set_max_unblock_read_length_samples(0);
+
+        // write setup message to stream and throw exception if that was not successful
         if (!stream->Write(setupRequest))
         {
-            throw DataServiceException("Unable to setup a live read stream!");
+            data_logger->error("Failed starting live stream : Could not send setup message!");
+            data_logger->flush();
+            throw FailedSetupMessageException("Failed starting live stream : Could not send setup message!");
         }
 
-        data_logger->debug("leaving setup message thread");
+        data_logger->info("Setup message successfully send to MinKNOW.");
+        data_logger->flush();
     }
 
-    void Data::printResponseData()
+	/**
+    *   pull live nanopore signals from the stream and add the reads to the basecalling queue
+    *   @basecall_queue : safe queue for storing reads ready for basecalling
+    *   
+    *   TODO: analyze action responses and log success and failed actions
+    */
+    void Data::getLiveSignals(SafeQueue<SignalRead>& basecall_queue)
     {
-        std::ofstream ofs("readMetaData.csv", std::ofstream::out);
-        ofs << "read_id\tchannel_nr\tread_nr\tresponse\tunblock_duration\tsamples_since_start\tseconds_since_start\tstart_sample\tchunk_start_sample\tchunk_length\n"; 
-        while (isRunning())
-        {
-            
-            string id{};
-
-            bool hasElement = false;
-            string success = "none";
-            respQueueMutex.lock();
-            // take response out of the queue if it's not empty
-            if (!responseQueue.empty())
-            {
-                id = responseQueue.front().action_id();
-                switch(responseQueue.front().response())
-                {
-                    case GetLiveReadsResponse_ActionResponse_Response_SUCCESS:
-                        success = "success";
-                        break;
-                    case GetLiveReadsResponse_ActionResponse_Response_FAILED_READ_FINISHED:
-                        success = "failed";
-                        break;
-                }
-                hasElement = true;
-                responseQueue.pop();
-            }
-            respQueueMutex.unlock();
-
-            if (hasElement)
-            {
-                // add action success/failed information to responseCache entry
-                
-                if (id.rfind("unblock_",0) == 0)
-                {
-                    id = id.substr(8);
-                }
-                
-                responseMutex.lock();
-                std::map<string, ReadResponse>::iterator it = responseCache.find(id);
-                if (it != responseCache.end())
-                {
-                    ofs << (*it).second.id << "\t" << (*it).second.channelNr << "\t" << (*it).second.readNr << "\t" << success << "\t" << (*it).second.unblock_duration << "\t" << (*it).second.samples_since_start << "\t" << (*it).second.start_sample << "\t" << (*it).second.chunk_start_sample << "\t" << (*it).second.chunk_length << "\n";
-                    responseCache.erase(it);
-                }
-                responseMutex.unlock();
-            }
-
-
-            responseMutex.lock();
-            if (!responseCache.empty())
-            {
-                std::map<string,ReadResponse>::iterator it = responseCache.begin();
-                if((*it).second.unblock_duration < 0)
-                {
-                    ofs << (*it).second.id << "\t" << (*it).second.channelNr << "\t" << (*it).second.readNr << "\t none\t" << (*it).second.unblock_duration << "\t" << (*it).second.samples_since_start << "\t" << (*it).second.start_sample << "\t" << (*it).second.chunk_start_sample << "\t" << (*it).second.chunk_length << "\n";
-                    responseCache.erase(it);
-                }
-            }
-            responseMutex.unlock();
-
-        }
-
-        responseMutex.lock();
-        
-        for (std::map<string,ReadResponse>::iterator it = responseCache.begin(); it != responseCache.end(); ++it)
-        {
-            ofs << (*it).second.id << "\t" << (*it).second.channelNr << "\t" << (*it).second.readNr << "\tnone\t" << (*it).second.unblock_duration << "\t" << (*it).second.samples_since_start << "\t" << (*it).second.start_sample << "\t" << (*it).second.chunk_start_sample << "\t" << (*it).second.chunk_length << "\n";
-        }
-        responseMutex.unlock();
-        ofs.close();
-    }
-
-	/*Data::getSignalType()
-	{
-		GetDataTypesRequest request;
-		GetDataTypesResponse response;
-		::grpc::ClientContext context;
-		::grpc::Status status = stub->get_data_types(&context, request, &response);
-		if (status.ok())
-		{
-			GetDataTypesResponse_DataType dataType = response.calibrated_signal();
-			
-		}
-		else
-		{
-			throw DataServiceException("Unable to resolve signal data type!");
-		}
-	}
-*/
-    void Data::getLiveSignals()
-    {
-        data_logger->debug("start getting signals thread");
+        data_logger->info("Live signal receiving thread started");
+        data_logger->flush();
         GetLiveReadsResponse response;
-        int actNr = 0;
-        int success = 0;
-        int failed = 0;
 
+        uint32_t success = 0;
+        uint32_t finished = 0;
+        uint32_t too_long = 0;
+
+        StopClock::TimePoint begin = StopClock::Clock::now();
+
+        // as long as there is incoming data on the stream we read it and store
+        // temporary data in response variable
         while (stream->Read(&response))
         {
+            // stop trying to read from the stream if sequencing has been finished
             if (acq->isFinished())
             {
                 runs = false;
                 break;
             }
 
-            runs = true;
-            
-            
-            respQueueMutex.lock();
-        	for (GetLiveReadsResponse_ActionResponse actResponse : response.action_responses())
+            for (GetLiveReadsResponse_ActionResponse actResp : response.action_responses())
             {
-                responseQueue.push(actResponse);
-                actNr++;
-                switch (actResponse.response())
-                {
-                    case GetLiveReadsResponse_ActionResponse_Response_SUCCESS:
-                        success++;
-                        break;
-                    case GetLiveReadsResponse_ActionResponse_Response_FAILED_READ_FINISHED:
-                        failed++;
-                        break;
-                }
+                if (actResp.response() == GetLiveReadsResponse_ActionResponse_Response_SUCCESS)
+                    success++;
+                else  if (actResp.response() == GetLiveReadsResponse_ActionResponse_Response_FAILED_READ_FINISHED)
+                    finished++;
+                else
+                    too_long++;
             }
-            respQueueMutex.unlock();
-            
-            std::stringstream ss;
-            ss << "Success/Failed rate = " << success <<"/" << failed; 
-            data_logger->info(ss.str());
-            
-       		Map<uint32, GetLiveReadsResponse_ReadData> readData = response.channels();
+
+            // iterate over the read data from each channel
+            Map<uint32, GetLiveReadsResponse_ReadData> readData = response.channels();
        		for (MapPair<uint32, GetLiveReadsResponse_ReadData> entry : readData)
         	{
+                TimeMeasures times;
+                times.timeCompleteRead.start();
                 // only process read chunks from filter classes (e.g. strand or adapter)
                 bool filtered = true;
                 for (int32 cl : entry.second.chunk_classifications())
@@ -381,82 +351,48 @@ namespace readuntil
                 {
                     continue;
                 }
-
-                // only add reads we did not already see to processing queue
-                // TODO: test without this => send unblock again if it didn't work initially
-                //if (std::find(uniqueReadIds.begin(), uniqueReadIds.end(), entry.second.id()) == uniqueReadIds.end())
-                //{
-
-                    // store read data for csv printing
-                    ReadResponse respData{};
-                    respData.channelNr = entry.first;
-                    respData.readNr = entry.second.number();
-                    respData.id = entry.second.id();
-                    respData.samples_since_start = response.samples_since_start();
-                    respData.seconds_since_start = response.seconds_since_start();
-                    respData.start_sample = entry.second.start_sample();
-                    respData.chunk_start_sample = entry.second.chunk_start_sample();
-                    respData.chunk_length = entry.second.chunk_length();
-                    std::stringstream buf;
-                    buf << respData.channelNr << "_" << respData.readNr;
-                    responseMutex.lock();
-                    responseCache.emplace(buf.str(), respData);
-                    responseMutex.unlock();
-
-                    // add read to read cache for action request processing
-           		    uint32 channel = entry.first;
-           		    uint32 readNr = entry.second.number();
-                    ReadCache r{};
-                    r.channelNr = channel;
-                    r.readNr = readNr;
-                    r.id = entry.second.id();
-                    readMutex.lock();
-                    reads.push(r);
-                    readMutex.unlock();
-                    //uniqueReadIds.push_back(entry.second.id());
-                //}
+                // add read to basecalling queue
+                // nanopore signal string is converted into a vector of floating point numbers
+                basecall_queue.push(SignalRead{ entry.first,
+                                                    entry.second.number(),
+                                                    entry.second.id(),
+                                                    string_to_float(entry.second.raw_data()),
+                                                    times});
        		}
-            std::stringstream ss2;
-            ss2 << "ReadCacheSize : " << reads.size() << "; ActionBatchSize : " << (int)actionBatchSize;
-            data_logger->debug(ss2.str());
 
-            adaptActionBatchSize();  
+            StopClock::TimePoint end = StopClock::Clock::now();
+            std::chrono::duration< StopClock::Seconds > elapsed = end - begin;
+            if (elapsed.count() > 60.0)
+            {
+                data_logger->info("----------------------------- Intermediate Results -------------------------------------------------------");
+                std::stringstream sstr;
+                sstr << "Number of successfully unblocked reads    : " << success;
+                data_logger->info(sstr.str());
+                sstr.str("");
+                sstr << "Number of failed finished reads           : " << finished;
+                data_logger->info(sstr.str());
+                sstr.str("");
+                sstr << "Number of failed too long reads           : " << too_long;
+                data_logger->info(sstr.str());
+                data_logger->info("----------------------------------------------------------------------------------------------------------");
+                data_logger->flush();
+                begin = end;
+            }
        }
-       data_logger->debug("leaving signals thread");
        runs = false;
     }
 
-    void Data::getLiveReads()
+    /**
+    *   stop streaming data with a clean finish
+    */
+    void Data::stopLiveStream()
     {
-        runs = true;
-        grpc::Status status;
-
-        stream = stub->get_live_reads(&context);
-        // first write setup the stream
-
-        std::thread setupThread(&Data::createSetupMessage, this);
-
-        setupThread.join();
-
-        std::thread readerThread(&Data::getLiveSignals, this);
-        std::thread actionThread(&Data::addActions, this);
-        std::thread printThread(&Data::printResponseData, this);
-
-
-        readerThread.join();
-        actionThread.join();
-	
+        runs = false;
         stream->WritesDone();
 	    context.TryCancel();
-        status = stream->Finish();
-
-        printThread.join();
-
-        data_logger->debug(status.error_code());
-        data_logger->debug(status.error_message());
-        data_logger->debug(status.error_details());
+        grpc::Status status = stream->Finish();
 
     }
-
+    
 }
 

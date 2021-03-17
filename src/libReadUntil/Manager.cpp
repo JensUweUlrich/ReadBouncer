@@ -6,8 +6,7 @@
  *
  * Fetching information about devices connected to MinKNOW via Remote Procedure Calls
  *
- * [update] 14.11.2019
- *		seems to use another port (9502?) and tls secure connection with rpc certificates from the MinKNOW conf directory
+ * [update] 27.08.2020 resolveRpcPort for a given device name
  *
  *
  */
@@ -50,6 +49,17 @@ namespace readuntil
 		return dev.rpc_ports().insecure();
 	}
 
+	uint32_t Manager::resolveRpcPort(std::string &deviceName)
+	{
+		for(FlowCellPosition fp : getFlowCells())
+		{
+			if(deviceName == getFlowCellName(fp))
+			{
+				return getRpcPort(fp);
+			}
+		}
+		return 0;
+	}
 
 	std::string Manager::getGuppyVersion()
 	{

@@ -11,7 +11,7 @@
 #include <minknow_api/acquisition.grpc.pb.h>
 #include <minknow_api/acquisition.pb.h>
 
-#include "spdlog/spdlog.h"
+//#include "spdlog/spdlog.h"
 
 #include "MinKnowService.hpp"
 #include "ReadUntilClientException.hpp"
@@ -30,7 +30,7 @@ namespace readuntil
         private:
             std::unique_ptr<AcquisitionService::Stub> stub;
             std::unique_ptr<grpc::ClientReaderWriter<WatchForStatusChangeRequest, WatchForStatusChangeResponse>> stream;
-            std::shared_ptr<spdlog::logger> acquisition_logger;
+//            std::shared_ptr<spdlog::logger> acquisition_logger;
             
         public:
             Acquisition() = default;

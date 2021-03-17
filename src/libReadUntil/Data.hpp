@@ -4,6 +4,9 @@
  *  Created on: 12.11.2019
  *      Author: jens-uwe.ulrich
  */
+
+#pragma once
+
 #include <algorithm>
 #include <chrono>
 #include <thread>
@@ -13,13 +16,16 @@
 #include <queue>
 #include <set>
 #include <mutex>
-#include <unistd.h>
+#include <io.h>
 #include <grpcpp/grpcpp.h>
 #include <google/protobuf/map.h>
 #include <minknow_api/data.grpc.pb.h>
 #include <minknow_api/data.pb.h>
 
 #include "spdlog/spdlog.h"
+
+#include "SafeQueue.hpp"
+#include "StopClock.hpp"
 
 #include "Acquisition.hpp"
 #include "Analysis_Configuration.hpp"
@@ -29,30 +35,25 @@
 using namespace ::minknow_api::data;
 using namespace ::google::protobuf;
 
-#ifndef LIBREADUNTIL_DATA_HPP_
-#define LIBREADUNTIL_DATA_HPP_
 
 namespace readuntil
 {
-    struct ReadCache
+    struct SignalRead
     {
             uint32 channelNr{};
             uint32 readNr{};
             string id{};
+            std::vector<float> raw_signals{};
+            TimeMeasures processingTimes{};
     };
 
-    struct ReadResponse
+    struct ActionResponse
     {
         uint32 channelNr{};
         uint32 readNr{};
         string id{};
-        uint8_t response{0};
-        double unblock_duration{0.0};
-        uint64 samples_since_start{};
-        double seconds_since_start{};
-        uint64 start_sample{};
-        uint64 chunk_start_sample{};
-        uint64 chunk_length{};
+        TimeMeasures processingTimes{};
+        bool response;
     };
 
 
@@ -61,30 +62,39 @@ namespace readuntil
         private:
             std::unique_ptr<DataService::Stub> stub;
             std::unique_ptr<grpc::ClientReaderWriter<GetLiveReadsRequest, GetLiveReadsResponse>> stream;
-            readuntil::Acquisition *acq;
-            readuntil::AnalysisConfiguration *conf;
-            std::queue<ReadCache> reads;
-            std::queue<GetLiveReadsResponse_ActionResponse> responseQueue;
-            std::map<string, ReadResponse> responseCache;
-            std::vector<std::string> uniqueReadIds;
+            readuntil::Acquisition* acq;
+            readuntil::AnalysisConfiguration* conf;
             std::set<int32> filterClasses;
-            std::mutex readMutex;
-            std::mutex responseMutex;
-            std::mutex respQueueMutex;
             std::shared_ptr<spdlog::logger> data_logger;
             bool runs = false;
             bool unblock_all = false;
-            uint8_t unblockChannels;
-            uint8_t unblockReads;
             uint8_t actionBatchSize = 50;
-            void createSetupMessage();
-            void getLiveSignals();
-            void addActions();
-            void addUnblockAction(GetLiveReadsRequest_Actions *actionList, ReadCache &read, const double unblock_duration);
-            void addStopReceivingDataAction(GetLiveReadsRequest_Actions *actionList, ReadCache &read);
-            void printResponseData();
-            void adaptActionBatchSize();
+            
+            void addUnblockAction(GetLiveReadsRequest_Actions* actionList, ActionResponse& response, const double unblock_duration);
+            void addStopReceivingDataAction(GetLiveReadsRequest_Actions* actionList, ActionResponse& response);
+            void adaptActionBatchSize(const int queue_size);
             void resolveFilterClasses();
+
+            /**
+            *   converts a given string of signals into a vector of float signals
+            *   @signalString   : string of nanopore signals
+            *   @return         : vector of float nanopore signals
+            */
+            inline std::vector<float> Data::string_to_float(std::string const& signalString)
+            {
+                assert(signalString.size() % sizeof(float) == 0);
+
+                std::vector<float> result(signalString.size() / sizeof(float));
+
+                if (!result.empty())
+                {
+                    std::copy(signalString.data(), signalString.data() + signalString.size(),
+                        reinterpret_cast<char*>(&result.front()));
+                }
+
+                return result;
+            }
+
         public:
             Data() = default;
             Data(std::shared_ptr<::grpc::Channel> channel);
@@ -92,6 +102,8 @@ namespace readuntil
             ~Data()
             {
                 stub.release();
+                delete acq;
+                delete conf;
                 //actionList.Clear();
             }
 
@@ -100,7 +112,6 @@ namespace readuntil
                 if (this != &other)
                 {
                     stub.reset(other.stub.get());
-                    //actionList.CopyFrom(other.actionList);
                 }
                 return *this;
             }
@@ -110,19 +121,13 @@ namespace readuntil
 		        return &context;
 	        }
 
-            void getLiveReads();
+            void getLiveSignals(SafeQueue<SignalRead>& basecall_queue);
+            void sendActions(SafeQueue<readuntil::ActionResponse>& action_queue, SafeQueue<Durations>& duration_queue);
+            void startLiveStream();
+            void stopLiveStream();
+
             bool isRunning();
             
-            inline void setUnblockChannels(const uint8_t &unblock)
-            {
-                unblockChannels = unblock;
-            }
-
-            inline void setUnblockReads(const uint8_t &unblock)
-            {
-                unblockReads = unblock;
-            }
-
             inline void setActionBatchSize(const uint8_t &size)
             {
                 actionBatchSize = size;
@@ -132,7 +137,7 @@ namespace readuntil
             {
                 unblock_all = unblock;
             }
+
     };
 
 } //namespace
-#endif /* LIBREADUNTIL_DATA_HPP_ */

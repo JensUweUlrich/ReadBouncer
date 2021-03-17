@@ -1,16 +1,39 @@
 cmake_minimum_required(VERSION 3.4)
 
-project(seqan3-download)
 
+#project(seqan3-download)
+
+#include(ExternalProject)
+#ExternalProject_Add(seqan3
+#  GIT_REPOSITORY    https://github.com/seqan/seqan3.git
+#  GIT_TAG           master
+#  SOURCE_DIR        "${CMAKE_CURRENT_BINARY_DIR}/seqan3/seqan3-src"
+#  CMAKE_ARGS		"-DCMAKE_PREFIX_PATH=<SOURCE_DIR>/build_system"
+#  CONFIGURE_COMMAND	""
+#  BUILD_COMMAND		""
+#  INSTALL_COMMAND	""
+#)
+
+project(seqan2-download NONE)
 include(ExternalProject)
-ExternalProject_Add(seqan3
-  GIT_REPOSITORY    https://github.com/seqan/seqan3.git
-  GIT_TAG           master
-  SOURCE_DIR        "${CMAKE_CURRENT_BINARY_DIR}/seqan3/seqan3-src"
-  CMAKE_ARGS		"-DCMAKE_PREFIX_PATH=<SOURCE_DIR>/build_system"
+
+ExternalProject_Add(sdsl-lite
+  GIT_REPOSITORY    https://github.com/simongog/sdsl-lite.git
+  GIT_TAG           v2.1.1
+  SOURCE_DIR        "${CMAKE_CURRENT_BINARY_DIR}/sdsl-lite"
+  CMAKE_CACHE_ARGS
+                    -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/sdsl-lite
+                    -DMSVC_COMPILER
+  INSTALL_COMMAND	""
+)
+
+ExternalProject_Add(seqan2
+  GIT_REPOSITORY    https://github.com/JensUweUlrich/seqan.git
+  GIT_TAG           SeqAn
+  SOURCE_DIR        "${CMAKE_CURRENT_BINARY_DIR}/seqan2/seqan2-src"
+  CMAKE_ARGS		    "-DCMAKE_PREFIX_PATH=<SOURCE_DIR>/util/cmake" 
+                    "-DSEQAN_INCLUDE_PATH=${CMAKE_CURRENT_BINARY_DIR}/seqan2/seqan2-src/include"
   CONFIGURE_COMMAND	""
   BUILD_COMMAND		""
   INSTALL_COMMAND	""
 )
-
-

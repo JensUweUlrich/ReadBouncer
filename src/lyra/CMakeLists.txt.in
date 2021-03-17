@@ -1,0 +1,15 @@
+cmake_minimum_required(VERSION 3.4)
+
+project(lyra-download)
+
+include(ExternalProject)
+ExternalProject_Add(lyra
+  GIT_REPOSITORY    https://github.com/bfgroup/Lyra.git
+  GIT_TAG           1.5.1
+  SOURCE_DIR        "${CMAKE_CURRENT_BINARY_DIR}/lyra/lyra-src"
+  CMAKE_ARGS		    "-DCMAKE_PREFIX_PATH=<SOURCE_DIR>/lyra/share/lyra/cmake"
+  CMAKE_CACHE_ARGS  
+                    -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/lyra
+)
+
+

@@ -7,7 +7,7 @@ if(result)
   message(FATAL_ERROR "CMake step for spdlog failed: ${result}")
 endif()
 
-execute_process(COMMAND ${CMAKE_COMMAND} --build .
+execute_process(COMMAND ${CMAKE_COMMAND} --build . --config Release
   RESULT_VARIABLE result
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/spdlog-build)
 if(result)

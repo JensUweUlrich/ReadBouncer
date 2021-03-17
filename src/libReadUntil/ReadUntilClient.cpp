@@ -9,7 +9,7 @@
 
 namespace readuntil
 {
-	bool ReadUntilClient::connect()
+	bool ReadUntilClient::connect(std::string device)
 	{
 		try
 		{
@@ -20,13 +20,23 @@ namespace readuntil
 			std::cerr << "Log initialization failed: " << e.what() << std::endl;
 		}
 		
-		bool connected = false;
+
+
+		// connect with MinKNOW Manager to get FlowCell Connection
+		std::stringstream s;
+		s << mk_host << ":" << mk_port;
+		std::shared_ptr<::grpc::Channel> mgrCh = grpc::CreateChannel(s.str(), grpc::InsecureChannelCredentials());
+		readuntil::Manager *mgr = new Manager(mgrCh);
+		// get RPC port for given device
+		uint32_t rpcPort = mgr->resolveRpcPort(device);
+
+
 		std::stringstream connect_str;
 		std::stringstream info_str;
-		connect_str << mk_host << ":" << mk_port;
+		connect_str << mk_host << ":" << rpcPort;
 		info_str << "Trying to connect to Minknow on " << connect_str.str();
 		int retry_count = 5;
-		connection_logger->flush_on(spdlog::level::err);
+		connection_logger->flush_on(spdlog::level::info);
 		connection_logger->set_level(spdlog::level::debug);
 		connection_logger->info(info_str.str());
 
@@ -67,26 +77,12 @@ namespace readuntil
 			connected = false;
 		}
 
-		readuntil::Manager *mgr = (readuntil::Manager*) getMinKnowService(readuntil::MinKnowServiceType::MANAGER);
-
-		try
-		{
-			std::stringstream gupss;
-			gupss << "guppy version : " << (*mgr).getGuppyVersion();
-			connection_logger->info(gupss.str());
-		}
-		catch (readuntil::ReadUntilClientException e)
-		{
-			std::stringstream em;
-			em << "Could not get guppy version : " << e.what();
-			connection_logger->error(em.str());
-		}
-
 		return connected;
 	}
 
 	MinKnowService* ReadUntilClient::getMinKnowService(const MinKnowServiceType type)
 	{
+		
 		MinKnowService *s;
 		switch (type)
 		{
@@ -100,13 +96,6 @@ namespace readuntil
 				return new Data(channel);
 			case DEVICE:
 				return new Device(channel);
-			case MANAGER:
-			{
-				std::stringstream s;
-				s << mk_host << ":" << "9501";
-				std::shared_ptr<::grpc::Channel> mgrCh = grpc::CreateChannel("localhost:9501", grpc::InsecureChannelCredentials());
-				return new Manager(mgrCh);
-			}
 			default:
 				return s;
 

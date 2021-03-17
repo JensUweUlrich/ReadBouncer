@@ -42,6 +42,61 @@ namespace readuntil
 
 	};
 
+	class FailedSetupMessageException : public DataServiceException
+	{
+
+	private:
+		std::string error_message
+		{ };
+
+	public:
+
+		FailedSetupMessageException() : DataServiceException()
+		{
+
+		}
+		FailedSetupMessageException(const std::string& msg) :
+			DataServiceException(msg)
+		{
+		}
+		~FailedSetupMessageException() throw ()
+		{
+		}
+
+		virtual const char* what() const throw ()
+		{
+			return error_message.c_str();
+		}
+
+	};
+
+	class FailedActionRequestException : public DataServiceException
+	{
+
+	private:
+		std::string error_message
+		{ };
+
+	public:
+
+		FailedActionRequestException() : DataServiceException()
+		{
+
+		}
+		FailedActionRequestException(const std::string& msg) :
+			DataServiceException(msg)
+		{
+		}
+		~FailedActionRequestException() throw ()
+		{
+		}
+
+		virtual const char* what() const throw ()
+		{
+			return error_message.c_str();
+		}
+
+	};
 }
 
 
