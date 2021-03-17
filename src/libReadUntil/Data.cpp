@@ -276,7 +276,7 @@ namespace readuntil
         // minimum number of signals for part of a read to be sent via the stream
         // zero means no limitation
         // TODO: Try to find out if other parameter like e.g. 4 is better
-        setup->set_sample_minimum_chunk_size(0);
+        setup->set_sample_minimum_chunk_size(4);
         setup->set_max_unblock_read_length_samples(0);
 
         // write setup message to stream and throw exception if that was not successful
@@ -365,9 +365,15 @@ namespace readuntil
             if (elapsed.count() > 60.0)
             {
                 data_logger->info("----------------------------- Intermediate Results -------------------------------------------------------");
-                data_logger->info("Number of successfully unblocked reads    : " + success);
-                data_logger->info("Number of failed finished reads           : " + finished);
-                data_logger->info("Number of failed finished reads           : " + too_long);
+                std::stringstream sstr;
+                sstr << "Number of successfully unblocked reads    : " << success;
+                data_logger->info(sstr.str());
+                sstr.str("");
+                sstr << "Number of failed finished reads           : " << finished;
+                data_logger->info(sstr.str());
+                sstr.str("");
+                sstr << "Number of failed too long reads           : " << too_long;
+                data_logger->info(sstr.str());
                 data_logger->info("----------------------------------------------------------------------------------------------------------");
                 data_logger->flush();
                 begin = end;

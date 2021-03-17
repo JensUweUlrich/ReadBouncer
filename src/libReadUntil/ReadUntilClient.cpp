@@ -36,7 +36,7 @@ namespace readuntil
 		connect_str << mk_host << ":" << rpcPort;
 		info_str << "Trying to connect to Minknow on " << connect_str.str();
 		int retry_count = 5;
-		connection_logger->flush_on(spdlog::level::err);
+		connection_logger->flush_on(spdlog::level::info);
 		connection_logger->set_level(spdlog::level::debug);
 		connection_logger->info(info_str.str());
 

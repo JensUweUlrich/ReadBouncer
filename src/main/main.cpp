@@ -7,9 +7,12 @@
 #include <sstream>
 #include <fstream>
 #include <future>
+#include <filesystem>
 
-#include "SafeQueue.hpp"
+#include <SafeQueue.hpp>
+#include <SafeMap.hpp>
 #include <StopClock.hpp>
+#include <NanoLiveExceptions.hpp>
 
 // spdlog library
 #include "spdlog/spdlog.h"
@@ -33,11 +36,17 @@
 readuntil::Data *data;
 
 std::shared_ptr<spdlog::logger> nanolive_logger;
+std::filesystem::path NanoLiveRoot;
 
 double avgDurationCompleteClassifiedRead = 0;
 double avgDurationCompleteUnClassifiedRead = 0;
 double avgDurationBasecallRead = 0;
 double avgDurationClassifyRead = 0;
+
+// reads not classified after first or second try
+SafeMap<std::string, std::pair<uint8_t, interleave::Read> > pending{};
+SafeQueue<interleave::Read> classifiedReads{};
+SafeQueue<interleave::Read> unclassifiedReads{};
 
 //--------------------------------------------------------------------
 
@@ -248,10 +257,10 @@ struct live_depletion_parser
 {
 	// default host & port to communicate with MinKNOW
 	std::string host = "127.0.0.1";
-	int port = 9501;
 	std::string device{};
-	std::string weights{};
 	std::string ibf_input_file{ };
+	std::string weights = "48";
+	int port = 9501;
 	double kmer_significance = 0.95;
 	double error_rate = 0.1;
     bool command = false;
@@ -307,19 +316,19 @@ struct live_depletion_parser
 					.name("-s")
 					.name("--significance")
 					.optional()
-					.help("significance level for confidence interval of number of errorneous kmers (default is 0.95"))
+					.help("significance level for confidence interval of number of errorneous kmers (default is 0.95)"))
 				.add_argument(
 					lyra::opt(error_rate, "err")
 					.name("-e")
 					.name("--error-rate")
 					.optional()
-					.help("exepected per read sequencing error rate (default is 0.1"))
+					.help("exepected per read sequencing error rate (default is 0.1)"))
 				.add_argument(
 					lyra::opt(weights, "weights")
 						.name("-w")
 						.name("--weights")
 						.optional()
-						.help("Weights file"))
+						.help("Deep Nano Weights (default is 48)"))
 				.add_argument(
                     lyra::opt(unblock_all)
                         .name("-u")
@@ -354,7 +363,7 @@ struct live_depletion_parser
 				std::cout << "Significance level for confidence interval   : " << kmer_significance << std::endl;
 				std::cout << "Expected sequencing error rate               : " << error_rate << std::endl;
 				std::cout << "Unblock all live reads                       : " << (unblock_all ? "yes" : "no") << std::endl;
-				std::cout << "Weights file for Live Basecalling            : " << weights << std::endl;
+				std::cout << "Deep Nano Weights for Live Basecalling       : " << weights << std::endl;
 				std::cout << "---------------------------------------------------------------------------------------------------" << std::endl;
 			}
         }
@@ -375,11 +384,18 @@ struct live_depletion_parser
 void basecall_live_reads(SafeQueue<readuntil::SignalRead>& basecall_queue,
 					SafeQueue<interleave::Read>& classification_queue,
 					std::string& weights,
+					std::filesystem::path& weights_file,
 					readuntil::Acquisition* acq)
 {
-	// create DeepNano2 caller object
-	Caller* caller = create_caller("48", weights.c_str(), 5, 0.01);
+	
+	std::string f = weights_file.string();
 
+	//TODO: check if 
+
+	// create DeepNano2 caller object
+	Caller* caller = create_caller(weights.c_str(), f.c_str(), 5, 0.01);
+
+	// stop clock for looging basecall queue size regularly => only for debugging
 	StopClock::TimePoint begin = StopClock::Clock::now();
 
 	while (true)
@@ -387,15 +403,38 @@ void basecall_live_reads(SafeQueue<readuntil::SignalRead>& basecall_queue,
 		if (!basecall_queue.empty())
 		{
 			readuntil::SignalRead read = basecall_queue.pop();
-			read.processingTimes.timeBasecallRead.start();
-			char* sequence = call_raw_signal(caller, read.raw_signals.data(), read.raw_signals.size());
-			read.processingTimes.timeBasecallRead.stop();
-			classification_queue.push(interleave::Read(read.id, sequence, read.channelNr, read.readNr, read.processingTimes));
+			// if we see data from this read for the first time
+			// basecall signals and push to classification queue
+			if (!pending.contains(read.id))
+			{
+				read.processingTimes.timeBasecallRead.start();
+				char* sequence = call_raw_signal(caller, read.raw_signals.data(), read.raw_signals.size());
+				read.processingTimes.timeBasecallRead.stop();
+				classification_queue.push(interleave::Read(read.id, sequence, read.channelNr, read.readNr, read.processingTimes));
+			}
+			else
+			{
+				// if read was not classified after first and second try
+				// concatenate sequence data from actual signals with former basecalled sequence data
+				// use stop clock from former tries again
+				TimeMeasures m = pending[read.id].second.getProcessingTimes();
+				m.timeBasecallRead.start();
+				char* sequence = call_raw_signal(caller, read.raw_signals.data(), read.raw_signals.size());
+				m.timeBasecallRead.stop();
+				std::stringstream sstr;
+				sstr << pending[read.id].second.getSeq() << sequence;
+				// push prolonged sequence to classification queue
+				// longer read may be classified better
+				classification_queue.push(interleave::Read(read.id, sstr.str(), read.channelNr, read.readNr, m));
+
+			}
 			StopClock::TimePoint end = StopClock::Clock::now();
 			std::chrono::duration< StopClock::Seconds > elapsed = end - begin;
 			if (elapsed.count() > 60.0)
 			{
-				nanolive_logger->debug("Size of Basecall Queue       :	" + basecall_queue.size());
+				std::stringstream sstr;
+				sstr << "Size of Basecall Queue       :	" << basecall_queue.size();
+				nanolive_logger->debug(sstr.str());
 				nanolive_logger->flush();
 				begin = end;
 			}
@@ -435,9 +474,10 @@ void classify_live_reads(	SafeQueue<interleave::Read>& classification_queue,
 	double avgReadLen = 0.0;
 	uint64_t rCounter = 0;
 
+	// TODO: make this global and store whole read object for sequence concatenation
 	// for unclassified read => store number of chunks that were unclassified
 	//							and Time for the first data chunk
-	std::map<seqan::CharString, std::pair<uint8_t, TimeMeasures> > unclassified{};
+	
 	StopClock::TimePoint begin = StopClock::Clock::now();
 	while (true)
 	{
@@ -445,39 +485,56 @@ void classify_live_reads(	SafeQueue<interleave::Read>& classification_queue,
 		{
 			interleave::Read read = classification_queue.pop();
 			TimeMeasures m = read.getProcessingTimes();
+			string readID = seqan::toCString(read.getID());
+			// Average Read length for classifcation
 			avgReadLen += ((double)read.getSeqLength() - avgReadLen) / (double) ++rCounter;
 			m.timeClassifyRead.start();
 			try
 			{
-				if (read.classify(filters, deplConf))
+				if (read.getSeqLength() >= 250 && read.classify(filters, deplConf))
 				{
 					m.timeClassifyRead.stop();
 					// store all read data and time measures for classified read
 					action_queue.push(readuntil::ActionResponse{read.getChannelNr(), read.getReadNr(), 
 										seqan::toCString(read.getID()), m, true});
+					classifiedReads.push(read);
 				}
 				else
 				{
-					// add readid entry to unclassified map
+					// add readid entry to pending map
 					// if read was unclassified for the third time -> add to action_queue with stop_further_data
 					// store only processing times of the first chunk
 					// helps to calculate time from getting first chunk to sending stopFurtherData message
-					if (unclassified.find(read.getID()) == unclassified.end())
+					if (!pending.contains(readID))
 					{
 						m.timeClassifyRead.stop();
-						unclassified.insert({ read.getID() , std::pair(1, m) });
+						// cut first 100bp of the read because of potential sequencing adapter
+						if (read.getSeqLength() > 100)
+						{
+							interleave::Read pendingRead{ read.getID(), seqan::suffix(read.getSeq(), 100), read.getChannelNr(), read.getReadNr(), m };
+							pending.insert({ readID , std::make_pair(1, pendingRead) });
+						}
+						else
+						{
+							pending.insert({ readID , std::make_pair(1, read) });
+						}
+						
 					}
 					else
 					{
-						if (unclassified[read.getID()].first == 2)
+						if (pending[readID].first == 2)
 						{
 							// push read on action queue if unclassified for the third time
 							// using time measures from the first chunk of data
 							action_queue.push(readuntil::ActionResponse{ read.getChannelNr(), read.getReadNr(),
-												seqan::toCString(read.getID()), unclassified[read.getID()].second , false });
+												seqan::toCString(read.getID()), pending[readID].second.getProcessingTimes() , false });
+							unclassifiedReads.push(read);
+							pending.erase(readID);
 						}
 						else
-							unclassified[read.getID()].first += 1;
+						{
+							pending.assign({ readID, std::make_pair(2, read) });
+						}
 					}
 				}
 			}
@@ -496,8 +553,10 @@ void classify_live_reads(	SafeQueue<interleave::Read>& classification_queue,
 			std::chrono::duration< StopClock::Seconds > elapsed = end - begin;
 			if (elapsed.count() > 60.0)
 			{
-				nanolive_logger->debug("Size of Classification Queue       :	" + classification_queue.size());
 				std::stringstream sstr;
+				sstr << "Size of Classification Queue       :	" << classification_queue.size();
+				nanolive_logger->debug(sstr.str());
+				sstr.str("");
 				sstr << "Average Read Length                :	" << avgReadLen;
 				nanolive_logger->debug(sstr.str());
 				nanolive_logger->flush();
@@ -547,9 +606,13 @@ void compute_average_durations(SafeQueue<Durations>& duration_queue, readuntil::
 			if (elapsed.count() > 60.0)
 			{
 				nanolive_logger->info("----------------------------- Intermediate Results -------------------------------------------------------");
-				nanolive_logger->info("Number of classified reads                        :	" + classifiedReadCounter);
-				nanolive_logger->info("Number of unclassified reads                      :	" + unclassifiedReadCounter);
 				std::stringstream sstr;
+				sstr << "Number of classified reads                        :	" << classifiedReadCounter;
+				nanolive_logger->info(sstr.str());
+				sstr.str("");
+				sstr << "Number of unclassified reads                      :	" << unclassifiedReadCounter;
+				nanolive_logger->info(sstr.str());
+				sstr.str("");
 				sstr << "Average Processing Time for classified Reads      :	" << avgDurationCompleteClassifiedRead;
 				nanolive_logger->info(sstr.str());
 				sstr.str("");
@@ -583,6 +646,44 @@ void compute_average_durations(SafeQueue<Durations>& duration_queue, readuntil::
 	
 }
 
+void writeReads(SafeQueue<interleave::Read>& read_queue,
+				readuntil::Acquisition* acq,
+				const std::string output_file)
+{
+	seqan::SeqFileOut SeqOut;
+
+	if (!seqan::open(SeqOut, seqan::toCString(output_file)))
+	{
+		std::cerr << "ERROR: Unable to open the file: " << output_file << std::endl;
+		return;
+	}
+	
+	while (true)
+	{
+		if (!read_queue.empty())
+		{
+			interleave::Read read = read_queue.pop();
+			try
+			{
+				std::stringstream sstr;
+				sstr << read.getID() << " channelNr=" << read.getChannelNr() << " readNr=" << read.getReadNr();
+				seqan::writeRecord(SeqOut, sstr.str(), read.getSeq());
+
+			}
+			catch (seqan::Exception const& e)
+			{
+				std::cerr << "ERROR: " << e.what() << " [@" << read.getID() << "]" << std::endl;
+				break;
+			}
+		}
+
+		if (acq->isFinished() && read_queue.empty())
+			break;
+	}
+
+	seqan::close(SeqOut);
+}
+
 /**
  *	core method for live read depletion
  *	@parser: input from the command line
@@ -590,8 +691,19 @@ void compute_average_durations(SafeQueue<Durations>& duration_queue, readuntil::
  */ 
 void live_read_depletion(live_depletion_parser& parser)
 {
-	// first load IBFs of host reference sequence
+	
+	// first check if basecalling file exists
+	std::filesystem::path weights_file = NanoLiveRoot;
+	weights_file.append("data");
+	weights_file /= "rnn" + parser.weights + ".txt";
+	if (!std::filesystem::exists(weights_file))
+	{
+		nanolive_logger->error("Could not find DeepNano weights file : " + weights_file.string());
+		nanolive_logger->flush();
+		throw ;
+	}
 
+	// first load IBFs of host reference sequence
 	if (parser.verbose)
 		std::cout << "Loading Interleaved Bloom Filter(s)!" << ::std::endl;
 
@@ -621,14 +733,15 @@ void live_read_depletion(live_depletion_parser& parser)
 		std::cout << "Host : " << parser.host << std::endl;
 		std::cout << "Port : " << parser.port << std::endl;
 	}
-	else
-	{
-		nanolive_logger->info("Successfully loaded Interleaved Bloom Filter(s)!");
-		nanolive_logger->info("Trying to connect to MinKNOW");
-		nanolive_logger->info("Host : " + parser.host);
-		nanolive_logger->info("Port : " + parser.port);
-		nanolive_logger->flush();
-	}
+	
+	nanolive_logger->info("Successfully loaded Interleaved Bloom Filter(s)!");
+	nanolive_logger->info("Trying to connect to MinKNOW");
+	nanolive_logger->info("Host : " + parser.host);
+	std::stringstream sstr;
+	sstr << "Port : " << parser.port;
+	nanolive_logger->info(sstr.str());
+	nanolive_logger->flush();
+	
 
 
 	// create ReadUntilClient object and connect to specified device
@@ -718,7 +831,7 @@ void live_read_depletion(live_depletion_parser& parser)
 	//for (uint8_t t = 0; t < 2; ++t)
 	//{
 		tasks.emplace_back(std::async(std::launch::async, &basecall_live_reads, std::ref(basecall_queue),
-			std::ref(classification_queue), std::ref(parser.weights), acq));
+			std::ref(classification_queue), std::ref(parser.weights), std::ref(weights_file), acq));
 	//}
 
 	// create thread/task for classification
@@ -730,6 +843,11 @@ void live_read_depletion(live_depletion_parser& parser)
 
 	// create task for calculating average times needed to complete the different tasks
 	tasks.emplace_back(std::async(std::launch::async, &compute_average_durations, std::ref(duration_queue), acq));
+
+	// create task for writing classified and unclassified reads to output fasta files
+	tasks.emplace_back(std::async(std::launch::async, &writeReads, std::ref(classifiedReads), acq, "classifiedReads.fasta"));
+	tasks.emplace_back(std::async(std::launch::async, &writeReads, std::ref(unclassifiedReads), acq, "unclassifiedReads.fasta"));
+
 
 	for (auto& task : tasks)
 	{
@@ -943,9 +1061,12 @@ void initializeLogger()
 
 int main(int argc, char const **argv)
 {
+	
 	std::signal(SIGINT, signalHandler);	
 
 	initializeLogger();
+	std::string binPath = argv[0];
+	NanoLiveRoot = binPath.substr(0, binPath.find("bin"));
 
 	auto cli = lyra::cli();
 	std::string command;
@@ -961,12 +1082,15 @@ int main(int argc, char const **argv)
         std::cerr << cli;
         exit(1);
     }
+	
+	
 
     if(show_help)
     {
         std::cout << cli << '\n';
         exit(0);
     }
+
 
 	try
 	{

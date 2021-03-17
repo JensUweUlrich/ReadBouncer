@@ -120,7 +120,7 @@ namespace interleave
                     std::cerr << "IBF Log initialization failed: " << e.what() << std::endl;
                 }
                 ibf_logger->set_level(spdlog::level::debug);
-                ibf_logger->flush_on(spdlog::level::debug);
+                //ibf_logger->flush_on(spdlog::level::debug);
             }
 			~IBF(){}
             FilterStats create_filter(IBFConfig& config);
@@ -144,7 +144,6 @@ namespace interleave
             uint16_t channelNr = 0;
             uint16_t readNr = 0;
             TimeMeasures processingTimes{};
-            std::shared_ptr<spdlog::logger> depletion_logger;
 
             uint32_t filter_matches(TMatches& matches,
                                     uint16_t  len,

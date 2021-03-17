@@ -31,7 +31,7 @@ namespace interleave
                     std::cerr << "Classification Log initialization failed: " << e.what() << std::endl;
                 }
                 classification_logger->set_level(spdlog::level::debug);
-                classification_logger->flush_on(spdlog::level::debug);
+                //classification_logger->flush_on(spdlog::level::debug);
             }
             ~DepleteConfig() {};
             double      significance;
