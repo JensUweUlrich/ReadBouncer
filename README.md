@@ -36,4 +36,50 @@ cmake.exe --build . --config Release --target package
 The last step creates the "NanoLive-0.3.0-win64.exe" within the build directory, which is a simple installer for Windows that leads you through the installation process.
 
 
+### <a name="general"></a>General usage
+
+#### <a name="ibfbuild"></a>Building the database
+Before you can use NanoLIVE for adaptive sequencing, the reference database has to be build by using the subcommand <b>ibfbuild</b>. In this step you have to provide a reference sequence file in FASTA format, an output file in which the Interleaved Bloom Filter (IBF) shall be stored ad the size of the kmers used to build the IBF. 
+For better classification sensitivity the reference sequences are fragmented and each fragment represents exactly one bin in the IBF. By default we recommend a fragment size of 100000 basepairs. 
+The optimal filter size is calculated automatically (for human genome it is approx. 4 GigaBytes). But if you are short of disk space or have a large reference sequence set, you can state the filter size here in MegaBytes. <b>Note that this can negatively influence the read classification accuracy.</b>
+
+```
+Build Interleaved Bloom Filter with given references sequences
+
+OPTIONS, ARGUMENTS:
+  ibfbuild                Build Interleaved Bloom Filter with given references sequences
+
+  -?, -h, --help
+  -v, --verbose           Show additional output as to what we are doing.
+  -o, --output-file <output-file>
+                          Output file of Interleaved Bloom Filter
+  -i, --input-reference <input-reference>
+                          Reference sequence file (fasta format) used to build the IBF; reads matching this reference will be filtered out
+  -k, --kmer-size <kmer-size>
+                          Kmer size used for building the Interleaved Bloom Filter
+  -t, --threads <threads> Number of building threads
+  -f, --fragment-size <fragment-size>
+                          Length of fragments from the reference that are put in one bin of the IBF
+  -s, --filter-size <filter-size>
+                          IBF size in MB
+```
+
+#### <a name="classify"></a>Classify Query Reads
+
+If you like to test NanoLIVE's read classification with a set of Nanopore reads, you can use the <b>classify</b> subcommand. 
+
+```
+classify                classify nanopore reads based on a given IBF file
+
+  -?, -h, --help
+  -v, --verbose           Show additional output as to what we are doing.
+  -r, --read-file <read-file>
+                          File with reads to classify (FASTA or FASTQ format)
+  -i, --ibf-file <ibf-file>
+                          Interleaved Bloom Filter file
+  -s, --significance <probability>
+                          significance level for confidence interval of number of errorneous kmers (default is 0.95
+  -e, --error-rate <err>  exepected per read sequencing error rate (default is 0.1
+  -t, --threads <threads> Number of classification threads
+```
 
