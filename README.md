@@ -39,9 +39,7 @@ The last step creates the "NanoLive-0.3.0-win64.exe" within the build directory,
 ### <a name="general"></a>General usage
 
 #### <a name="ibfbuild"></a>Building the database
-Before you can use NanoLIVE for adaptive sequencing, the reference database has to be build by using the subcommand <b>ibfbuild</b>. In this step you have to provide a reference sequence file in FASTA format, an output file in which the Interleaved Bloom Filter (IBF) shall be stored ad the size of the kmers used to build the IBF. 
-For better classification sensitivity the reference sequences are fragmented and each fragment represents exactly one bin in the IBF. By default we recommend a fragment size of 100000 basepairs. 
-The optimal filter size is calculated automatically (for human genome it is approx. 4 GigaBytes). But if you are short of disk space or have a large reference sequence set, you can state the filter size here in MegaBytes. <b>Note that this can negatively influence the read classification accuracy.</b>
+Before you can use NanoLIVE for adaptive sequencing, the reference database has to be build by using the subcommand <b>ibfbuild</b>. In this step you have to provide a reference sequence file in FASTA format, an output file in which the Interleaved Bloom Filter (IBF) shall be stored and the size of the kmers used to build the IBF.  
 
 ```
 Build Interleaved Bloom Filter with given references sequences
@@ -64,9 +62,18 @@ OPTIONS, ARGUMENTS:
                           IBF size in MB
 ```
 
+<b>--fragment-size</b>
+The reference sequence is fragmented in subsequences of this length, where every fragment is stored in a separate bin of the interleaved bloom filter. Fragments overlap by 500 nucleotides since the expected length of pulled read information from MinKNOW is between 200 and 400 nucleotides. The fragmentation leads to better classification specificity when using smaller ```kmer-size``` values. By default we recommend a fragment size of 100000 basepairs. But for smaller expected sequencing errors, larger ```kmer-size``` values can be used and thus the size of the fragments can be increased as well.
+
+<b>--kmer-size</b>
+For every fragment we compute all kmers of this size, calculate hash values for the kmers and add those to the interleaved bloom filter like described by [Dadi et. al., 2018](https://academic.oup.com/bioinformatics/article/34/17/i766/5093228). For sequencing error rates of around 10% we recommend using k=13. But with ONT's continuous improvements in single read accuracy, higher values are feasible as well.
+
+<b>--filter-size</b>
+The optimal filter size is calculated automatically (for human genome it is approx. 4 GigaBytes). But if you are short of disk space or have a large reference sequence set, you can state the maximum filter size here in MegaBytes. <b>Note that this can negatively impact the read classification accuracy.</b>
+
 #### <a name="classify"></a>Classify Query Reads
 
-If you like to test NanoLIVE's read classification with a set of Nanopore reads, you can use the <b>classify</b> subcommand. 
+If you like to test NanoLIVE's read classification with a set of Nanopore reads, you can use the <b>classify</b> subcommand. You only have to provide an interleaved bloom filter (IBF) file and some reads as FASTA or FASTQ file. We than take the first 500 nucleotides from each read and map those against each bin of the IBF. If a certain number of kmers are shared between the 500 nucleotides and the bin, the read is classified as match.
 
 ```
 classify                classify nanopore reads based on a given IBF file
@@ -78,8 +85,29 @@ classify                classify nanopore reads based on a given IBF file
   -i, --ibf-file <ibf-file>
                           Interleaved Bloom Filter file
   -s, --significance <probability>
-                          significance level for confidence interval of number of errorneous kmers (default is 0.95
-  -e, --error-rate <err>  exepected per read sequencing error rate (default is 0.1
+                          significance level for confidence interval of number of errorneous kmers (default is 0.95)
+  -e, --error-rate <err>  exepected per read sequencing error rate (default is 0.1)
   -t, --threads <threads> Number of classification threads
+```
+<b>--significance and --error-rate</b>
+For more accurate classification of reads we are calculating the expected number of mutated kmers for each 500 nucleotide start sequence of the read based on the expected sequencing ```error rate```. Than a confidence interval for the mutated kmers is calculated as described by [Blanca et. al., 2021](https://www.biorxiv.org/content/10.1101/2021.01.15.426881v2) and the minimum number of matching kmers is calculated based on the upper bound of the confidence interval. The significance level of the confidence interval can be specified, but is set to 95% by default.
+
+#### <a name="deplete"></a>Live Depletion of Nanopore Reads
+
+```
+  live-deplete            Live classification and rejection of nanopore reads
+
+  -?, -h, --help
+  -v, --verbose           Show additional output as to what we are doing.
+  -d, --device <device>   Device or FlowCell name for live analysis
+  -c, --host <host>       IP address on which MinKNOW software runs
+  -p, --port <port>       MinKNOW communication port
+  -i, --ibf-file <ibf-file>
+                          Interleaved Bloom Filter file
+  -s, --significance <probability>
+                          significance level for confidence interval of number of errorneous kmers (default is 0.95)
+  -e, --error-rate <err>  exepected per read sequencing error rate (default is 0.1)
+  -w, --weights <weights> Deep Nano Weights (default is 48)
+  -u, --unblock-all       Unblock all reads
 ```
 
