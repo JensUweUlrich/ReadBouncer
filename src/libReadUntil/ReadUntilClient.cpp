@@ -9,6 +9,12 @@
 
 namespace readuntil
 {
+	/**
+	*	Establishes a connection to a given device/flowcell
+	*	@device: Name of the flowcell to connect to
+	*	@return: true if connection was sucessfully established, false otherwise
+	*	@throws: DeviceServiceException, ReadUntilClientException
+	*/
 	bool ReadUntilClient::connect(std::string device)
 	{
 		try
@@ -57,6 +63,7 @@ namespace readuntil
 				std::stringstream em;
 				em << "Failed to connect to minknow instance (retry " << i << "/" << retry_count << ") : " << e.what();
 				connection_logger->error(em.str());
+				throw;
 			}
 			std::this_thread::sleep_for(std::chrono::seconds(1));
 		}
@@ -75,6 +82,7 @@ namespace readuntil
 			em << "Could not get device type/id : " << e.what();
 			connection_logger->error(em.str());
 			connected = false;
+			throw;
 		}
 
 		return connected;

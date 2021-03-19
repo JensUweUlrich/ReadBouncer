@@ -158,7 +158,7 @@ namespace interleave
                     {
                         // add all fragments of the current reference to the IBF
                         int64_t fragIdx = 0;
-                        int64_t fragstart = fragIdx * config.fragment_length - config.kmer_size + 1;
+                        int64_t fragstart = fragIdx * config.fragment_length - config.overlap_length + 1;
                         if (fragstart < 0) fragstart = 0;
 
 

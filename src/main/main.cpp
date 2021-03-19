@@ -27,7 +27,8 @@
 // Basecalling library
 #include "DeepNano2.h"
 
-#include <lyra/lyra.hpp>
+// command line parser
+#include "parser.hpp"
 
 
 // global variables
@@ -49,328 +50,6 @@ SafeQueue<interleave::Read> classifiedReads{};
 SafeQueue<interleave::Read> unclassifiedReads{};
 
 //--------------------------------------------------------------------
-
-//command line parser
-//--------------------------------------------------------------------
-/**
-	class for generating the IBF build parser group
-*/
-struct ibf_build_parser
-{
-	std::string bloom_filter_output_path{ };
-	std::string reference_file{};
-    bool command = false;
-    bool show_help = false;
-	// never use uint*_t => not supported by lyra
-	// will lead to unrecognized tokens
-	int size_k = 13;
-	int threads = 1;
-	int fragment_size=10000;
-	int filter_size = 0;
-	bool verbose = false;
-
-	/**
-		parser constructor
-		creates the ibfbuild group and adds it to the lyra cli 
-		@cli: lyra command line interface object
-	*/
-    ibf_build_parser(lyra::cli& cli) 
-    {
-        cli.add_argument(
-            lyra::command("ibfbuild",
-                [this](const lyra::group & g) { this->do_command(g); }) 
-                .help("Build Interleaved Bloom Filter with given references sequences")
-                .add_argument(lyra::help(show_help))
-                .add_argument(
-                    lyra::opt(verbose)
-                        .name("-v")
-                        .name("--verbose")
-                        .optional()
-                        .help(
-                            "Show additional output as to what we are doing."))
-                .add_argument(
-					lyra::opt(bloom_filter_output_path, "output-file")
-						.name("-o")
-						.name("--output-file")
-						.required()
-						.help("Output file of Interleaved Bloom Filter"))
-				.add_argument(
-					lyra::opt(reference_file, "input-reference")
-						.name("-i")
-						.name("--input-reference")
-						.required()
-						.help("Reference sequence file (fasta format) used to build the IBF; reads matching this reference will be filtered out"))
-				.add_argument(
-					lyra::opt(size_k, "kmer-size")
-						.name("-k")
-						.name("--kmer-size")
-						.optional()
-						.help("Kmer size used for building the Interleaved Bloom Filter"))
-				.add_argument(
-					lyra::opt(threads, "threads")
-						.name("-t")
-						.name("--threads")
-						.optional()
-						.help("Number of building threads"))
-				.add_argument(
-					lyra::opt(fragment_size, "fragment-size")
-						.name("-f")
-						.name("--fragment-size")
-						.optional()
-						.help("Length of fragments from the reference that are put in one bin of the IBF"))
-				.add_argument(
-					lyra::opt(filter_size, "filter-size")
-						.name("-s")
-						.name("--filter-size")
-						.optional()
-						.help("IBF size in MB"))
-		);
-				
-    }
-
-	/**
-		function is called after parsing the group parameters from the command line
-		prints the help page or the parameter values if option verbose is set
-	*/
-    void do_command(const lyra::group & g)
-    {
-        if (show_help)
-            std::cout << g; 
-        else
-        {
-			// trigger for calling the correct function after parsing the group parameters
-			command = true;
-			if (verbose)
-			{
-				std::cout << "---------------------------------------------------------------------------------------------------" << std::endl;
-            	std::cout << "Build Interleaved Bloom Filter      : " << "verbose=" << (verbose ? "true" : "false") << std::endl;
-            	std::cout << "Input reference file                : " << reference_file << std::endl;
-				std::cout << "Output IBF file                     : " << bloom_filter_output_path << std::endl;
-				std::cout << "Kmer size                           : " << size_k << std::endl;
-				std::cout << "Size of reference fragments per bin : " << fragment_size << std::endl;
-				std::cout << "IBF file size in MegaBytes          : " << filter_size << std::endl;
-				std::cout << "Building threads                    : " << threads << std::endl;
-				std::cout << "---------------------------------------------------------------------------------------------------" << std::endl;
-			}
-        }
-    }
-};
-
-/**
-	class for generating the IBF build parser group
-*/
-struct read_classify_parser
-{
-	std::string ibf_input_file{ };
-	std::string read_file{};
-    bool command = false;
-    bool show_help = false;
-	double kmer_significance = 0.95;
-	double error_rate = 0.1;
-	int threads = 1;
-	bool verbose = false;
-
-	/**
-		parser constructor
-		creates the classify group and adds it to the lyra cli 
-		@cli: lyra command line interface object
-	*/
-    read_classify_parser(lyra::cli& cli) 
-    {
-        cli.add_argument(
-            lyra::command("classify",
-                [this](const lyra::group & g) { this->do_command(g); }) 
-                .help("classify nanopore reads based on a given IBF file")
-                .add_argument(lyra::help(show_help))
-                .add_argument(
-                    lyra::opt(verbose)
-                        .name("-v")
-                        .name("--verbose")
-                        .optional()
-                        .help(
-                            "Show additional output as to what we are doing."))
-                .add_argument(
-					lyra::opt(read_file, "read-file")
-						.name("-r")
-						.name("--read-file")
-						.required()
-						.help("File with reads to classify (FASTA or FASTQ format)"))
-				.add_argument(
-					lyra::opt(ibf_input_file, "ibf-file")
-						.name("-i")
-						.name("--ibf-file")
-						.required()
-						.help("Interleaved Bloom Filter file"))
-				.add_argument(
-					lyra::opt(kmer_significance, "probability")
-						.name("-s")
-						.name("--significance")
-						.optional()
-						.help("significance level for confidence interval of number of errorneous kmers (default is 0.95"))
-				.add_argument(
-					lyra::opt(error_rate, "err")
-					.name("-e")
-					.name("--error-rate")
-					.optional()
-					.help("exepected per read sequencing error rate (default is 0.1"))
-				.add_argument(
-					lyra::opt(threads, "threads")
-						.name("-t")
-						.name("--threads")
-						.optional()
-						.help("Number of classification threads"))
-		);
-				
-    }
-
-	/**
-		function is called after parsing the group parameters from the command line
-		prints the help page or the parameter values if option verbose is set
-	*/
-    void do_command(const lyra::group & g)
-    {
-        if (show_help)
-            std::cout << g; 
-        else
-        {
-			// trigger for calling the correct function after parsing the group parameters
-			command = true;
-			if (verbose)
-			{
-				std::cout << "---------------------------------------------------------------------------------------------------" << std::endl;
-            	std::cout << "Classify Reads                               : " << "verbose=" << (verbose ? "true" : "false") << std::endl;
-            	std::cout << "Input read file                              : " << read_file << std::endl;
-				std::cout << "Input IBF file                               : " << ibf_input_file << std::endl;
-				std::cout << "Significance level for confidence interval   : " << kmer_significance << std::endl;
-				std::cout << "Expected sequencing error rate               : " << error_rate << std::endl;
-				std::cout << "Building threads                             : " << threads << std::endl;
-				std::cout << "---------------------------------------------------------------------------------------------------" << std::endl;
-			}
-        }
-    }
-};
-
-/**
-	class for generating the IBF build parser group
-*/
-struct live_depletion_parser
-{
-	// default host & port to communicate with MinKNOW
-	std::string host = "127.0.0.1";
-	std::string device{};
-	std::string ibf_input_file{ };
-	std::string weights = "48";
-	int port = 9501;
-	double kmer_significance = 0.95;
-	double error_rate = 0.1;
-    bool command = false;
-    bool show_help = false;
-	bool verbose = false;
-	bool unblock_all = false;
-
-	/**
-		parser constructor
-		creates the live-deplete group and adds it to the lyra cli 
-		@cli: lyra command line interface object
-	*/
-    live_depletion_parser(lyra::cli& cli) 
-    {
-        cli.add_argument(
-            lyra::command("live-deplete",
-                [this](const lyra::group & g) { this->do_command(g); }) 
-                .help("Live classification and rejection of nanopore reads")
-                .add_argument(lyra::help(show_help))
-                .add_argument(
-					lyra::opt(verbose)
-                        .name("-v")
-                        .name("--verbose")
-                        .optional()
-                        .help(
-                            "Show additional output as to what we are doing."))
-                .add_argument(
-					lyra::opt(device, "device")
-						.name("-d")
-						.name("--device")
-						.required()
-						.help("Device or FlowCell name for live analysis"))
-				.add_argument(
-					lyra::opt(host, "host")
-						.name("-c")
-						.name("--host")
-						.optional()
-						.help("IP address on which MinKNOW software runs"))
-				.add_argument(
-					lyra::opt(port, "port")
-						.name("-p")
-						.name("--port")
-						.optional()
-						.help("MinKNOW communication port"))
-				.add_argument(
-					lyra::opt(ibf_input_file, "ibf-file")
-						.name("-i")
-						.name("--ibf-file")
-						.required()
-						.help("Interleaved Bloom Filter file"))
-				.add_argument(
-					lyra::opt(kmer_significance, "probability")
-					.name("-s")
-					.name("--significance")
-					.optional()
-					.help("significance level for confidence interval of number of errorneous kmers (default is 0.95)"))
-				.add_argument(
-					lyra::opt(error_rate, "err")
-					.name("-e")
-					.name("--error-rate")
-					.optional()
-					.help("exepected per read sequencing error rate (default is 0.1)"))
-				.add_argument(
-					lyra::opt(weights, "weights")
-						.name("-w")
-						.name("--weights")
-						.optional()
-						.help("Deep Nano Weights (default is 48)"))
-				.add_argument(
-                    lyra::opt(unblock_all)
-                        .name("-u")
-                        .name("--unblock-all")
-                        .optional()
-                        .help(
-                            "Unblock all reads"))
-		);
-				
-    }
-
-	/**
-		function is called after parsing the group parameters from the command line
-		prints the help page or the parameter values if option verbose is set
-	*/
-    void do_command(const lyra::group & g)
-    {
-        if (show_help)
-            std::cout << g; 
-        else
-        {
-			// trigger for calling the correct function after parsing the group parameters
-			command = true;
-			if (verbose)
-			{
-				std::cout << "---------------------------------------------------------------------------------------------------" << std::endl;
-            	std::cout << "Live Nanopore Read Depletion                 : " << "verbose=" << (verbose ? "true" : "false") << std::endl;
-            	std::cout << "Host IP address                              : " << host << std::endl;
-				std::cout << "MinKNOW communication port                   : " << port << std::endl;
-				std::cout << "Device or Flowcell name                      : " << device << std::endl;
-				std::cout << "Input IBF file                               : " << ibf_input_file << std::endl;
-				std::cout << "Significance level for confidence interval   : " << kmer_significance << std::endl;
-				std::cout << "Expected sequencing error rate               : " << error_rate << std::endl;
-				std::cout << "Unblock all live reads                       : " << (unblock_all ? "yes" : "no") << std::endl;
-				std::cout << "Deep Nano Weights for Live Basecalling       : " << weights << std::endl;
-				std::cout << "---------------------------------------------------------------------------------------------------" << std::endl;
-			}
-        }
-    }
-};
-
-
 // functions referenced as asynchronous tasks
 //----------------------------------------------------------------------------------------------------------
 
@@ -390,8 +69,6 @@ void basecall_live_reads(SafeQueue<readuntil::SignalRead>& basecall_queue,
 	
 	std::string f = weights_file.string();
 
-	//TODO: check if 
-
 	// create DeepNano2 caller object
 	Caller* caller = create_caller(weights.c_str(), f.c_str(), 5, 0.01);
 
@@ -403,6 +80,7 @@ void basecall_live_reads(SafeQueue<readuntil::SignalRead>& basecall_queue,
 		if (!basecall_queue.empty())
 		{
 			readuntil::SignalRead read = basecall_queue.pop();
+			
 			// if we see data from this read for the first time
 			// basecall signals and push to classification queue
 			if (!pending.contains(read.id))
@@ -484,6 +162,7 @@ void classify_live_reads(	SafeQueue<interleave::Read>& classification_queue,
 		if (!classification_queue.empty())
 		{
 			interleave::Read read = classification_queue.pop();
+
 			TimeMeasures m = read.getProcessingTimes();
 			string readID = seqan::toCString(read.getID());
 			// Average Read length for classifcation
@@ -788,10 +467,6 @@ void live_read_depletion(live_depletion_parser& parser)
 	// used for streaming live nanopore signals from MinKNOW and sending action messages back
 	data = (readuntil::Data*) client.getMinKnowService(readuntil::MinKnowServiceType::DATA);
 
-	// set unblock all reads
-	if (parser.unblock_all)
-		(*data).setUnblockAll(true);
-
 	// start live streaming of data
 	try
 	{
@@ -825,18 +500,18 @@ void live_read_depletion(live_depletion_parser& parser)
 		std::cout << "Start sending unblock messages thread" << std::endl;
 	}
 
+	
+	// create thread for receiving signals from MinKNOW
 	tasks.emplace_back(std::async(std::launch::async, &readuntil::Data::getLiveSignals, data, std::ref(basecall_queue)));
 
-	// start t basecalling tasks/threads
-	//for (uint8_t t = 0; t < 2; ++t)
-	//{
-		tasks.emplace_back(std::async(std::launch::async, &basecall_live_reads, std::ref(basecall_queue),
+	// create thread for live basecalling
+	tasks.emplace_back(std::async(std::launch::async, &basecall_live_reads, std::ref(basecall_queue),
 			std::ref(classification_queue), std::ref(parser.weights), std::ref(weights_file), acq));
-	//}
 
 	// create thread/task for classification
 	tasks.emplace_back(std::async(std::launch::async, &classify_live_reads, std::ref(classification_queue), 
-									std::ref(action_queue), std::ref(filters), parser.kmer_significance, parser.error_rate, acq));
+									std::ref(action_queue), std::ref(filters), parser.kmer_significance, 
+									parser.error_rate, acq));
 
 	// create thread/task for sending action messages back to MinKNOW
 	tasks.emplace_back(std::async(std::launch::async, &readuntil::Data::sendActions, data, std::ref(action_queue), std::ref(duration_queue)));
@@ -856,21 +531,7 @@ void live_read_depletion(live_depletion_parser& parser)
 
 	data->stopLiveStream();
 
-	/*
-	try
-	{
-		
-		
-	}
-	catch (readuntil::DataServiceException ex)
-	{
-		std::cerr << "Could not get live reads : " << ex.what() << std::endl;
-		if (data != nullptr)
-		{
-			data->getContext()->TryCancel();
-   		}
-	}
-	*/
+	
 }
 
 void signalHandler(int signum)
@@ -1059,6 +720,139 @@ void initializeLogger()
 	}
 }
 
+void fill_action_queue(SafeQueue<readuntil::SignalRead>& basecall_queue, 
+					   SafeQueue<readuntil::ActionResponse>& action_queue,
+					   readuntil::Acquisition* acq)
+{
+	while (true)
+	{
+		if (!basecall_queue.empty())
+		{
+			readuntil::SignalRead read = basecall_queue.pop();
+			action_queue.push(readuntil::ActionResponse{ read.channelNr, read.readNr,
+										read.id, read.processingTimes, true });
+		}
+
+		if (acq->isFinished())
+			break;
+	}
+}
+
+void test_connection(connection_test_parser& parser)
+{
+	std::cout << "Trying to connect to MinKNOW" << std::endl;
+	std::cout << "Host : " << parser.host << std::endl;
+	std::cout << "Port : " << parser.port << std::endl;
+
+	std::stringstream sstr;
+	sstr << "Port : " << parser.port;
+
+	// create ReadUntilClient object and connect to specified device
+	readuntil::ReadUntilClient& client = readuntil::ReadUntilClient::getClient();
+	client.setHost(parser.host);
+	client.setPort(parser.port);
+
+	// TODO: throw exception if connection could not be established
+	try
+	{
+		if (client.connect(parser.device))
+		{
+			std::cout << "Connection successfully established!" << std::endl;
+			std::cout << "You can start live-depletion using these settings." << std::endl;
+		}
+	}
+	catch (readuntil::DeviceServiceException& e)
+	{
+		std::cerr << "Connection to MinKNOW successfully established." << std::endl;
+		std::cerr << "But could not detect given device/flowcell" << std::endl;
+		std::cerr << "Please check whether the Flowcell has already been inserted. " << std::endl;
+	}
+	catch (readuntil::ReadUntilClientException& e)
+	{
+		std::cerr << "Could not establish connection to MinKNOW." << std::endl;
+		std::cerr << "Please check the given host IP address and TCP port. " << std::endl;
+	}
+
+	if (parser.unblock_all)
+	{
+		// create Data Service object
+	// used for streaming live nanopore signals from MinKNOW and sending action messages back
+		data = (readuntil::Data*)client.getMinKnowService(readuntil::MinKnowServiceType::DATA);
+
+		// set unblock all reads
+		if (parser.unblock_all)
+		{
+			(*data).setUnblockAll(true);
+			nanolive_logger->info("Unblocking all reads without basecalling or classification!");
+			nanolive_logger->flush();
+		}
+		// start live streaming of data
+		try
+		{
+			data->startLiveStream();
+		}
+		catch (readuntil::DataServiceException& e)
+		{
+			nanolive_logger->error("Could not start streaming signals from device (" + parser.device + ")");
+			nanolive_logger->error("Error message : " + std::string(e.what()));
+			nanolive_logger->flush();
+			throw;
+		}
+
+		// wait until sequencing run has been started
+		if (parser.verbose)
+			std::cout << "Waiting for device to start sequencing!" << ::std::endl;
+
+		std::cout << "Please start the sequencing run now!" << ::std::endl;
+
+		readuntil::Acquisition* acq = (readuntil::Acquisition*)client.getMinKnowService(readuntil::MinKnowServiceType::ACQUISITION);
+		if (acq->hasStarted())
+		{
+			if (parser.verbose)
+				std::cout << "Sequencing has begun. Starting live signal processing!" << ::std::endl;
+
+			nanolive_logger->info("Sequencing has begun. Starting live signal processing!");
+			nanolive_logger->flush();
+
+		}
+
+		// thread safe queue storing reads ready for basecalling
+		SafeQueue<readuntil::SignalRead> basecall_queue{};
+		// thread safe queue storing classified reads ready for action creation
+		SafeQueue<readuntil::ActionResponse> action_queue{};
+		// thread safe queue storing for every read the duration for the different tasks to complete
+		SafeQueue<Durations> duration_queue{};
+
+		// start live signal streaming from ONT MinKNOW
+		std::vector< std::future< void > > tasks;
+
+		if (parser.verbose)
+		{
+			std::cout << "Start receiving live signals thread" << std::endl;
+			std::cout << "Start sending unblock messages thread" << std::endl;
+		}
+
+
+		// create thread for receiving signals from MinKNOW
+		tasks.emplace_back(std::async(std::launch::async, &readuntil::Data::getLiveSignals, data, std::ref(basecall_queue)));
+
+		// create thread for live basecalling
+		tasks.emplace_back(std::async(std::launch::async, &fill_action_queue, std::ref(basecall_queue),
+			std::ref(action_queue), acq));
+
+		// create thread/task for sending action messages back to MinKNOW
+		tasks.emplace_back(std::async(std::launch::async, &readuntil::Data::sendActions, data, std::ref(action_queue), std::ref(duration_queue)));
+
+		for (auto& task : tasks)
+		{
+			task.get();
+		}
+
+		data->stopLiveStream();
+	}
+	
+}
+
 int main(int argc, char const **argv)
 {
 	
@@ -1075,6 +869,7 @@ int main(int argc, char const **argv)
 	ibf_build_parser ibfbuild_parser{cli};
 	read_classify_parser classify_parser{cli};
 	live_depletion_parser deplete_parser{cli};
+	connection_test_parser connect_parser{ cli };
 	auto result = cli.parse({ argc, argv });
 	if (!result)
     {
@@ -1096,6 +891,8 @@ int main(int argc, char const **argv)
 	{
 		if (ibfbuild_parser.command)
 			buildIBF(ibfbuild_parser);
+		else if (connect_parser.command)
+			test_connection(connect_parser);
 		else if (classify_parser.command)
 			classify_reads(classify_parser);
 		else if (deplete_parser.command)
