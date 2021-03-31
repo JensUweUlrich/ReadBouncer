@@ -137,24 +137,23 @@ void basecall_live_reads(SafeQueue<readuntil::SignalRead>& basecall_queue,
 */
 void classify_live_reads(	SafeQueue<interleave::Read>& classification_queue,
 							SafeQueue<readuntil::ActionResponse>& action_queue,
-							std::vector<interleave::TIbf>& filters,
+							std::vector<interleave::TIbf>& DepletionFilters,
+							std::vector<interleave::TIbf>& TargetFilters,
 							const double significance,
 							const double error_rate,
 							readuntil::Acquisition* acq)
 {
 	
-	interleave::DepleteConfig deplConf{};
-	deplConf.strata_filter = -1;
-	deplConf.significance = significance;
-	deplConf.error_rate = error_rate;
+	interleave::ClassifyConfig conf{};
+	conf.strata_filter = -1;
+	conf.significance = significance;
+	conf.error_rate = error_rate;
 	uint16_t found = 0;
 	uint16_t failed = 0;
 	double avgReadLen = 0.0;
 	uint64_t rCounter = 0;
-
-	// TODO: make this global and store whole read object for sequence concatenation
-	// for unclassified read => store number of chunks that were unclassified
-	//							and Time for the first data chunk
+	std::set<std::string> onceSeen{};
+	bool withTarget = !(TargetFilters.empty());
 	
 	StopClock::TimePoint begin = StopClock::Clock::now();
 	while (true)
@@ -166,53 +165,59 @@ void classify_live_reads(	SafeQueue<interleave::Read>& classification_queue,
 			TimeMeasures m = read.getProcessingTimes();
 			string readID = seqan::toCString(read.getID());
 			// Average Read length for classifcation
-			avgReadLen += ((double)read.getSeqLength() - avgReadLen) / (double) ++rCounter;
-			m.timeClassifyRead.start();
+			
 			try
 			{
-				if (read.getSeqLength() >= 250 && read.classify(filters, deplConf))
+				
+				// only classify reads with length >= 300
+				// reads with length < 300 will wait for the next read chunks and combine them
+				// longer read can be better classified
+				if (read.getSeqLength() < 300)
 				{
-					m.timeClassifyRead.stop();
-					// store all read data and time measures for classified read
-					action_queue.push(readuntil::ActionResponse{read.getChannelNr(), read.getReadNr(), 
-										seqan::toCString(read.getID()), m, true});
-					classifiedReads.push(read);
+					// add readid and read entry to pending map
+					pending.insert({ readID , std::make_pair(0, read) });
 				}
 				else
 				{
-					// add readid entry to pending map
-					// if read was unclassified for the third time -> add to action_queue with stop_further_data
-					// store only processing times of the first chunk
-					// helps to calculate time from getting first chunk to sending stopFurtherData message
-					if (!pending.contains(readID))
+					m.timeClassifyRead.start();
+					bool classified = false;
+					// if additional target filter is given
+					// read is classified for depletion iff it was found in depletion filters but not in target filters
+					if (withTarget)
+						classified = read.classify(DepletionFilters, conf) && !read.classify(TargetFilters, conf);
+					else
+						classified = read.classify(DepletionFilters, conf);
+					m.timeClassifyRead.stop();
+
+					if (classified)
 					{
-						m.timeClassifyRead.stop();
-						// cut first 100bp of the read because of potential sequencing adapter
-						if (read.getSeqLength() > 100)
-						{
-							interleave::Read pendingRead{ read.getID(), seqan::suffix(read.getSeq(), 100), read.getChannelNr(), read.getReadNr(), m };
-							pending.insert({ readID , std::make_pair(1, pendingRead) });
-						}
-						else
-						{
-							pending.insert({ readID , std::make_pair(1, read) });
-						}
-						
+						// store all read data and time measures for classified read
+						action_queue.push(readuntil::ActionResponse{read.getChannelNr(), read.getReadNr(), 
+											seqan::toCString(read.getID()), m, true});
+						classifiedReads.push(read);
+						pending.erase(readID);
+						avgReadLen += ((double)read.getSeqLength() - avgReadLen) / (double) ++rCounter;
 					}
 					else
 					{
-						if (pending[readID].first == 2)
+						// check if we already marked read as unclassified
+						// if read unclassified for the second time => stop receiving further data from this read 
+						std::set<std::string>::iterator it = onceSeen.find(readID);
+						if (it != onceSeen.end())
 						{
-							// push read on action queue if unclassified for the third time
-							// using time measures from the first chunk of data
 							action_queue.push(readuntil::ActionResponse{ read.getChannelNr(), read.getReadNr(),
-												seqan::toCString(read.getID()), pending[readID].second.getProcessingTimes() , false });
+													seqan::toCString(read.getID()), pending[readID].second.getProcessingTimes() , false });
 							unclassifiedReads.push(read);
 							pending.erase(readID);
+							onceSeen.erase(it);
+							avgReadLen += ((double)read.getSeqLength() - avgReadLen) / (double) ++rCounter;
 						}
 						else
 						{
-							pending.assign({ readID, std::make_pair(2, read) });
+							// read unclassified for the first time => insert in Ste of already seen reads
+							// but erase from pendin if first chunks were too short for classification
+							onceSeen.insert(readID);
+							pending.erase(readID);
 						}
 					}
 				}
@@ -254,7 +259,7 @@ void classify_live_reads(	SafeQueue<interleave::Read>& classification_queue,
 *	compute average duration for complete processing time, basecalling time and classification time per read
 *	using online average computation
 *	@duration_queue	:	safe queue elapsed time for reads that finished sequencing
-*	@acq			: Acquisition service checking if sequencing run is already finished
+*	@acq			:	Acquisition service checking if sequencing run is already finished
 */
 void compute_average_durations(SafeQueue<Durations>& duration_queue, readuntil::Acquisition* acq)
 {
@@ -370,7 +375,7 @@ void writeReads(SafeQueue<interleave::Read>& read_queue,
  */ 
 void live_read_depletion(live_depletion_parser& parser)
 {
-	
+	bool withTarget = false;
 	// first check if basecalling file exists
 	std::filesystem::path weights_file = NanoLiveRoot;
 	weights_file.append("data");
@@ -382,18 +387,22 @@ void live_read_depletion(live_depletion_parser& parser)
 		throw ;
 	}
 
+	std::vector<interleave::TIbf> DepletionFilters{};
+	std::vector<interleave::TIbf> TargetFilters{};
 	// first load IBFs of host reference sequence
 	if (parser.verbose)
-		std::cout << "Loading Interleaved Bloom Filter(s)!" << ::std::endl;
+		std::cout << "Loading Interleaved Bloom Filter(s) for depletion!" << ::std::endl;
 
-	interleave::IBFConfig config{};
-	interleave::IBF filter{};
-	config.input_filter_file = parser.ibf_input_file;
+	
 	try
 	{
+		interleave::IBFConfig config{};
+		interleave::IBF filter{};
+		config.input_filter_file = parser.ibf_deplete_file;
 		interleave::FilterStats stats = filter.load_filter(config);
 		if (parser.verbose)
 			interleave::print_stats(stats);
+		DepletionFilters.emplace_back(filter.getFilter());
 	}
 	catch (interleave::IBFBuildException& e)
 	{
@@ -402,8 +411,29 @@ void live_read_depletion(live_depletion_parser& parser)
 		throw;
 	}
 	
-	std::vector<interleave::TIbf> filters{};
-	filters.emplace_back(filter.getFilter());
+	// parse target IBF if given as parameter
+	if (parser.ibf_target_file.length() > 0)
+	{
+		try
+		{
+			interleave::IBFConfig config{};
+			interleave::IBF filter{};
+			config.input_filter_file = parser.ibf_target_file;
+			interleave::FilterStats stats = filter.load_filter(config);
+			TargetFilters.emplace_back(filter.getFilter());
+			interleave::print_stats(stats);
+			withTarget = true;
+		}
+		catch (interleave::ParseIBFFileException& e)
+		{
+			nanolive_logger->error("Error parsing target IBF using the following parameters");
+			nanolive_logger->error("Target IBF file                : " + parser.ibf_target_file);
+			nanolive_logger->error("Error message : " + std::string(e.what()));
+			nanolive_logger->flush();
+			throw;
+		}
+	}
+	
 
 	if (parser.verbose)
 	{
@@ -510,8 +540,8 @@ void live_read_depletion(live_depletion_parser& parser)
 
 	// create thread/task for classification
 	tasks.emplace_back(std::async(std::launch::async, &classify_live_reads, std::ref(classification_queue), 
-									std::ref(action_queue), std::ref(filters), parser.kmer_significance, 
-									parser.error_rate, acq));
+									std::ref(action_queue), std::ref(DepletionFilters), std::ref(TargetFilters), 
+									parser.kmer_significance, parser.error_rate, acq));
 
 	// create thread/task for sending action messages back to MinKNOW
 	tasks.emplace_back(std::async(std::launch::async, &readuntil::Data::sendActions, data, std::ref(action_queue), std::ref(duration_queue)));
@@ -546,7 +576,8 @@ void signalHandler(int signum)
 
 
 void parse_reads( std::string const& 	reads_file,
-                  interleave::TReads& 	reads )
+                  interleave::TReads& 	reads,
+				  uint64_t prefixLength)
 {
 	seqan::SeqFileIn seqFileIn;
     if ( !seqan::open( seqFileIn, seqan::toCString( reads_file ) ) )
@@ -563,23 +594,12 @@ void parse_reads( std::string const& 	reads_file,
         try
         {
             seqan::readRecord( id, seq, seqFileIn );
-			int64_t fragIdx = 0;
-			int64_t seqlen = (int64_t) (length(seq));
-			int64_t fragstart = fragIdx * 500 + 100;
-			while (fragstart < (seqlen - 1))
-			{
-				std::string newid = std::string(seqan::toCString(id));
-				std::size_t pos = newid.find(" ");
-				newid = newid.substr(0,pos) + "_" + std::to_string(fragIdx); 
-				uint64_t fragend = (fragIdx+1) * 500 + 100;
-                // make sure that last fragment ends at last position of the reference sequence
-                if (fragend > length(seq)) fragend = length(seq);
-				seqan::Infix< seqan::CharString >::Type fragment = seqan::infix( seq, fragstart, fragend );
-				reads.emplace_back(interleave::Read(newid, fragment));
-                fragstart = ++fragIdx * 500 + 100;
-				if (fragIdx > 0)
-					break;
-			}
+
+			uint64_t fragend = prefixLength;
+			// make sure that last fragment ends at last position of the reference sequence
+			if (fragend > length(seq)) fragend = length(seq);
+			seqan::Infix< seqan::CharString >::Type fragment = seqan::infix(seq, 0, fragend);
+			reads.emplace_back(interleave::Read(id, fragment));
             
         }
         catch ( seqan::Exception const& e )
@@ -632,30 +652,107 @@ void buildIBF(ibf_build_parser& parser)
 }
 
 /**
-* 
+*	classify reads from an input file based on given depletion and/or target filters
+*	@parser	: command line input parameters
 */
 void classify_reads(read_classify_parser& parser)
 {
-	interleave::IBFConfig config{};
-	interleave::IBF filter {};
-	config.input_filter_file = parser.ibf_input_file;
-	interleave::FilterStats stats = filter.load_filter(config);
-	interleave::print_stats(stats);
-	interleave::TReads reads;
-	parse_reads(parser.read_file, reads);
-	std::vector<interleave::TIbf> filters{};
-	filters.emplace_back(filter.getFilter());
-	interleave::DepleteConfig deplConf{};
-	deplConf.strata_filter = -1;
+	// initialize depletion and target filters
+	interleave::IBFConfig DepleteIBFconfig{};
+	interleave::IBFConfig TargetIBFconfig{};
+	interleave::IBF DepleteFilter {};
+	interleave::IBF TargetFilter{};
+	std::vector<interleave::TIbf> DepletionFilters{};
+	std::vector<interleave::TIbf> TargetFilters{};
 
-	deplConf.significance = parser.kmer_significance; 
-	deplConf.error_rate = parser.error_rate;
+	bool deplete = false;
+	bool target = false;
+
+	// parse depletion IBF if given as parameter
+	if (parser.ibf_deplete_file.length() > 0)
+	{
+		try
+		{
+			DepleteIBFconfig.input_filter_file = parser.ibf_deplete_file;
+			interleave::FilterStats stats = DepleteFilter.load_filter(DepleteIBFconfig);
+			DepletionFilters.emplace_back(DepleteFilter.getFilter());
+			interleave::print_stats(stats);
+			deplete = true;
+		}
+		catch (interleave::ParseIBFFileException& e)
+		{
+			nanolive_logger->error("Error parsing depletion IBF using the following parameters");
+			nanolive_logger->error("Depletion IBF file                : " + parser.ibf_deplete_file);
+			nanolive_logger->error("Error message : " + std::string(e.what()));
+			nanolive_logger->flush();
+			throw;
+		}
+	}
+
+	// parse target IBF if given as parameter
+	if (parser.ibf_target_file.length() > 0)
+	{
+		try
+		{
+			TargetIBFconfig.input_filter_file = parser.ibf_target_file;
+			interleave::FilterStats stats = TargetFilter.load_filter(TargetIBFconfig);
+			TargetFilters.emplace_back(TargetFilter.getFilter());
+			interleave::print_stats(stats);
+			target = true;
+		}
+		catch (interleave::ParseIBFFileException& e)
+		{
+			nanolive_logger->error("Error parsing target IBF using the following parameters");
+			nanolive_logger->error("Target IBF file                : " + parser.ibf_target_file);
+			nanolive_logger->error("Error message : " + std::string(e.what()));
+			nanolive_logger->flush();
+			throw;
+		}
+	}
+
+	// parse input reads
+	interleave::TReads reads;
+	parse_reads(parser.read_file, reads, parser.preLen);
+	
+	// create classification config
+	interleave::ClassifyConfig Conf{};
+	Conf.strata_filter = -1;
+	Conf.significance = parser.kmer_significance; 
+	Conf.error_rate = parser.error_rate;
+
 	uint64_t found = 0;
 	uint16_t failed = 0;
+	uint64_t too_short = 0;
 	uint64_t readCounter = 0;
 	StopClock::Seconds avgClassifyduration = 0;
 	// start stop clock
 	StopClock::TimePoint begin = StopClock::Clock::now();
+
+
+	// initialize classification output files
+	seqan::SeqFileOut ClassifiedOut;
+	seqan::SeqFileOut UnclassifiedOut;
+
+	// only print classified reads to file if option given via command line
+	if (parser.classified_file.length() > 0)
+	{
+		if (!seqan::open(ClassifiedOut, seqan::toCString(parser.classified_file)))
+		{
+			std::cerr << "ERROR: Unable to open the file: " << parser.classified_file << std::endl;
+			return;
+		}
+	}
+	// only print unclassified reads to file if option given via command line
+	if (parser.unclassified_file.length() > 0)
+	{
+		if (!seqan::open(UnclassifiedOut, seqan::toCString(parser.unclassified_file)))
+		{
+			std::cerr << "ERROR: Unable to open the file: " << parser.unclassified_file << std::endl;
+			return;
+		}
+	}
+	
+
 	for (interleave::Read r : reads)
 	{
 		readCounter++;
@@ -663,13 +760,79 @@ void classify_reads(read_classify_parser& parser)
 		classifyRead.start();
 		try
 		{
-			if (r.getSeqLength() >= 250 && r.classify(filters, deplConf))
+			// read length has to be at least the size of the prefix used for read classification
+			if (r.getSeqLength() < parser.preLen)
 			{
-				found++;
-				//std::cout << ">" << r.getID() << " kmers=" << r.getMaxKmerCount() << " len=" << r.getSeqLength() - config.kmer_size + 1 << std::endl;
-				//std::cout << r.getSeq() << std::endl;
+				too_short++;
+				continue;
 			}
-			
+
+			// only classify if read is in depletion filter but NOT in target filter
+			if (deplete && target)
+			{
+				if (r.classify(DepletionFilters, Conf) && !r.classify(TargetFilters, Conf))
+				{
+					found++;
+					if (parser.classified_file.length() > 0)
+					{
+						std::stringstream sstr;
+						sstr << r.getID() << " channelNr=" << r.getChannelNr() << " readNr=" << r.getReadNr();
+						seqan::writeRecord(ClassifiedOut, sstr.str(), r.getSeq());
+					}
+					//std::cout << ">" << r.getID() << " kmers=" << r.getMaxKmerCount() << " len=" << r.getSeqLength() - config.kmer_size + 1 << std::endl;
+					//std::cout << r.getSeq() << std::endl;
+				}
+				else if (parser.unclassified_file.length() > 0)
+				{
+					std::stringstream sstr;
+					sstr << r.getID() << " channelNr=" << r.getChannelNr() << " readNr=" << r.getReadNr();
+					seqan::writeRecord(UnclassifiedOut, sstr.str(), r.getSeq());
+				}
+			}
+			// only classify if read is in depletion filter
+			else if (deplete)
+			{
+				if (r.classify(DepletionFilters, Conf))
+				{
+					found++;
+					if (parser.classified_file.length() > 0)
+					{
+						std::stringstream sstr;
+						sstr << r.getID() << " channelNr=" << r.getChannelNr() << " readNr=" << r.getReadNr();
+						seqan::writeRecord(ClassifiedOut, sstr.str(), r.getSeq());
+					}
+					//std::cout << ">" << r.getID() << " kmers=" << r.getMaxKmerCount() << " len=" << r.getSeqLength() - config.kmer_size + 1 << std::endl;
+					//std::cout << r.getSeq() << std::endl;
+				}
+				else if (parser.unclassified_file.length() > 0)
+				{
+					std::stringstream sstr;
+					sstr << r.getID() << " channelNr=" << r.getChannelNr() << " readNr=" << r.getReadNr();
+					seqan::writeRecord(UnclassifiedOut, sstr.str(), r.getSeq());
+				}
+			}
+			// only classify if read is in target filter
+			else
+			{
+				if (r.classify(TargetFilters, Conf))
+				{
+					found++;
+					if (parser.classified_file.length() > 0)
+					{
+						std::stringstream sstr;
+						sstr << r.getID() << " channelNr=" << r.getChannelNr() << " readNr=" << r.getReadNr();
+						seqan::writeRecord(ClassifiedOut, sstr.str(), r.getSeq());
+					}
+					//std::cout << ">" << r.getID() << " kmers=" << r.getMaxKmerCount() << " len=" << r.getSeqLength() - TargetIBFconfig.kmer_size + 1 << std::endl;
+					//std::cout << r.getSeq() << std::endl;
+				}
+				else if (parser.unclassified_file.length() > 0)
+				{
+					std::stringstream sstr;
+					sstr << r.getID() << " channelNr=" << r.getChannelNr() << " readNr=" << r.getReadNr();
+					seqan::writeRecord(UnclassifiedOut, sstr.str(), r.getSeq());
+				}
+			}
 		}
 		catch (std::exception& e)
 		{
@@ -692,6 +855,9 @@ void classify_reads(read_classify_parser& parser)
 			sstr << "Number of classified reads                         :   " << found;
 			nanolive_logger->info(sstr.str());
 			sstr.str("");
+			sstr << "Number of of too short reads (len < " << parser.preLen << ")   :   " << too_short;
+			nanolive_logger->info(sstr.str());
+			sstr.str("");
 			sstr << "Number of all reads                                :   " << readCounter;
 			nanolive_logger->info(sstr.str());
 			sstr.str("");
@@ -703,10 +869,22 @@ void classify_reads(read_classify_parser& parser)
 		}
 
 	}
-	std::cout<<found << "/" << reads.size()<<std::endl;
-	std::cout<<failed << "/" << reads.size()<<std::endl;
+	if (parser.classified_file.length() > 0)
+		seqan::close(ClassifiedOut);
+	if (parser.unclassified_file.length() > 0)
+		seqan::close(UnclassifiedOut);
+	std::stringstream sstr;
+	std::cout << "------------------------------- Final Results -------------------------------" << std::endl;
+	std::cout << "Number of classified reads                         :   " << found << std::endl;
+	std::cout << "Number of of too short reads (len < " << parser.preLen << ")          :   " << too_short << std::endl;
+	std::cout << "Number of all reads                                :   " << readCounter << std::endl;
+	std::cout << "Average Processing Time Read Classification        :   " << avgClassifyduration << std::endl;
+	std::cout << "-----------------------------------------------------------------------------------" << std::endl;
 }
 
+/**
+*	setup global Logger for NanoLIVE
+*/
 void initializeLogger()
 {
 	try
@@ -720,15 +898,22 @@ void initializeLogger()
 	}
 }
 
-void fill_action_queue(SafeQueue<readuntil::SignalRead>& basecall_queue, 
+/**
+*	shift incoming signals directly as unblock response to action queue
+*	needed only for unblock all
+*	@signal_queue	:	thread safe queue with signal-only reads coming in from the sequencer
+*	@action_queue	:	thread safe queue with unblock actions
+*	@acq			:	Acquisition service checking if sequencing run is already finished
+*/
+void fill_action_queue(SafeQueue<readuntil::SignalRead>& signal_queue, 
 					   SafeQueue<readuntil::ActionResponse>& action_queue,
 					   readuntil::Acquisition* acq)
 {
 	while (true)
 	{
-		if (!basecall_queue.empty())
+		if (!signal_queue.empty())
 		{
-			readuntil::SignalRead read = basecall_queue.pop();
+			readuntil::SignalRead read = signal_queue.pop();
 			action_queue.push(readuntil::ActionResponse{ read.channelNr, read.readNr,
 										read.id, read.processingTimes, true });
 		}
@@ -738,6 +923,10 @@ void fill_action_queue(SafeQueue<readuntil::SignalRead>& basecall_queue,
 	}
 }
 
+/**
+*	core function for testing connection to MinKNOW software and testing unblock all reads
+*	@parser : input from the command line
+*/
 void test_connection(connection_test_parser& parser)
 {
 	std::cout << "Trying to connect to MinKNOW" << std::endl;
@@ -766,39 +955,19 @@ void test_connection(connection_test_parser& parser)
 		std::cerr << "Connection to MinKNOW successfully established." << std::endl;
 		std::cerr << "But could not detect given device/flowcell" << std::endl;
 		std::cerr << "Please check whether the Flowcell has already been inserted. " << std::endl;
+		throw;
 	}
 	catch (readuntil::ReadUntilClientException& e)
 	{
 		std::cerr << "Could not establish connection to MinKNOW." << std::endl;
 		std::cerr << "Please check the given host IP address and TCP port. " << std::endl;
+		throw;
 	}
 
 	if (parser.unblock_all)
 	{
-		// create Data Service object
-	// used for streaming live nanopore signals from MinKNOW and sending action messages back
-		data = (readuntil::Data*)client.getMinKnowService(readuntil::MinKnowServiceType::DATA);
-
-		// set unblock all reads
-		if (parser.unblock_all)
-		{
-			(*data).setUnblockAll(true);
-			nanolive_logger->info("Unblocking all reads without basecalling or classification!");
-			nanolive_logger->flush();
-		}
-		// start live streaming of data
-		try
-		{
-			data->startLiveStream();
-		}
-		catch (readuntil::DataServiceException& e)
-		{
-			nanolive_logger->error("Could not start streaming signals from device (" + parser.device + ")");
-			nanolive_logger->error("Error message : " + std::string(e.what()));
-			nanolive_logger->flush();
-			throw;
-		}
-
+		
+		
 		// wait until sequencing run has been started
 		if (parser.verbose)
 			std::cout << "Waiting for device to start sequencing!" << ::std::endl;
@@ -816,8 +985,33 @@ void test_connection(connection_test_parser& parser)
 
 		}
 
+		// create Data Service object
+		// used for streaming live nanopore signals from MinKNOW and sending action messages back
+		data = (readuntil::Data*)client.getMinKnowService(readuntil::MinKnowServiceType::DATA);
+
+		// set unblock all reads
+
+		//(*data).setUnblockAll(true);
+		nanolive_logger->info("Unblocking all reads without basecalling or classification!");
+		nanolive_logger->flush();
+
+		// start live streaming of data
+		try
+		{
+			data->startLiveStream();
+		}
+		catch (readuntil::DataServiceException& e)
+		{
+			nanolive_logger->error("Could not start streaming signals from device (" + parser.device + ")");
+			nanolive_logger->error("Error message : " + std::string(e.what()));
+			nanolive_logger->flush();
+			throw;
+		}
+
+		
+
 		// thread safe queue storing reads ready for basecalling
-		SafeQueue<readuntil::SignalRead> basecall_queue{};
+		SafeQueue<readuntil::SignalRead> read_queue{};
 		// thread safe queue storing classified reads ready for action creation
 		SafeQueue<readuntil::ActionResponse> action_queue{};
 		// thread safe queue storing for every read the duration for the different tasks to complete
@@ -834,10 +1028,10 @@ void test_connection(connection_test_parser& parser)
 
 
 		// create thread for receiving signals from MinKNOW
-		tasks.emplace_back(std::async(std::launch::async, &readuntil::Data::getLiveSignals, data, std::ref(basecall_queue)));
+		tasks.emplace_back(std::async(std::launch::async, &readuntil::Data::getLiveSignals, data, std::ref(read_queue)));
 
 		// create thread for live basecalling
-		tasks.emplace_back(std::async(std::launch::async, &fill_action_queue, std::ref(basecall_queue),
+		tasks.emplace_back(std::async(std::launch::async, &fill_action_queue, std::ref(read_queue),
 			std::ref(action_queue), acq));
 
 		// create thread/task for sending action messages back to MinKNOW
@@ -882,7 +1076,7 @@ int main(int argc, char const **argv)
 
     if(show_help)
     {
-        std::cout << cli << '\n';
+        std::cout << cli << std::endl;
         exit(0);
     }
 
@@ -897,6 +1091,10 @@ int main(int argc, char const **argv)
 			classify_reads(classify_parser);
 		else if (deplete_parser.command)
 			live_read_depletion(deplete_parser);
+		else
+			std::cout << cli << std::endl;
+			
+			
 	}
 	catch (std::exception& e)
 	{

@@ -22,10 +22,10 @@ namespace interleave
         // for ( uint32_t binNo = 0; binNo < filter.ibf.noOfBins; ++binNo )
         // loop in map structure to avoid extra validations when map.size() < filter.ibf.noOfBins when ibf is updated and
         // sequences removed also avoid the error of spurius results from empty bins (bug reported)
-       // std::cout<<"threshold : " << threshold <<std::endl;
+       
         for ( uint32_t binNo = 0; binNo < filter.noOfBins; ++binNo ) 
         {
-           // std::cout<<selectedBins[binNo] << " , " << selectedBinsRev[binNo] <<std::endl;
+            //std::cout<<selectedBins[binNo] << " , " << selectedBinsRev[binNo] <<std::endl;
             // if kmer count is higher than threshold
             if ( selectedBins[binNo] >= threshold || selectedBinsRev[binNo] >= threshold )
             {
@@ -44,6 +44,8 @@ namespace interleave
                 //}
             }
         }
+        //if (this->max_kmer_count > 0)
+        //    std::cout << "threshold : " << threshold << ", Max Kmer Count: " << this->max_kmer_count <<std::endl;
     }
 
     /**
@@ -57,7 +59,7 @@ namespace interleave
     */
     void Read::find_matches(TMatches& matches, 
                                 std::vector< TIbf >& filters, 
-                                DepleteConfig& config )
+                                ClassifyConfig& config )
     {
         std::shared_ptr<spdlog::logger> logger = config.classification_logger;
         // iterate over all ibfs
@@ -74,9 +76,12 @@ namespace interleave
                 // get calculated threshold for minimum number of kmers needed to report a match
                 // this is based on the confidence interval for mutated kmers in a read with expected error rate, kmer size
                 TInterval ci = calculateCI(config.error_rate, filter.kmerSize, seqan::length(this->seq), config.significance);
+                //std::cout << "CI = [" << ci.first << " , " << ci.second << "]" << std::endl;
+                uint16_t readlen = seqan::length(this->seq);
                 // minimum number of kmers = max number of kmer in read - upper bound of the CI
-                uint16_t threshold = seqan::length(this->seq) - filter.kmerSize + 1 - ci.second;
-
+                //std::cout << seqan::length(this->seq) << " " << filter.kmerSize << std::endl;
+                int16_t threshold = readlen - filter.kmerSize + 1 - ci.second;
+                //uint16_t threshold = seqan::length(this->seq) - filter.kmerSize + 1 - (floor((ci.second - ci.first) / 2) + ci.first);
                 // select matches above chosen threshold
                 select_matches( matches, selectedBins, selectedBinsRev, filter, threshold);
             }
@@ -111,7 +116,7 @@ namespace interleave
         {
             // get maximum possible number of error for this read
             uint16_t max_error = get_error( len, kmer_size, this->max_kmer_count );
-            // get min kmer count necesary to achieve the calculated number of errors
+            // get min kmer count neccessary to achieve the calculated number of errors
             threshold_strata = get_threshold_errors( len, kmer_size, max_error + strata_filter );
         }
 
@@ -134,7 +139,7 @@ namespace interleave
         @return: true, if at least one specific match was found, false otherwise 
         @throws: NullFilterException, ShortReadException, CountKmerException
     */
-    bool Read::classify(  std::vector< TIbf >& filters, DepleteConfig& config)
+    bool Read::classify(  std::vector< TIbf >& filters, ClassifyConfig& config)
     {
         std::shared_ptr<spdlog::logger> logger = config.classification_logger;
         if (filters.empty())
@@ -159,11 +164,9 @@ namespace interleave
 
             if ( this->max_kmer_count > 0 )
             {
+                //std::cout << "kmer count : " << this->max_kmer_count << std::endl;
                 // filter matches based on strata filter settings
-                return (filter_matches( matches,
-                                                                  seqan::length(this->seq),
-                                                                  kmer_size,
-                                                                  config.strata_filter ) > 0) ;
+                return (filter_matches( matches, seqan::length(this->seq), kmer_size, config.strata_filter ) > 0) ;
             }
         }
         else

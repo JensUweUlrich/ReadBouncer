@@ -111,16 +111,19 @@ namespace interleave
         public:
             IBF()
             {
-                try
+                if ((ibf_logger = spdlog::get("IbfLog")) == nullptr)
                 {
-                    ibf_logger = spdlog::rotating_logger_mt("IbfLog", "logs/InterleavedBloomFilterLog.txt", 1048576 * 5, 100);
+                    try
+                    {
+                        ibf_logger = spdlog::rotating_logger_mt("IbfLog", "logs/InterleavedBloomFilterLog.txt", 1048576 * 5, 100);
+                    }
+                    catch (const spdlog::spdlog_ex& e)
+                    {
+                        std::cerr << "IBF Log initialization failed: " << e.what() << std::endl;
+                    }
+                    ibf_logger->set_level(spdlog::level::debug);
+                    //ibf_logger->flush_on(spdlog::level::debug);
                 }
-                catch (const spdlog::spdlog_ex& e)
-                {
-                    std::cerr << "IBF Log initialization failed: " << e.what() << std::endl;
-                }
-                ibf_logger->set_level(spdlog::level::debug);
-                //ibf_logger->flush_on(spdlog::level::debug);
             }
 			~IBF(){}
             FilterStats create_filter(IBFConfig& config);
@@ -151,7 +154,7 @@ namespace interleave
                                     int16_t   strata_filter );
             void find_matches( TMatches& matches, 
                                     std::vector< TIbf >& filters, 
-                                    DepleteConfig&  config );
+                                    ClassifyConfig&  config );
             void select_matches(TMatches&                matches,
                                 std::vector< uint16_t >& selectedBins,
                                 std::vector< uint16_t >& selectedBinsRev,
@@ -207,7 +210,7 @@ namespace interleave
             {
                 return processingTimes;
             }
-            bool classify(std::vector< TIbf >& filters, DepleteConfig& config);
+            bool classify(std::vector< TIbf >& filters, ClassifyConfig& config);
         
         
     };

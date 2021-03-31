@@ -197,11 +197,24 @@ full\path\to\NanoLIVE\root\directory\bin\NanoLive.exe connection-test --host 127
 ```
 When NanoLIVE says that it successfully established a connection, you can start a sequencing run on the the device, which will playback the run from the bulkfile.
 6. Open the read length histogram after 5 minutes and have a look at the read counts plot.
-![alt text](examples/images/Unblock.png "Unblock Image")
+![alt text](images/unblock_all.png "Unblock All Image")
 7. Now zoom in to the histogram so that only read counts for read lengths up to 5kb are shown. You should see a peak for read counts between 500b and 1 kb like the one in the figure below.
-![alt text](examples/images/Unblock.png "Unblock Image")
+![alt text](images/unblock_all_5kb.png "Unblock All Image (5kb)")
 If that's the case you can go on with testing basecalling and classification
 
 ### <a name="host-depletion"></a>Live-Basecalling and read classification
 
+In order to test if read depletion works on your machine, you can start a `live-depletion` playback run with the bulk FAST5 file from the test above. If you already set up the playback functionality, you only need to download the reference sequence of one or more human chromosomes from e.g. the [NCBI](https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.39) as FASTA file. In the example below, chromosome 3 reads shall be depleted.
 
+1. Before live-depletion, we need to build an Interleaved Bloom Filter (IBF) for the reference sequence(s) we aim to deplete. 
+```
+full\path\to\NanoLIVE\root\directory\bin\NanoLive.exe ibfbuild -o path\to\output\directory\hg38p13_chr3.ibf -i path\to\reference\file\hg38p13_chr3.fasta -k 13 -f 100000
+```
+2. Now you can start live-depletion of chromosome 3 with the following subcommand from you working directory
+ ```
+full\path\to\NanoLIVE\root\directory\bin\NanoLive.exe live-deplete -i path\to\output\directory\hg38p13_chr3.ibf -d MS00000
+```
+3. Start a sequencing run on the simulated device as you did above. Open the read length histogram after 15 minutes and have a look at the read counts plot. When you zoom into the region for reads up to 5kb length, you should see a plot like this:
+![alt text](images/unblock_all.png "Unblock All Image")
+
+4. After stopping the run, NanoLIVE will provide you with some statistics about the number of classified (unblocked) and unclassified reads, which will be sequenced until the end. You will also see average overall processing times as well as for basecalling and classification. You should aim for overall processing times for classified reads below one second. The average processing time for basecalling and classification should be below 0.02 seconds. Otherwise you will experience 

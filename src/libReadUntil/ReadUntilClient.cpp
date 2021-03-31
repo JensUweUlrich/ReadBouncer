@@ -63,6 +63,7 @@ namespace readuntil
 				std::stringstream em;
 				em << "Failed to connect to minknow instance (retry " << i << "/" << retry_count << ") : " << e.what();
 				connection_logger->error(em.str());
+				connected = false;
 				throw;
 			}
 			std::this_thread::sleep_for(std::chrono::seconds(1));

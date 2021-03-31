@@ -17,10 +17,10 @@
 namespace interleave
 {
 
-    class DepleteConfig
+    class ClassifyConfig
     {
         public:
-            DepleteConfig()
+            ClassifyConfig()
             {
                 try
                 {
@@ -33,7 +33,7 @@ namespace interleave
                 classification_logger->set_level(spdlog::level::debug);
                 //classification_logger->flush_on(spdlog::level::debug);
             }
-            ~DepleteConfig() {};
+            ~ClassifyConfig() {};
             double      significance;
             double      error_rate;
             uint16_t    max_error;
@@ -64,7 +64,7 @@ namespace interleave
             uint16_t overlap_length     = 500;
 
             uint16_t kmer_size      = 13;
-            uint16_t hash_functions = 4;
+            uint16_t hash_functions = 3;
 
             uint16_t threads   = 2;
             uint32_t n_refs    = 400;

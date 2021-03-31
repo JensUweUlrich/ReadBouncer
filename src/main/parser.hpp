@@ -116,13 +116,17 @@ struct ibf_build_parser
 */
 struct read_classify_parser
 {
-	std::string ibf_input_file{ };
+	std::string ibf_deplete_file{ };
+	std::string ibf_target_file{ };
 	std::string read_file{};
+	std::string classified_file{};
+	std::string unclassified_file{};
 	bool command = false;
 	bool show_help = false;
 	double kmer_significance = 0.95;
 	double error_rate = 0.1;
 	int threads = 1;
+	int preLen = 360;
 	bool verbose = false;
 
 	/**
@@ -151,11 +155,29 @@ struct read_classify_parser
 				.required()
 				.help("File with reads to classify in FASTA or FASTQ format (required)"))
 			.add_argument(
-				lyra::opt(ibf_input_file, "ibf-file")
-				.name("-i")
-				.name("--ibf-file")
-				.required()
-				.help("Interleaved Bloom Filter file (required)"))
+				lyra::opt(ibf_deplete_file, "ibf-file")
+				.name("-d")
+				.name("--depletion-file")
+				.optional()
+				.help("Interleaved Bloom Filter file with depletion references"))
+			.add_argument(
+				lyra::opt(ibf_target_file, "ibf-file")
+				.name("-t")
+				.name("--target-file")
+				.optional()
+				.help("Interleaved Bloom Filter file with target references"))
+			.add_argument(
+				lyra::opt(classified_file, "file")
+				.name("-c")
+				.name("--classified-file")
+				.optional()
+				.help("File with classified reads in FASTA format"))
+			.add_argument(
+				lyra::opt(unclassified_file, "file")
+				.name("-u")
+				.name("--unclassified-file")
+				.optional()
+				.help("File with unclassified reads in FASTA format"))
 			.add_argument(
 				lyra::opt(kmer_significance, "probability")
 				.name("-s")
@@ -169,9 +191,15 @@ struct read_classify_parser
 				.optional()
 				.help("expected per read sequencing error rate (default: 0.1)"))
 			.add_argument(
+				lyra::opt(preLen, "length")
+				.name("-p")
+				.name("--prefix-length")
+				.optional()
+				.help("Length of read prefix used for classification (default: 360)"))
+			.add_argument(
 				lyra::opt(threads, "threads")
-				.name("-t")
-				.name("--threads")
+				.name("-n")
+				.name("--num-threads")
 				.optional()
 				.help("Number of classification threads"))
 		);
@@ -188,17 +216,31 @@ struct read_classify_parser
 			std::cout << g;
 		else
 		{
+			if (ibf_deplete_file.length() < 1 && ibf_target_file.length() < 1)
+			{
+				std::cerr << "Please provide an IBF file for depletion and/or  an IBF file for targeted sequencing." << std::endl;
+				command = false;
+				return;
+			}
 			// trigger for calling the correct function after parsing the group parameters
 			command = true;
 			if (verbose)
 			{
 				std::cout << "---------------------------------------------------------------------------------------------------" << std::endl;
-				std::cout << "Classify Reads                               : " << "verbose=" << (verbose ? "true" : "false") << std::endl;
-				std::cout << "Input read file                              : " << read_file << std::endl;
-				std::cout << "Input IBF file                               : " << ibf_input_file << std::endl;
-				std::cout << "Significance level for confidence interval   : " << kmer_significance << std::endl;
-				std::cout << "Expected sequencing error rate               : " << error_rate << std::endl;
-				std::cout << "Building threads                             : " << threads << std::endl;
+				std::cout << "Classify Reads                                : " << "verbose=" << (verbose ? "true" : "false") << std::endl;
+				std::cout << "Input read file                               : " << read_file << std::endl;
+				if (ibf_deplete_file.length() > 0)
+					std::cout << "Depletion IBF file                            : " << ibf_deplete_file << std::endl;
+				if (ibf_target_file.length() > 0)
+					std::cout << "Target IBF file                               : " << ibf_target_file << std::endl;
+				if (classified_file.length() > 0)
+					std::cout << "Classified reads file                         : " << classified_file << std::endl;
+				if (unclassified_file.length() > 0)
+					std::cout << "Unclassified reads file                       : " << unclassified_file << std::endl;
+				std::cout << "Significance level for confidence interval    : " << kmer_significance << std::endl;
+				std::cout << "Expected sequencing error rate                : " << error_rate << std::endl;
+				std::cout << "Length of read prefix used for classification : " << preLen << std::endl;
+				std::cout << "Building threads                              : " << threads << std::endl;
 				std::cout << "---------------------------------------------------------------------------------------------------" << std::endl;
 			}
 		}
@@ -213,7 +255,8 @@ struct live_depletion_parser
 	// default host & port to communicate with MinKNOW
 	std::string host = "127.0.0.1";
 	std::string device{};
-	std::string ibf_input_file{ };
+	std::string ibf_deplete_file{ };
+	std::string ibf_target_file{ };
 	std::string weights = "48";
 	int port = 9501;
 	double kmer_significance = 0.95;
@@ -260,11 +303,17 @@ struct live_depletion_parser
 				.optional()
 				.help("MinKNOW communication port (default: 9501)"))
 			.add_argument(
-				lyra::opt(ibf_input_file, "ibf-file")
-				.name("-i")
-				.name("--ibf-file")
-				.required()
-				.help("Interleaved Bloom Filter file (required)"))
+				lyra::opt(ibf_deplete_file, "ibf-file")
+				.name("-d")
+				.name("--depletion-file")
+				.optional()
+				.help("Interleaved Bloom Filter file with depletion references"))
+			.add_argument(
+				lyra::opt(ibf_target_file, "ibf-file")
+				.name("-t")
+				.name("--target-file")
+				.optional()
+				.help("Interleaved Bloom Filter file with target references"))
 			.add_argument(
 				lyra::opt(kmer_significance, "probability")
 				.name("-s")
@@ -298,6 +347,12 @@ struct live_depletion_parser
 			std::cout << g;
 		else
 		{
+			if (ibf_deplete_file.length() < 1 && ibf_target_file.length() < 1)
+			{
+				std::cerr << "Please provide an IBF file for depletion and/or  an IBF file for targeted sequencing." << std::endl;
+				command = false;
+				return;
+			}
 			// trigger for calling the correct function after parsing the group parameters
 			command = true;
 			if (verbose)
@@ -307,7 +362,10 @@ struct live_depletion_parser
 				std::cout << "Host IP address                              : " << host << std::endl;
 				std::cout << "MinKNOW communication port                   : " << port << std::endl;
 				std::cout << "Device or Flowcell name                      : " << device << std::endl;
-				std::cout << "Input IBF file                               : " << ibf_input_file << std::endl;
+				if (ibf_deplete_file.length() > 0)
+					std::cout << "Depletion IBF file                           : " << ibf_deplete_file << std::endl;
+				if (ibf_target_file.length() > 0)
+					std::cout << "Target IBF file                              : " << ibf_target_file << std::endl;
 				std::cout << "Significance level for confidence interval   : " << kmer_significance << std::endl;
 				std::cout << "Expected sequencing error rate               : " << error_rate << std::endl;
 				std::cout << "Deep Nano Weights for Live Basecalling       : " << weights << std::endl;
