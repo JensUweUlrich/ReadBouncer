@@ -152,11 +152,8 @@ namespace interleave
                                     uint16_t  len,
                                     uint16_t  kmer_size,
                                     int16_t   strata_filter );
-            void find_matches( TMatches& matches, 
-                                    std::vector< TIbf >& filters, 
-                                    ClassifyConfig&  config );
-            void select_matches(TMatches&                matches,
-                                std::vector< uint16_t >& selectedBins,
+            bool find_matches(std::vector< TIbf >& filters, ClassifyConfig&  config );
+            bool select_matches(std::vector< uint16_t >& selectedBins,
                                 std::vector< uint16_t >& selectedBinsRev,
                                 TIbf&                    filter,
                                 uint16_t                 threshold);

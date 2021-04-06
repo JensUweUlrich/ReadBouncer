@@ -39,6 +39,7 @@ namespace readuntil
 
 		std::stringstream connect_str;
 		std::stringstream info_str;
+
 		connect_str << mk_host << ":" << rpcPort;
 		info_str << "Trying to connect to Minknow on " << connect_str.str();
 		int retry_count = 5;

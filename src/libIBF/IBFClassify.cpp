@@ -4,16 +4,14 @@ namespace interleave
 {
 
     /**
-        store all targets that share > threshold kmers with the read in matches map
-        store maximum number of kmers that match against best matching target
-        @matches:           unordered map to store matches (matches[binNo] = maxKmerCountBin)
+        return true if there is at least one bin with number of 
+        matching kmers above the threshold
         @selectedBins:      number of kmer matches for every bin in the filter
         @selectedBinsRev:   number of reverse complement kmer matches for every bin in the filter
         @filter:            actual IBF
         @threshold:         minimum number of kmer matches needed to add the bin number with its kmer match count to the matches map 
     */
-    void Read::select_matches(TMatches&                matches,
-                        std::vector< uint16_t >& selectedBins,
+    bool Read::select_matches(std::vector< uint16_t >& selectedBins,
                         std::vector< uint16_t >& selectedBinsRev,
                         TIbf&                    filter,
                         uint16_t                 threshold )
@@ -29,40 +27,26 @@ namespace interleave
             // if kmer count is higher than threshold
             if ( selectedBins[binNo] >= threshold || selectedBinsRev[binNo] >= threshold )
             {
-                // get best matching strand
-                uint16_t maxKmerCountBin = std::max( selectedBins[binNo], selectedBinsRev[binNo] );
-                
-                // keep only the best match target/read when same targets are split in several
-                // bins
-                // only needed if we have different ibfs for different ref seqs
-                //if ( matches.count( binNo ) == 0 || maxKmerCountBin > matches[target] )
-                //{
-                // store match to target
-                    matches[binNo] = maxKmerCountBin;
-                    if ( maxKmerCountBin > this->max_kmer_count )
-                        this->max_kmer_count = maxKmerCountBin;
-                //}
+                return true;
             }
         }
-        //if (this->max_kmer_count > 0)
-        //    std::cout << "threshold : " << threshold << ", Max Kmer Count: " << this->max_kmer_count <<std::endl;
+        return false;
     }
 
     /**
         find matches of kmers in ibfs
-        report only targets where at least n > threshold kmers match target in the ibf
-        match forward and reverse complement of kmers
+        return true if read matches at least one bin of a given IBF
         @matches:   unordered map to store matches 
         @filters:   vector of IBFs
         @config:    configuration settings needed
         @throws:    CountKmerException
     */
-    void Read::find_matches(TMatches& matches, 
-                                std::vector< TIbf >& filters, 
+    bool Read::find_matches(std::vector< TIbf >& filters, 
                                 ClassifyConfig& config )
     {
         std::shared_ptr<spdlog::logger> logger = config.classification_logger;
         // iterate over all ibfs
+        bool found = false;
         for ( TIbf& filter : filters )
         {
             try
@@ -83,7 +67,9 @@ namespace interleave
                 int16_t threshold = readlen - filter.kmerSize + 1 - ci.second;
                 //uint16_t threshold = seqan::length(this->seq) - filter.kmerSize + 1 - (floor((ci.second - ci.first) / 2) + ci.first);
                 // select matches above chosen threshold
-                select_matches( matches, selectedBins, selectedBinsRev, filter, threshold);
+                found = select_matches( selectedBins, selectedBinsRev, filter, threshold);
+                if (found)
+                    break;
             }
             catch (seqan::Exception const& e)
             {
@@ -93,6 +79,7 @@ namespace interleave
                 throw CountKmerException(sstr.str());
             }
         }
+        return found;
     }
 
     /**
@@ -155,19 +142,21 @@ namespace interleave
             // try to find kmer matches between read and ibfs
             try
             {
-                find_matches( matches, filters, config );
+                return find_matches(filters, config );
             }
             catch (const CountKmerException& e)
             {
                 throw;
             }
-
+            // not needed anymore
+            /* 
             if ( this->max_kmer_count > 0 )
             {
                 //std::cout << "kmer count : " << this->max_kmer_count << std::endl;
                 // filter matches based on strata filter settings
                 return (filter_matches( matches, seqan::length(this->seq), kmer_size, config.strata_filter ) > 0) ;
             }
+            */
         }
         else
         {
