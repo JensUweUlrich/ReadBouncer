@@ -219,11 +219,12 @@ full\path\to\NanoLIVE\root\directory\bin\NanoLive.exe connection-test --host 127
 When NanoLIVE says that it successfully established a connection, you can start a sequencing run on the the device, which will playback the run from the bulkfile.
 6. Open the read length histogram after 5 minutes and have a look at the read counts plot.
 <p align="center">
-  <img src="images/unblock_all.PNG" width="350" title="hover text">
+  <img src="images/unblock_all.PNG" width="500" title="Unblock All Image">
 </p>
-![Alt text](../../images/unblock_all.png "Unblock All Image")
 7. Now zoom in to the histogram so that only read counts for read lengths up to 5kb are shown. You should see a peak for read counts between 500b and 1 kb like the one in the figure below.
-![Alt text](../..//images/unblock_all_5kb.png "Unblock All Image (5kb)")
+<p align="center">
+  <img src="images/unblock_all_5kb.png" width="500" title="Unblock All Image (5kb)">
+</p>
 If that's the case you can go on with testing basecalling and classification
 
 ### <a name="host-depletion"></a>Live-Basecalling and read classification
