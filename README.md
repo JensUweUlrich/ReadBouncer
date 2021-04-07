@@ -82,13 +82,13 @@ OPTIONS, ARGUMENTS:
                           IBF size in MB
 ```
 
-<b>--fragment-size</b>
+<b>--fragment-size</b><br>
 The reference sequence is fragmented in subsequences of this length, where every fragment is stored in a separate bin of the interleaved bloom filter. Fragments overlap by 500 nucleotides since the expected length of pulled read information from MinKNOW is between 200 and 400 nucleotides. The fragmentation leads to better classification specificity when using smaller ```kmer-size``` values. By default we recommend a fragment size of 100,000 basepairs. But for smaller expected sequencing errors, larger ```kmer-size``` values can be used and thus the size of the fragments can be increased as well.
 
-<b>--kmer-size</b>
+<b>--kmer-size</b><br>
 For every fragment we compute all kmers of this size, calculate hash values for the kmers and add those to the interleaved bloom filter like described by [Dadi et. al., 2018](https://academic.oup.com/bioinformatics/article/34/17/i766/5093228). For sequencing error rates of around 10% we recommend using k=13. But with ONT's continuous improvements in single read accuracy, higher values are feasible as well.
 
-<b>--filter-size</b>
+<b>--filter-size</b><br>
 The optimal filter size is calculated automatically (for human genome it is approx. 4 GigaBytes). But if you are short of disk space or have a large reference sequence set, you can state the maximum filter size here in MegaBytes. <b>Note that this can negatively impact the read classification accuracy.</b>
 
 #### <a name="classify"></a>Classify Query Reads
@@ -118,13 +118,13 @@ classify                classify nanopore reads based on a given IBF file
   -n, --num-threads <threads>
                           Number of classification threads
 ```
-<b>--prefix-length</b>
+<b>--prefix-length</b><br>
 This is the number of nucleotides from the beginning of each read that is used for classification. By default, NanoLIVE takes the first 360 nucleotides since this represents approximately 0.4 seconds of sequencing or 4 chunks of data sent from MinKNOW to our ReadUntil client.
 
-<b>--depletion-file and --target-file</b>
+<b>--depletion-file and --target-file</b><br>
 The depletion-file contains the IBF for references we would want to deplete in a real experiment. If we also have a priori knowledge about potential organisms in our sample we definitely want to sequence, it is also possible to build an IBF of the reference sequences of those organisms and provide NanoLIVE the IBF as a target filter file. This can improve the specificity of the classification.
 
-<b>--significance and --error-rate</b>
+<b>--significance and --error-rate</b><br>
 For more accurate classification of reads we are calculating the expected number of mutated kmers for each read prefix based on the expected sequencing ```error rate```. Than a confidence interval for the mutated kmers is calculated as described by [Blanca et. al., 2021](https://www.biorxiv.org/content/10.1101/2021.01.15.426881v2) and the minimum number of matching kmers is calculated based on the upper bound of the confidence interval. The significance level of the confidence interval can be specified, but is set to 95% by default.
 
 
@@ -150,19 +150,19 @@ When nanopore reads of a certain organism (or even more) are not of interest, th
   -e, --error-rate <err>  expected per read sequencing error rate (default: 0.1)
   -w, --weights <weights> Deep Nano Weights (default: 48; other choices: 56, 64, 80, 96, 256)
 ```
-<b>--host and --port</b>
+<b>--host and --port</b><br>
 This is the IP adress and the TCP/IP port on which the MinKNOW software is hosted. NanoLIVE will exchange data with the MinKNOW software via this communication channel. It is recommended to test the communication before starting the sequencing run.
 
-<b>--device</b>
+<b>--device</b><br>
 This is the name of the FlowCell for which we want to do the live depletion. 
 
-<b>--depletion-file and --target-file</b>
+<b>--depletion-file and --target-file</b><br>
 The depletion-file contains the IBF for references we would want to deplete in a real experiment. If we also have a priori knowledge about potential organisms in our sample we definitely want to sequence, it is also possible to build an IBF of the reference sequences of those organisms and provide NanoLIVE the IBF as a target filter file. This can improve the specificity of the classification.
 
-<b>--significance and --error-rate</b>
+<b>--significance and --error-rate</b><br>
 For more accurate classification of reads we are calculating the expected number of mutated kmers for each read prefix based on the expected sequencing ```error rate```. Than a confidence interval for the mutated kmers is calculated as described by [Blanca et. al., 2021](https://www.biorxiv.org/content/10.1101/2021.01.15.426881v2) and the minimum number of matching kmers is calculated based on the upper bound of the confidence interval. The significance level of the confidence interval can be specified, but is set to 95% by default.
 
-<b>--weights</b>
+<b>--weights</b><br>
 For CPU based real-time basecalling of Nanopore reads, NanoLIVE integrates [DeepNano-blitz](https://github.com/fmfi-compbio/deepnano-blitz). This basecaller uses recurrent neural networks (RNNs) for signal-to-nucleotide translation. There are different sizes of RNNs available, e.g. 48, 56, 64, 80, 96 and 256. In general, the smaller the RNN the faster basecalling is performed. But on the other hand higher RNN weight values provide higher base call accuracy. <b>Note that necessary basecalling speed could only be supported for maximum weights value of 80 on a an Intel Core i7 2,8 GHz processor. Therefore we recommend values smaller than 80 to keep up with sequencing speed.</b>
 
 #### <a name="test"></a>Testing Connection NanoLIVE
@@ -179,13 +179,13 @@ connection-test         Test connection to a working MinKNOW instance
   -p, --port <port>       MinKNOW communication port (default: 9501)
   -u, --unblock-all       Unblock all reads
 ```
-<b>--host and --port</b>
+<b>--host and --port</b><br>
 This is the IP adress and the TCP/IP port on which the MinKNOW software is hosted. NanoLIVE will exchange data with the MinKNOW software via this communication channel. It is recommended to test the communication before starting the sequencing run.
 
-<b>--device</b>
+<b>--device</b><br>
 This is the name of the FlowCell for which we want to do the live depletion. 
 
-<b>--unblock-all</b>
+<b>--unblock-all</b><br>
 If you have a bulk FAST5 file at hand, you can simulate a Nanopore sequencing run and try out if MinKNOW accepts messages for unblocking pores from NanoLIVE. You can simply replay the sequencing run from the bulk fast5 file and state NanoLIVE to send unblock messages for all reads. If you observe that lots of reads have lengths below 1kb unblocking works as expected.
 
 ### <a name="ucase"></a>Use Cases
@@ -218,9 +218,9 @@ full\path\to\NanoLIVE\root\directory\bin\NanoLive.exe connection-test --host 127
 ```
 When NanoLIVE says that it successfully established a connection, you can start a sequencing run on the the device, which will playback the run from the bulkfile.
 6. Open the read length histogram after 5 minutes and have a look at the read counts plot.
-![Alt text](/images/unblock_all.png "Unblock All Image")
+![Alt text](./images/unblock_all.png "Unblock All Image")
 7. Now zoom in to the histogram so that only read counts for read lengths up to 5kb are shown. You should see a peak for read counts between 500b and 1 kb like the one in the figure below.
-![Alt text](/images/unblock_all_5kb.png "Unblock All Image (5kb)")
+![Alt text](./images/unblock_all_5kb.png "Unblock All Image (5kb)")
 If that's the case you can go on with testing basecalling and classification
 
 ### <a name="host-depletion"></a>Live-Basecalling and read classification
@@ -236,6 +236,6 @@ full\path\to\NanoLIVE\root\directory\bin\NanoLive.exe ibfbuild -o path\to\output
 full\path\to\NanoLIVE\root\directory\bin\NanoLive.exe live-deplete -i path\to\output\directory\hg38p13_chr3.ibf -d MS00000
 ```
 3. Start a sequencing run on the simulated device as you did above. Open the read length histogram after 15 minutes and have a look at the read counts plot. When you zoom into the region for reads up to 5kb length, you should see a plot like this:
-![Alt text](/images/unblock_all.png "Unblock All Image")
+![Alt text](./images/unblock_all.png "Unblock All Image")
 
 4. After stopping the run, NanoLIVE will provide you with some statistics about the number of classified (unblocked) and unclassified reads, which will be sequenced until the end. You will also see average overall processing times as well as for basecalling and classification. You should aim for overall processing times for classified reads below one second. The average processing time for basecalling and classification should be below 0.02 seconds. Otherwise you will experience 
