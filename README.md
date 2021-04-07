@@ -218,9 +218,9 @@ full\path\to\NanoLIVE\root\directory\bin\NanoLive.exe connection-test --host 127
 ```
 When NanoLIVE says that it successfully established a connection, you can start a sequencing run on the the device, which will playback the run from the bulkfile.
 6. Open the read length histogram after 5 minutes and have a look at the read counts plot.
-![Alt text](./images/unblock_all.png "Unblock All Image")
+![Alt text](../../images/unblock_all.png "Unblock All Image")
 7. Now zoom in to the histogram so that only read counts for read lengths up to 5kb are shown. You should see a peak for read counts between 500b and 1 kb like the one in the figure below.
-![Alt text](./images/unblock_all_5kb.png "Unblock All Image (5kb)")
+![Alt text](../..//images/unblock_all_5kb.png "Unblock All Image (5kb)")
 If that's the case you can go on with testing basecalling and classification
 
 ### <a name="host-depletion"></a>Live-Basecalling and read classification
@@ -236,6 +236,6 @@ full\path\to\NanoLIVE\root\directory\bin\NanoLive.exe ibfbuild -o path\to\output
 full\path\to\NanoLIVE\root\directory\bin\NanoLive.exe live-deplete -i path\to\output\directory\hg38p13_chr3.ibf -d MS00000
 ```
 3. Start a sequencing run on the simulated device as you did above. Open the read length histogram after 15 minutes and have a look at the read counts plot. When you zoom into the region for reads up to 5kb length, you should see a plot like this:
-![Alt text](./images/unblock_all.png "Unblock All Image")
+![Alt text](../../images/unblock_all.png "Unblock All Image")
 
 4. After stopping the run, NanoLIVE will provide you with some statistics about the number of classified (unblocked) and unclassified reads, which will be sequenced until the end. You will also see average overall processing times as well as for basecalling and classification. You should aim for overall processing times for classified reads below one second. The average processing time for basecalling and classification should be below 0.02 seconds. Otherwise you will experience 
