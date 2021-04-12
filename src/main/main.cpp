@@ -29,6 +29,12 @@
 
 #include <lyra/lyra.hpp>
 
+//Qt
+//#include "nanolivetk.h" //skip for now 
+#include <QApplication>
+#include <QCoreApplication>
+#include <QAbstractAnimation>
+#include <QDialog>
 
 // global variables
 //-------------------------------------------------------------------
