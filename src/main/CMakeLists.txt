@@ -1,3 +1,30 @@
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets REQUIRED)
+
+if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
+    qt_add_executable(guiNano
+        ${PROJECT_SOURCES}
+    )
+else()
+    if(ANDROID)
+        add_library(guiNano SHARED
+            ${PROJECT_SOURCES}
+        )
+    else()
+        add_executable(guiNano
+            ${PROJECT_SOURCES}
+        )
+    endif()
+endif()
+
 set(Main_SRC "main.cpp")
 file(GLOB MAIN_HDRS "*.hpp")
 add_executable (${PROJECT_NAME} ${MAIN_HDRS} ${Main_SRC})
@@ -14,5 +41,11 @@ include_directories(${DEEPNANO_INCLUDE_DIR} "${CMAKE_CURRENT_SOURCE_DIR}/../libB
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/../lyra/lyra/lyra-src/include ${CMAKE_CURRENT_SOURCE_DIR}/../libBaseCaller ${CMAKE_CURRENT_SOURCE_DIR}/../util)
 # using seqan
 add_definitions(-DMSVC_COMPILER)
-target_link_libraries (${PROJECT_NAME} IBF ReadUntil deepnano2 spdlog::spdlog_header_only)
+target_link_libraries (${PROJECT_NAME} IBF ReadUntil deepnano2 spdlog::spdlog_header_only Qt${QT_VERSION_MAJOR}::Widgets)
+#target_link_libraries(${PROJECT_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 install(TARGETS ${PROJECT_NAME} DESTINATION bin COMPONENT applications)
+
+#Qt
+
+find_package(Qt${QT_VERSION_MAJOR}Widgets)
+
