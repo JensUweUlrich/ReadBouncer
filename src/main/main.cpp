@@ -31,6 +31,7 @@
 
 //Qt
 //#include "nanolivetk.h" //skip for now 
+#include "mainwindow.h"
 #include <QApplication>
 #include <QCoreApplication>
 #include <QAbstractAnimation>
@@ -1112,6 +1113,11 @@ int main(int argc, char const **argv)
 		std::cerr << e.what() << std::endl;
 	}
 	
-	return 0;
+	
+    QApplication a(argc, argv);
+    MainWindow w;
+    w.show();
+
+    return a.exec();
 }
 
