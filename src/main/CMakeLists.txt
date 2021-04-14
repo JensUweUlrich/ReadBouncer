@@ -25,7 +25,13 @@ else()
     endif()
 endif()
 
-set(Main_SRC "main.cpp")
+set(Main_SRC
+    main.cpp
+    mainwindow.cpp
+    mainwindow.h
+    mainwindow.ui
+
+    )
 file(GLOB MAIN_HDRS "*.hpp")
 add_executable (${PROJECT_NAME} ${MAIN_HDRS} ${Main_SRC})
 #find_package (Threads)
