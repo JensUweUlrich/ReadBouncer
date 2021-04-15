@@ -20,7 +20,7 @@ struct ibf_build_parser
 	// will lead to unrecognized tokens
 	int size_k = 13;
 	int threads = 1;
-	int fragment_size = 10000;
+	int fragment_size = 100000;
 	int filter_size = 0;
 	bool verbose = false;
 
@@ -286,8 +286,8 @@ struct live_depletion_parser
 					"Show additional output as to what we are doing."))
 			.add_argument(
 				lyra::opt(device, "device")
-				.name("-d")
-				.name("--device")
+				.name("-f")
+				.name("--flowcell")
 				.required()
 				.help("Device or FlowCell name for live analysis (required)"))
 			.add_argument(

@@ -195,18 +195,12 @@ void classify_reads(read_classify_parser& parser)
 					found++;
 					if (parser.classified_file.length() > 0)
 					{
-						std::stringstream sstr;
-						sstr << r.getID() << " channelNr=" << r.getChannelNr() << " readNr=" << r.getReadNr();
-						seqan::writeRecord(ClassifiedOut, sstr.str(), r.getSeq());
+						seqan::writeRecord(ClassifiedOut, id, seq);
 					}
-					//std::cout << ">" << r.getID() << " kmers=" << r.getMaxKmerCount() << " len=" << r.getSeqLength() - config.kmer_size + 1 << std::endl;
-					//std::cout << r.getSeq() << std::endl;
 				}
 				else if (parser.unclassified_file.length() > 0)
 				{
-					std::stringstream sstr;
-					sstr << r.getID() << " channelNr=" << r.getChannelNr() << " readNr=" << r.getReadNr();
-					seqan::writeRecord(UnclassifiedOut, sstr.str(), r.getSeq());
+					seqan::writeRecord(UnclassifiedOut, id, seq);
 				}
 			}
 			// only classify if read is in depletion filter
@@ -217,18 +211,12 @@ void classify_reads(read_classify_parser& parser)
 					found++;
 					if (parser.classified_file.length() > 0)
 					{
-						std::stringstream sstr;
-						sstr << r.getID() << " channelNr=" << r.getChannelNr() << " readNr=" << r.getReadNr();
-						seqan::writeRecord(ClassifiedOut, sstr.str(), r.getSeq());
+						seqan::writeRecord(ClassifiedOut, id, seq);
 					}
-					//std::cout << ">" << r.getID() << " kmers=" << r.getMaxKmerCount() << " len=" << r.getSeqLength() - config.kmer_size + 1 << std::endl;
-					//std::cout << r.getSeq() << std::endl;
 				}
 				else if (parser.unclassified_file.length() > 0)
 				{
-					std::stringstream sstr;
-					sstr << r.getID() << " channelNr=" << r.getChannelNr() << " readNr=" << r.getReadNr();
-					seqan::writeRecord(UnclassifiedOut, sstr.str(), r.getSeq());
+					seqan::writeRecord(UnclassifiedOut, id, seq);
 				}
 			}
 			// only classify if read is in target filter
@@ -239,18 +227,12 @@ void classify_reads(read_classify_parser& parser)
 					found++;
 					if (parser.classified_file.length() > 0)
 					{
-						std::stringstream sstr;
-						sstr << r.getID() << " channelNr=" << r.getChannelNr() << " readNr=" << r.getReadNr();
-						seqan::writeRecord(ClassifiedOut, sstr.str(), r.getSeq());
+						seqan::writeRecord(ClassifiedOut, id, seq);
 					}
-					//std::cout << ">" << r.getID() << " kmers=" << r.getMaxKmerCount() << " len=" << r.getSeqLength() - TargetIBFconfig.kmer_size + 1 << std::endl;
-					//std::cout << r.getSeq() << std::endl;
 				}
 				else if (parser.unclassified_file.length() > 0)
 				{
-					std::stringstream sstr;
-					sstr << r.getID() << " channelNr=" << r.getChannelNr() << " readNr=" << r.getReadNr();
-					seqan::writeRecord(UnclassifiedOut, sstr.str(), r.getSeq());
+					seqan::writeRecord(UnclassifiedOut, id, seq);
 				}
 			}
 		}

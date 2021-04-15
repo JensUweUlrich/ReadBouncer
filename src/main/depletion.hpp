@@ -31,11 +31,13 @@ SafeQueue<interleave::Read> unclassifiedReads{};
 *	take read from the basecalling queue, perform basecalling and push that read on the classification queue
 *	@basecall_queue			: safe queue with reads ready for basecalling
 *	@classification_queue	: safe queue with basecalled reads
+*	@channel_stats			: safe map with number of received reads for every flow cell channel
 *	@weights				: weights file path needed by DeepNano to perform basecalling
 *	@acq					: Acquisition service checking if sequencing run is already finished
 */
 void basecall_live_reads(SafeQueue<readuntil::SignalRead>& basecall_queue,
 	SafeQueue<interleave::Read>& classification_queue,
+	SafeMap<uint16_t, uint32_t>& channel_stats,
 	std::string& weights,
 	std::filesystem::path& weights_file,
 	readuntil::Acquisition* acq)
@@ -63,6 +65,8 @@ void basecall_live_reads(SafeQueue<readuntil::SignalRead>& basecall_queue,
 				char* sequence = call_raw_signal(caller, read.raw_signals.data(), read.raw_signals.size());
 				read.processingTimes.timeBasecallRead.stop();
 				classification_queue.push(interleave::Read(read.id, sequence, read.channelNr, read.readNr, read.processingTimes));
+				uint32_t chNr = (uint32_t)read.channelNr;
+				channel_stats.assign(std::pair(chNr, channel_stats[chNr] + 1));
 			}
 			else
 			{
@@ -233,9 +237,12 @@ void classify_live_reads(SafeQueue<interleave::Read>& classification_queue,
 *	compute average duration for complete processing time, basecalling time and classification time per read
 *	using online average computation
 *	@duration_queue	:	safe queue elapsed time for reads that finished sequencing
+*   @channel_stats	: safe map with number of received reads for every flow cell channel
 *	@acq			:	Acquisition service checking if sequencing run is already finished
 */
-void compute_average_durations(SafeQueue<Durations>& duration_queue, readuntil::Acquisition* acq)
+void compute_average_durations(SafeQueue<Durations>& duration_queue, 
+	                           SafeMap<uint16_t, uint32_t>& channel_stats,
+	                           readuntil::Acquisition* acq)
 {
 	std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("NanoLiveLog");
 	uint64_t classifiedReadCounter = 0;
@@ -264,12 +271,26 @@ void compute_average_durations(SafeQueue<Durations>& duration_queue, readuntil::
 			std::chrono::duration< StopClock::Seconds > elapsed = end - begin;
 			if (elapsed.count() > 60.0)
 			{
+				// calculate number of channels that were actively sequencing
+				// during the last 60 seconds
+				uint16_t activeChannels = 0;
+				for (uint16_t ch = 1; ch < 513; ++ch)
+				{
+					if (channel_stats[ch] > 0)
+					{
+						activeChannels++;
+						channel_stats.assign(std::pair(ch, 0));
+					}
+				}
 				nanolive_logger->info("----------------------------- Intermediate Results -------------------------------------------------------");
 				std::stringstream sstr;
 				sstr << "Number of classified reads                        :	" << classifiedReadCounter;
 				nanolive_logger->info(sstr.str());
 				sstr.str("");
 				sstr << "Number of unclassified reads                      :	" << unclassifiedReadCounter;
+				nanolive_logger->info(sstr.str());
+				sstr.str("");
+				sstr << "Number of active sequencing channels              :	" << activeChannels;
 				nanolive_logger->info(sstr.str());
 				sstr.str("");
 				sstr << "Average Processing Time for classified Reads      :	" << avgDurationCompleteClassifiedRead;
@@ -494,6 +515,12 @@ void live_read_depletion(live_depletion_parser& parser)
 	SafeQueue<readuntil::ActionResponse> action_queue{};
 	// thread safe queue storing for every read the duration for the different tasks to complete
 	SafeQueue<Durations> duration_queue{};
+	// thread safe map storing number of send reads for every channel
+	SafeMap<uint16_t, uint32_t> channelStats{};
+	for (uint16_t ch = 1; ch < 513; ++ch)
+	{
+		channelStats.insert(std::pair(ch, 0));
+	}
 
 	// start live signal streaming from ONT MinKNOW
 	std::vector< std::future< void > > tasks;
@@ -512,7 +539,7 @@ void live_read_depletion(live_depletion_parser& parser)
 
 	// create thread for live basecalling
 	tasks.emplace_back(std::async(std::launch::async, &basecall_live_reads, std::ref(basecall_queue),
-		std::ref(classification_queue), std::ref(parser.weights), std::ref(weights_file), acq));
+		std::ref(classification_queue), std::ref(channelStats), std::ref(parser.weights), std::ref(weights_file), acq));
 
 	// create thread/task for classification
 	tasks.emplace_back(std::async(std::launch::async, &classify_live_reads, std::ref(classification_queue),
@@ -523,7 +550,7 @@ void live_read_depletion(live_depletion_parser& parser)
 	tasks.emplace_back(std::async(std::launch::async, &readuntil::Data::sendActions, data, std::ref(action_queue), std::ref(duration_queue)));
 
 	// create task for calculating average times needed to complete the different tasks
-	tasks.emplace_back(std::async(std::launch::async, &compute_average_durations, std::ref(duration_queue), acq));
+	tasks.emplace_back(std::async(std::launch::async, &compute_average_durations, std::ref(duration_queue), std::ref(channelStats),acq));
 
 	// create task for writing classified and unclassified reads to output fasta files
 	tasks.emplace_back(std::async(std::launch::async, &writeReads, std::ref(classifiedReads), acq, "classifiedReads.fasta"));

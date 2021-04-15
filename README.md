@@ -11,6 +11,8 @@
     - [Classify Query Reads](#classify)
     - [Live Depletion of Nanopore Reads](#deplete)
   - [Use cases](#ucase)
+    - [Classify already sequenced reads](#classifyreads)
+    - [Test unblocking all reads](#unblockall)
     - [Deplete Host Background Reads](#host-depletion)
   - [Advanced features](#advanced)
   - [Algorithm overview](#algo)
@@ -189,6 +191,16 @@ This is the name of the FlowCell for which we want to do the live depletion.
 If you have a bulk FAST5 file at hand, you can simulate a Nanopore sequencing run and try out if MinKNOW accepts messages for unblocking pores from NanoLIVE. You can simply replay the sequencing run from the bulk fast5 file and state NanoLIVE to send unblock messages for all reads. If you observe that lots of reads have lengths below 1kb unblocking works as expected.
 
 ### <a name="ucase"></a>Use Cases
+
+### <a name="classifyreads"></a>Classify already sequenced reads
+Sometimes it can be useful to find all reads of an organism in a set of reads that were already sequenced without aligning the sequences. NanoLIVE offers this functionality by using the `classify` subcommand. The following steps describe how to classify all bacterial reads from a Zymo Mock Community that was sequenced on a MinION device.
+
+1. Download the bacterial reference sequences of the Zymo Mock Community from [here](https://owncloud.hpi.de/s/di1lwRsvkXAr4XN) and store it in your working directory.
+2. Build an Interleaved Bloom Filter (IBF) file from those reference sequence set
+```
+full\path\to\NanoLIVE\root\directory\bin\NanoLive.exe ibfbuild -o path\to\output\directory\ZmcBacterialReferences.ibf -i path\to\reference\file\ZmcBacterialReferences.fasta -k 13 -f 100000
+```
+3. Use the `classify` subcommand get all reads that origin from one of the 7 bacteria in the Zymo Mock Community mix. (You can use the following [sample read set]() to simply test the feature)
 
 ### <a name="unblockall"></a>Test NanoLIVE-to-MinKNOW interaction
 Before using NanoLIVE in a real experiment, we recommend first running a playback experiment to test unblock speed.
