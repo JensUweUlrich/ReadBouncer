@@ -9,22 +9,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets REQUIRED)
 
-if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-    qt_add_executable(guiNano
-        ${PROJECT_SOURCES}
-    )
-else()
-    if(ANDROID)
-        add_library(guiNano SHARED
-            ${PROJECT_SOURCES}
-        )
-    else()
-        add_executable(guiNano
-            ${PROJECT_SOURCES}
-        )
-    endif()
-endif()
-
 set(Main_SRC
     main.cpp
     mainwindow.cpp
