@@ -240,7 +240,7 @@ struct read_classify_parser
 				std::cout << "Significance level for confidence interval    : " << kmer_significance << std::endl;
 				std::cout << "Expected sequencing error rate                : " << error_rate << std::endl;
 				std::cout << "Length of read prefix used for classification : " << preLen << std::endl;
-				std::cout << "Building threads                              : " << threads << std::endl;
+				std::cout << "Classification threads                            : " << threads << std::endl;
 				std::cout << "---------------------------------------------------------------------------------------------------" << std::endl;
 			}
 		}
@@ -259,6 +259,8 @@ struct live_depletion_parser
 	std::string ibf_target_file{ };
 	std::string weights = "48";
 	int port = 9501;
+	int basecall_threads = 1;
+	int classify_threads = 1;
 	double kmer_significance = 0.95;
 	double error_rate = 0.1;
 	bool command = false;
@@ -291,9 +293,9 @@ struct live_depletion_parser
 				.required()
 				.help("Device or FlowCell name for live analysis (required)"))
 			.add_argument(
-				lyra::opt(host, "host")
-				.name("-c")
-				.name("--host")
+				lyra::opt(host, "ip")
+				.name("-i")
+				.name("--host-ip")
 				.optional()
 				.help("IP address on which MinKNOW software runs (default: localhost)"))
 			.add_argument(
@@ -333,6 +335,18 @@ struct live_depletion_parser
 				.optional()
 				.choices("48", "56", "64", "80", "96", "256")
 				.help("Deep Nano Weights (default: 48; other choices: 56, 64, 80, 96, 256)"))
+			.add_argument(
+				lyra::opt(basecall_threads, "t")
+				.name("-b")
+				.name("--basecall-threads")
+				.optional()
+				.help("Number of threads used for base calling (default: 1)"))
+			.add_argument(
+				lyra::opt(classify_threads, "t")
+				.name("-c")
+				.name("--classification-threads")
+				.optional()
+				.help("Number of threads used for read classification (default: 1)"))
 		);
 
 	}
@@ -369,6 +383,8 @@ struct live_depletion_parser
 				std::cout << "Significance level for confidence interval   : " << kmer_significance << std::endl;
 				std::cout << "Expected sequencing error rate               : " << error_rate << std::endl;
 				std::cout << "Deep Nano Weights for Live Basecalling       : " << weights << std::endl;
+				std::cout << "Base calling threads                         : " << basecall_threads << std::endl;
+				std::cout << "Classification threads                       : " << classify_threads << std::endl;
 				std::cout << "---------------------------------------------------------------------------------------------------" << std::endl;
 			}
 		}

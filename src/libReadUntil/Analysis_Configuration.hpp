@@ -11,7 +11,7 @@
 #include <minknow_api/analysis_configuration.grpc.pb.h>
 #include <minknow_api/analysis_configuration.pb.h>
 
-//#include "spdlog/spdlog.h"
+#include "spdlog/spdlog.h"
 
 #include "MinKnowService.hpp"
 #include "ReadUntilClientException.hpp"
@@ -29,7 +29,7 @@ namespace readuntil
     {
         private:
             std::unique_ptr<AnalysisConfigurationService::Stub> stub;
-//            std::shared_ptr<spdlog::logger> Analysis_Configuration_logger;
+            std::shared_ptr<spdlog::logger> Analysis_Configuration_logger;
             
         public:
             AnalysisConfiguration() = default;
@@ -55,6 +55,7 @@ namespace readuntil
 	        }
             // return map of read classifications mapped to id (used internally in analysis)
             Map<int32, string> getReadClassifications();
+            void set_break_reads_after_seconds(double seconds);
                 
     };
 

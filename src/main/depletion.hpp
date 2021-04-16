@@ -9,15 +9,18 @@
 std::filesystem::path NanoLiveRoot;
 
 readuntil::Data* data;
+//Caller* caller;
+std::mutex callerMutex;
 SafeMap<std::string, std::pair<uint8_t, interleave::Read> > pending{};
-double avgDurationCompleteClassifiedRead = 0;
-double avgDurationCompleteUnClassifiedRead = 0;
-double avgDurationBasecallRead = 0;
-double avgDurationClassifyRead = 0;
-
 // too short reads that need more data
 SafeQueue<interleave::Read> classifiedReads{};
 SafeQueue<interleave::Read> unclassifiedReads{};
+
+// write access only via mutex because several classification threads
+// modify these variables
+std::mutex avgReadLenMutex;
+double avgReadLen = 0.0;
+uint64_t rCounter = 0;
 
 //-------------------------------------------------------------------
 
@@ -43,14 +46,11 @@ void basecall_live_reads(SafeQueue<readuntil::SignalRead>& basecall_queue,
 	readuntil::Acquisition* acq)
 {
 	std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("NanoLiveLog");
-	std::string f = weights_file.string();
-
 	// create DeepNano2 caller object
+	std::string f = weights_file.string();
+	callerMutex.lock();
 	Caller* caller = create_caller(weights.c_str(), f.c_str(), 5, 0.01);
-
-	// stop clock for looging basecall queue size regularly => only for debugging
-	StopClock::TimePoint begin = StopClock::Clock::now();
-
+	callerMutex.unlock();
 	while (true)
 	{
 		if (!basecall_queue.empty())
@@ -84,16 +84,7 @@ void basecall_live_reads(SafeQueue<readuntil::SignalRead>& basecall_queue,
 				classification_queue.push(interleave::Read(read.id, sstr.str(), read.channelNr, read.readNr, m));
 
 			}
-			StopClock::TimePoint end = StopClock::Clock::now();
-			std::chrono::duration< StopClock::Seconds > elapsed = end - begin;
-			if (elapsed.count() > 60.0)
-			{
-				std::stringstream sstr;
-				sstr << "Size of Basecall Queue       :	" << basecall_queue.size();
-				nanolive_logger->debug(sstr.str());
-				nanolive_logger->flush();
-				begin = end;
-			}
+			
 		}
 
 		if (acq->isFinished())
@@ -115,25 +106,18 @@ void basecall_live_reads(SafeQueue<readuntil::SignalRead>& basecall_queue,
 */
 void classify_live_reads(SafeQueue<interleave::Read>& classification_queue,
 	SafeQueue<readuntil::ActionResponse>& action_queue,
+	SafeSet<std::string>& once_seen,
 	std::vector<interleave::TIbf>& DepletionFilters,
 	std::vector<interleave::TIbf>& TargetFilters,
-	const double significance,
-	const double error_rate,
+	interleave::ClassifyConfig& conf,
 	readuntil::Acquisition* acq)
 {
 	std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("NanoLiveLog");
-	interleave::ClassifyConfig conf{};
-	conf.strata_filter = -1;
-	conf.significance = significance;
-	conf.error_rate = error_rate;
-	uint16_t found = 0;
-	uint16_t failed = 0;
-	double avgReadLen = 0.0;
-	uint64_t rCounter = 0;
-	std::set<std::string> onceSeen{};
+	
+
+	
 	bool withTarget = !(TargetFilters.empty());
 
-	StopClock::TimePoint begin = StopClock::Clock::now();
 	while (true)
 	{
 		if (!classification_queue.empty())
@@ -174,27 +158,31 @@ void classify_live_reads(SafeQueue<interleave::Read>& classification_queue,
 											seqan::toCString(read.getID()), m, true });
 						classifiedReads.push(read);
 						pending.erase(readID);
+						avgReadLenMutex.lock();
 						avgReadLen += ((double)read.getSeqLength() - avgReadLen) / (double) ++rCounter;
+						avgReadLenMutex.unlock();
 					}
 					else
 					{
 						// check if we already marked read as unclassified
 						// if read unclassified for the second time => stop receiving further data from this read 
-						std::set<std::string>::iterator it = onceSeen.find(readID);
-						if (it != onceSeen.end())
+						std::set<std::string>::iterator it = once_seen.find(readID);
+						if (it != once_seen.end())
 						{
 							action_queue.push(readuntil::ActionResponse{ read.getChannelNr(), read.getReadNr(),
 													seqan::toCString(read.getID()), pending[readID].second.getProcessingTimes() , false });
 							unclassifiedReads.push(read);
 							pending.erase(readID);
-							onceSeen.erase(it);
+							once_seen.erase(it);
+							avgReadLenMutex.lock();
 							avgReadLen += ((double)read.getSeqLength() - avgReadLen) / (double) ++rCounter;
+							avgReadLenMutex.unlock();
 						}
 						else
 						{
 							// read unclassified for the first time => insert in Ste of already seen reads
 							// but erase from pendin if first chunks were too short for classification
-							onceSeen.insert(readID);
+							once_seen.insert(readID);
 							pending.erase(readID);
 						}
 					}
@@ -210,20 +198,6 @@ void classify_live_reads(SafeQueue<interleave::Read>& classification_queue,
 				nanolive_logger->error(estr.str());
 				nanolive_logger->flush();
 			}
-
-			StopClock::TimePoint end = StopClock::Clock::now();
-			std::chrono::duration< StopClock::Seconds > elapsed = end - begin;
-			if (elapsed.count() > 60.0)
-			{
-				std::stringstream sstr;
-				sstr << "Size of Classification Queue       :	" << classification_queue.size();
-				nanolive_logger->debug(sstr.str());
-				sstr.str("");
-				sstr << "Average Read Length                :	" << avgReadLen;
-				nanolive_logger->debug(sstr.str());
-				nanolive_logger->flush();
-				begin = end;
-			}
 		}
 
 		if (acq->isFinished())
@@ -236,17 +210,25 @@ void classify_live_reads(SafeQueue<interleave::Read>& classification_queue,
 /**
 *	compute average duration for complete processing time, basecalling time and classification time per read
 *	using online average computation
-*	@duration_queue	:	safe queue elapsed time for reads that finished sequencing
-*   @channel_stats	: safe map with number of received reads for every flow cell channel
-*	@acq			:	Acquisition service checking if sequencing run is already finished
+*	@duration_queue	        :	safe queue elapsed time for reads that finished sequencing
+* *	@basecall_queue			: safe queue with reads ready for basecalling
+*	@classification_queue	: safe queue with basecalled reads
+*   @channel_stats	        : safe map with number of received reads for every flow cell channel
+*	@acq			        :	Acquisition service checking if sequencing run is already finished
 */
 void compute_average_durations(SafeQueue<Durations>& duration_queue, 
+							   SafeQueue<readuntil::SignalRead>& basecall_queue,
+							   SafeQueue<interleave::Read>& classification_queue,
 	                           SafeMap<uint16_t, uint32_t>& channel_stats,
 	                           readuntil::Acquisition* acq)
 {
 	std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("NanoLiveLog");
 	uint64_t classifiedReadCounter = 0;
 	uint64_t unclassifiedReadCounter = 0;
+	double avgDurationCompleteClassifiedRead = 0;
+	double avgDurationCompleteUnClassifiedRead = 0;
+	double avgDurationBasecallRead = 0;
+	double avgDurationClassifyRead = 0;
 	StopClock::TimePoint begin = StopClock::Clock::now();
 	while (true)
 	{
@@ -293,6 +275,11 @@ void compute_average_durations(SafeQueue<Durations>& duration_queue,
 				sstr << "Number of active sequencing channels              :	" << activeChannels;
 				nanolive_logger->info(sstr.str());
 				sstr.str("");
+				avgReadLenMutex.lock();
+				sstr << "Average Read Length                               :	" << avgReadLen;
+				avgReadLenMutex.unlock();
+				nanolive_logger->info(sstr.str());
+				sstr.str("");
 				sstr << "Average Processing Time for classified Reads      :	" << avgDurationCompleteClassifiedRead;
 				nanolive_logger->info(sstr.str());
 				sstr.str("");
@@ -304,6 +291,12 @@ void compute_average_durations(SafeQueue<Durations>& duration_queue,
 				sstr.str("");
 				sstr << "Average Processing Time Read Classification       :	" << avgDurationClassifyRead;
 				nanolive_logger->info(sstr.str());
+				sstr.str("");
+				sstr << "Size of Basecall Queue                            :	" << basecall_queue.size();
+				nanolive_logger->debug(sstr.str());
+				sstr.str("");
+				sstr << "Size of Classification Queue                      :	" << classification_queue.size();
+				nanolive_logger->debug(sstr.str());
 				nanolive_logger->info("----------------------------------------------------------------------------------------------------------");
 				nanolive_logger->flush();
 				begin = end;
@@ -515,6 +508,8 @@ void live_read_depletion(live_depletion_parser& parser)
 	SafeQueue<readuntil::ActionResponse> action_queue{};
 	// thread safe queue storing for every read the duration for the different tasks to complete
 	SafeQueue<Durations> duration_queue{};
+	// thread safe set of reads which were too short after first basecalling
+	SafeSet<std::string> once_seen{};
 	// thread safe map storing number of send reads for every channel
 	SafeMap<uint16_t, uint32_t> channelStats{};
 	for (uint16_t ch = 1; ch < 513; ++ch)
@@ -537,20 +532,40 @@ void live_read_depletion(live_depletion_parser& parser)
 	// create thread for receiving signals from MinKNOW
 	tasks.emplace_back(std::async(std::launch::async, &readuntil::Data::getLiveSignals, data, std::ref(basecall_queue)));
 
-	// create thread for live basecalling
-	tasks.emplace_back(std::async(std::launch::async, &basecall_live_reads, std::ref(basecall_queue),
-		std::ref(classification_queue), std::ref(channelStats), std::ref(parser.weights), std::ref(weights_file), acq));
+	// create DeepNano2 caller object
+	//std::string f = weights_file.string();
+	// TODO: check if thread safe
+	//caller = create_caller(parser.weights.c_str(), f.c_str(), 5, 0.01);
+	
+
+	// create threads for live basecalling
+	for (uint8_t t = 0; t < parser.basecall_threads; ++t)
+	{
+		tasks.emplace_back(std::async(std::launch::async, &basecall_live_reads, std::ref(basecall_queue),
+			std::ref(classification_queue), std::ref(channelStats), std::ref(parser.weights),
+			std::ref(weights_file), acq));
+	}
+
+	// create classification config
+	interleave::ClassifyConfig conf{};
+	conf.strata_filter = -1;
+	conf.significance = parser.kmer_significance;
+	conf.error_rate = parser.error_rate;
 
 	// create thread/task for classification
-	tasks.emplace_back(std::async(std::launch::async, &classify_live_reads, std::ref(classification_queue),
-		std::ref(action_queue), std::ref(DepletionFilters), std::ref(TargetFilters),
-		parser.kmer_significance, parser.error_rate, acq));
+	for (uint8_t t = 0; t < parser.classify_threads; ++t)
+	{
+		tasks.emplace_back(std::async(std::launch::async, &classify_live_reads, std::ref(classification_queue),
+			std::ref(action_queue), std::ref(once_seen), std::ref(DepletionFilters), std::ref(TargetFilters),
+			std::ref(conf), acq));
+	}
 
 	// create thread/task for sending action messages back to MinKNOW
 	tasks.emplace_back(std::async(std::launch::async, &readuntil::Data::sendActions, data, std::ref(action_queue), std::ref(duration_queue)));
 
 	// create task for calculating average times needed to complete the different tasks
-	tasks.emplace_back(std::async(std::launch::async, &compute_average_durations, std::ref(duration_queue), std::ref(channelStats),acq));
+	tasks.emplace_back(std::async(std::launch::async, &compute_average_durations, std::ref(duration_queue), 
+		               std::ref(basecall_queue), std::ref(classification_queue), std::ref(channelStats), acq));
 
 	// create task for writing classified and unclassified reads to output fasta files
 	tasks.emplace_back(std::async(std::launch::async, &writeReads, std::ref(classifiedReads), acq, "classifiedReads.fasta"));

@@ -11,6 +11,7 @@
 
 #include <SafeQueue.hpp>
 #include <SafeMap.hpp>
+#include <SafeSet.hpp>
 #include <StopClock.hpp>
 #include <NanoLiveExceptions.hpp>
 
@@ -110,6 +111,9 @@ void test_connection(connection_test_parser& parser)
 		std::cerr << "Please check the given host IP address and TCP port. " << std::endl;
 		throw;
 	}
+
+	readuntil::AnalysisConfiguration* an_conf = (readuntil::AnalysisConfiguration*)client.getMinKnowService(readuntil::MinKnowServiceType::ANALYSIS_CONFIGURATION);
+	an_conf->set_break_reads_after_seconds(0.4);
 
 	if (parser.unblock_all)
 	{
