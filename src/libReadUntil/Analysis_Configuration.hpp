@@ -1,8 +1,9 @@
 /*
  * Analysis_Configuration.hpp
  *
- *  Created on: 14.08.2020
- *      Author: jens-uwe.ulrich
+ *  Created on  : 14.08.2020
+ *  Last Change : 16.04.2021
+ *      Author  : jens-uwe.ulrich
  */
 #include <string>
 #include <sstream>

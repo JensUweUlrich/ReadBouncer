@@ -1,8 +1,9 @@
 /*
  * Analysis_Configuration.cpp
  *
- *  Created on: 07.04.2020
- *      Author: jens-uwe.ulrich
+ *  Created on	: 14.08.2020
+ *	Last Change : 16.04.2021 
+ *      Author	: jens-uwe.ulrich
  */
 
 #include "Analysis_Configuration.hpp"
@@ -19,6 +20,11 @@ namespace readuntil
         Analysis_Configuration_logger = spdlog::get("RUClientLog");
     }
 
+	/**
+	*	set the seconds after which MinKNOW breaks the read signals and streams them to the ReadUntil client
+	*	one chunk corresponds to those seconds
+	*	@seconds	: seconds after which to break the reads
+	*/
 	void AnalysisConfiguration::set_break_reads_after_seconds(double seconds)
 	{
 		GetAnalysisConfigurationRequest request;
@@ -40,13 +46,13 @@ namespace readuntil
 		Analysis_Configuration_logger->info(sstr.str());
 
 		s->set_value(seconds);
-		std::cout << "new value set" << std::endl;
-		status = stub->set_analysis_configuration(&context, conf, &response);
+		::grpc::ClientContext context2;
+		status = stub->set_analysis_configuration(&context2, conf, &response);
 		if (!status.ok())
 			throw ReadUntilClientException(status.error_message());
-		std::cout << "conf set" << std::endl;
 
-		status = stub->get_analysis_configuration(&context, request, &conf);
+		::grpc::ClientContext context3;
+		status = stub->get_analysis_configuration(&context3, request, &conf);
 		if (!status.ok())
 			throw ReadUntilClientException(status.error_message());
 
@@ -56,7 +62,9 @@ namespace readuntil
 		Analysis_Configuration_logger->flush();
 	}
 
-
+	/**
+	*	get all possible classifications for reads
+	*/
     Map<int32, string> AnalysisConfiguration::getReadClassifications()
     {
         GetReadClassificationsRequest request;
