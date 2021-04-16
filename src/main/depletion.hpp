@@ -483,6 +483,16 @@ void live_read_depletion(live_depletion_parser& parser)
 
 	}
 
+	// set chunk size by changing break_reads_after_seconds
+	// seems to be overturned by TOML file configuration
+	readuntil::AnalysisConfiguration* ana_conf = (readuntil::AnalysisConfiguration*)client.getMinKnowService(readuntil::MinKnowServiceType::ANALYSIS_CONFIGURATION);
+	ana_conf->set_break_reads_after_seconds(0.4);
+	if (parser.verbose)
+	{
+		nanolive_logger->info("Set break_reads_after_seconds = 0.4");
+		nanolive_logger->flush();
+	}
+
 	// create Data Service object
 	// used for streaming live nanopore signals from MinKNOW and sending action messages back
 	data = (readuntil::Data*)client.getMinKnowService(readuntil::MinKnowServiceType::DATA);
