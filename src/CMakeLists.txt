@@ -31,7 +31,7 @@ else()
 endif()
 
 # add all subdirectories
-
+add_subdirectory(gui)
 add_subdirectory(spdlog)
 add_subdirectory(seqan)
 add_subdirectory(libIBF)
