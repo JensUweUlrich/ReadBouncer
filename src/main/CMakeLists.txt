@@ -11,10 +11,6 @@ find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets REQUIRED)
 
 set(Main_SRC
     main.cpp
-    mainwindow.cpp
-    mainwindow.h
-    mainwindow.ui
-
     )
 file(GLOB MAIN_HDRS "*.hpp")
 add_executable (${PROJECT_NAME} ${MAIN_HDRS} ${Main_SRC})
