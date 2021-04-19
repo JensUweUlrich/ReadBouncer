@@ -26,7 +26,7 @@ Requirements for Qt:
 * UI Designer 
 -------------------------------------------------------------------------------------------------------------------------
 
-Just for test (build only with Release) -- Build with PowerShell: 
+Just for test (build only with Release) -- Build with PowerShell and Qt_designer: 
 
 ```
 cmake.exe  -DCMAKE_PREFIX_PATH="c:/QT/QT5.12.10/6.1.0/msvc2019_64/lib/cmake/" ../[$PREFIX] CMAKE_BINARY_DIR
