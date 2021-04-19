@@ -30,8 +30,6 @@
 #include <lyra/lyra.hpp>
 
 //Qt
-//#include "nanolivetk.h" //skip for now 
-#include "mainwindow.h"
 #include <QApplication>
 #include <QCoreApplication>
 #include <QAbstractAnimation>
