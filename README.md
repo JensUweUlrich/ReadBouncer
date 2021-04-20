@@ -43,6 +43,7 @@ NanoLiveTk has the following dependencies that should be installed before compil
 * [Perl](http://strawberryperl.com/releases.html)
 * [Go](https://golang.org/dl/)
 * [NASM Compiler](https://www.nasm.us/)
+* [NSIS](https://nsis.sourceforge.io/Main_Page) Needed for creation of the Windows installer executable
 
 Then just need to clone the repository to your computer, create a <b>build</b> directory within cloned directory and let cmake do the work for you
 
