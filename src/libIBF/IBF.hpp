@@ -207,6 +207,10 @@ namespace interleave
             {
                 return processingTimes;
             }
+            inline void setProcessingTimes(TimeMeasures t)
+            {
+                this->processingTimes = t;
+            }
             bool classify(std::vector< TIbf >& filters, ClassifyConfig& config);
         
         

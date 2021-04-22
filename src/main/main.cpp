@@ -261,6 +261,7 @@ int main(int argc, char const **argv)
 {
 	StopClock NanoLiveTime;
 	NanoLiveTime.start();
+	
 	std::signal(SIGINT, signalHandler);	
 
 	initializeLogger();

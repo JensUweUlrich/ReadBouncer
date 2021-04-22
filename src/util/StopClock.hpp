@@ -11,7 +11,7 @@ class StopClock
 {
     public:
         using Clock     = std::chrono::system_clock;
-        using TimePoint = std::chrono::time_point< Clock >;
+        using TimePoint = std::chrono::system_clock::time_point;
         using Seconds   = double;
 
         void start()
@@ -31,6 +31,17 @@ class StopClock
             m_runTime += m_end - m_beginRound;
         }
 
+        void decrementStart(std::chrono::duration< Seconds > elapsed)
+        {
+            m_beginRound -= std::chrono::duration_cast<std::chrono::seconds>(elapsed);
+            m_runTime += elapsed;
+        }
+
+        void setBegin(TimePoint b)
+        {
+            m_beginRound = b;
+        }
+
         Seconds elapsed() const noexcept
         {
             return m_runTime.count();
@@ -44,6 +55,11 @@ class StopClock
         TimePoint end() const noexcept
         {
             return m_end;
+        }
+
+        std::chrono::duration< Seconds > runtime()
+        {
+            return m_runTime;
         }
 
     private:

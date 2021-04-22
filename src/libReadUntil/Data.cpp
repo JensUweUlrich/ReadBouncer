@@ -166,6 +166,10 @@ namespace readuntil
                             readResponse.processingTimes.timeBasecallRead.elapsed(),
                             readResponse.processingTimes.timeClassifyRead.elapsed(),
                             });
+                        if (readResponse.processingTimes.timeCompleteRead.elapsed() > 100.0)
+                        {
+                            std::cerr << readResponse.processingTimes.timeCompleteRead.begin() << "\t" << readResponse.processingTimes.timeCompleteRead.end() << std::endl;
+                        }
                     }
                     else
                     {
@@ -175,6 +179,11 @@ namespace readuntil
                             readResponse.processingTimes.timeBasecallRead.elapsed(),
                             readResponse.processingTimes.timeClassifyRead.elapsed(),
                             });
+
+                        if (readResponse.processingTimes.timeCompleteRead.elapsed() > 100.0)
+                        {
+                            std::cerr << readResponse.processingTimes.timeCompleteRead.begin() << "\t" << readResponse.processingTimes.timeCompleteRead.end() << std::endl;
+                        }
                     }
                     
                 }
@@ -276,7 +285,7 @@ namespace readuntil
         // minimum number of signals for part of a read to be sent via the stream
         // zero means no limitation
         // TODO: Try to find out if other parameter like e.g. 4 is better
-        setup->set_sample_minimum_chunk_size(2);
+        setup->set_sample_minimum_chunk_size(0);
         setup->set_max_unblock_read_length_samples(0);
 
         // write setup message to stream and throw exception if that was not successful

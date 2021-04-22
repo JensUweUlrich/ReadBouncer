@@ -64,25 +64,60 @@ void basecall_live_reads(SafeQueue<readuntil::SignalRead>& basecall_queue,
 				read.processingTimes.timeBasecallRead.start();
 				char* sequence = call_raw_signal(caller, read.raw_signals.data(), read.raw_signals.size());
 				read.processingTimes.timeBasecallRead.stop();
-				classification_queue.push(interleave::Read(read.id, sequence, read.channelNr, read.readNr, read.processingTimes));
+				interleave::Read r = interleave::Read(read.id, sequence, read.channelNr, read.readNr, read.processingTimes);
+
+
+				// only classify reads with length >= 300
+				// reads with length < 300 will wait for the next read chunks and combine them
+				if (r.getSeqLength() < 250)
+				{
+					//stop clock for overall processing time of the read
+					// add readid and read entry to pending map
+					//read.processingTimes.timeCompleteRead.stop();
+					//r.setProcessingTimes(read.processingTimes);
+					pending.insert({ read.id , std::make_pair(0, r) });
+				}
+				else
+				{
+					classification_queue.push(r);
+				}
 				uint32_t chNr = (uint32_t)read.channelNr;
 				channel_stats.assign(std::pair(chNr, channel_stats[chNr] + 1));
+				
 			}
 			else
 			{
 				// if read was not classified after first and second try
 				// concatenate sequence data from actual signals with former basecalled sequence data
 				// use stop clock from former tries again
+
 				TimeMeasures m = pending[read.id].second.getProcessingTimes();
-				m.timeBasecallRead.start();
+				read.processingTimes.timeBasecallRead.start();
 				char* sequence = call_raw_signal(caller, read.raw_signals.data(), read.raw_signals.size());
-				m.timeBasecallRead.stop();
+				read.processingTimes.timeBasecallRead.stop();
+
+				// add elapsed basecall time of first chunks to second chunk
+				read.processingTimes.timeBasecallRead.decrementStart(m.timeBasecallRead.runtime());
+				// add elapsed overall time of first chunks to second chunk
+				read.processingTimes.timeCompleteRead.setBegin(m.timeCompleteRead.begin());
+
 				std::stringstream sstr;
 				sstr << pending[read.id].second.getSeq() << sequence;
 				// push prolonged sequence to classification queue
 				// longer read may be classified better
-				classification_queue.push(interleave::Read(read.id, sstr.str(), read.channelNr, read.readNr, m));
-
+				interleave::Read r = interleave::Read(read.id, sstr.str(), read.channelNr, read.readNr, read.processingTimes);
+				if (r.getSeqLength() < 250)
+				{
+					// add readid and read entry to pending map
+					//read.processingTimes.timeCompleteRead.stop();
+					//r.setProcessingTimes(read.processingTimes);
+					pending.insert({ read.id , std::make_pair(0, r) });
+				}
+				else
+				{
+					classification_queue.push(r);
+					pending.erase(read.id);
+				}
 			}
 			
 		}
@@ -130,63 +165,49 @@ void classify_live_reads(SafeQueue<interleave::Read>& classification_queue,
 
 			try
 			{
+				m.timeClassifyRead.start();
+				bool classified = false;
+				// if additional target filter is given
+				// read is classified for depletion iff it was found in depletion filters but not in target filters
+				if (withTarget)
+					classified = read.classify(DepletionFilters, conf) && !read.classify(TargetFilters, conf);
+				else
+					classified = read.classify(DepletionFilters, conf);
+				m.timeClassifyRead.stop();
 
-				// only classify reads with length >= 300
-				// reads with length < 300 will wait for the next read chunks and combine them
-				// longer read can be better classified
-				if (read.getSeqLength() < 300)
+				if (classified)
 				{
-					// add readid and read entry to pending map
-					pending.insert({ readID , std::make_pair(0, read) });
+					// store all read data and time measures for classified read
+					action_queue.push(readuntil::ActionResponse{ read.getChannelNr(), read.getReadNr(),
+										seqan::toCString(read.getID()), m, true });
+					classifiedReads.push(read);
+					avgReadLenMutex.lock();
+					avgReadLen += ((double)read.getSeqLength() - avgReadLen) / (double) ++rCounter;
+					avgReadLenMutex.unlock();
 				}
 				else
 				{
-					m.timeClassifyRead.start();
-					bool classified = false;
-					// if additional target filter is given
-					// read is classified for depletion iff it was found in depletion filters but not in target filters
-					if (withTarget)
-						classified = read.classify(DepletionFilters, conf) && !read.classify(TargetFilters, conf);
-					else
-						classified = read.classify(DepletionFilters, conf);
-					m.timeClassifyRead.stop();
-
-					if (classified)
+					// check if we already marked read as unclassified
+					// if read unclassified for the second time => stop receiving further data from this read 
+					std::set<std::string>::iterator it = once_seen.find(readID);
+					if (it != once_seen.end())
 					{
-						// store all read data and time measures for classified read
 						action_queue.push(readuntil::ActionResponse{ read.getChannelNr(), read.getReadNr(),
-											seqan::toCString(read.getID()), m, true });
-						classifiedReads.push(read);
-						pending.erase(readID);
+												seqan::toCString(read.getID()), m , false });
+						unclassifiedReads.push(read);
+						once_seen.erase(it);
 						avgReadLenMutex.lock();
 						avgReadLen += ((double)read.getSeqLength() - avgReadLen) / (double) ++rCounter;
 						avgReadLenMutex.unlock();
 					}
 					else
 					{
-						// check if we already marked read as unclassified
-						// if read unclassified for the second time => stop receiving further data from this read 
-						std::set<std::string>::iterator it = once_seen.find(readID);
-						if (it != once_seen.end())
-						{
-							action_queue.push(readuntil::ActionResponse{ read.getChannelNr(), read.getReadNr(),
-													seqan::toCString(read.getID()), pending[readID].second.getProcessingTimes() , false });
-							unclassifiedReads.push(read);
-							pending.erase(readID);
-							once_seen.erase(it);
-							avgReadLenMutex.lock();
-							avgReadLen += ((double)read.getSeqLength() - avgReadLen) / (double) ++rCounter;
-							avgReadLenMutex.unlock();
-						}
-						else
-						{
-							// read unclassified for the first time => insert in Ste of already seen reads
-							// but erase from pendin if first chunks were too short for classification
-							once_seen.insert(readID);
-							pending.erase(readID);
-						}
+						// read unclassified for the first time => insert in Ste of already seen reads
+						// but erase from pendin if first chunks were too short for classification
+						once_seen.insert(readID);
 					}
 				}
+				
 			}
 			catch (std::exception& e)
 			{
@@ -223,12 +244,18 @@ void compute_average_durations(SafeQueue<Durations>& duration_queue,
 	                           readuntil::Acquisition* acq)
 {
 	std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("NanoLiveLog");
-	uint64_t classifiedReadCounter = 0;
-	uint64_t unclassifiedReadCounter = 0;
+	uint64_t totalClassifiedReadCounter = 0;
+	uint64_t totalUnclassifiedReadCounter = 0;
+	uint64_t currentClassifiedReadCounter = 0;
+	uint64_t currentUnclassifiedReadCounter = 0;
 	double avgDurationCompleteClassifiedRead = 0;
+	double currentAvgDurCompleteClassifiedReads = 0;
 	double avgDurationCompleteUnClassifiedRead = 0;
+	double currentAvgDurCompleteUnClassifiedRead = 0;
 	double avgDurationBasecallRead = 0;
+	double currentAvgDurationBasecallRead = 0;
 	double avgDurationClassifyRead = 0;
+	double currentAvgDurationClassifyRead = 0;
 	StopClock::TimePoint begin = StopClock::Clock::now();
 	while (true)
 	{
@@ -237,17 +264,29 @@ void compute_average_durations(SafeQueue<Durations>& duration_queue,
 			Durations dur = duration_queue.pop();
 			if (dur.completeClassified > -1)
 			{
-				classifiedReadCounter++;
-				avgDurationCompleteClassifiedRead += (dur.completeClassified - avgDurationCompleteClassifiedRead) / classifiedReadCounter;
+				currentClassifiedReadCounter++;
+				avgDurationCompleteClassifiedRead += (dur.completeClassified - avgDurationCompleteClassifiedRead) / 
+														(totalClassifiedReadCounter + currentClassifiedReadCounter);
+				currentAvgDurCompleteClassifiedReads += (dur.completeClassified - currentAvgDurCompleteClassifiedReads) /
+															currentClassifiedReadCounter;
 			}
 			else
 			{
-				unclassifiedReadCounter++;
-				avgDurationCompleteUnClassifiedRead += (dur.completeUnclassified - avgDurationCompleteUnClassifiedRead) / unclassifiedReadCounter;
+				currentUnclassifiedReadCounter++;
+				avgDurationCompleteUnClassifiedRead += (dur.completeUnclassified - avgDurationCompleteUnClassifiedRead) / 
+														(totalUnclassifiedReadCounter + currentUnclassifiedReadCounter);
+				currentAvgDurCompleteUnClassifiedRead += (dur.completeClassified - currentAvgDurCompleteUnClassifiedRead) /
+														currentUnclassifiedReadCounter;
 			}
 
-			avgDurationBasecallRead += (dur.basecalling - avgDurationBasecallRead) / (classifiedReadCounter + unclassifiedReadCounter);
-			avgDurationClassifyRead += (dur.classification - avgDurationClassifyRead) / (classifiedReadCounter + unclassifiedReadCounter);
+			avgDurationBasecallRead += (dur.basecalling - avgDurationBasecallRead) / 
+				(totalClassifiedReadCounter + totalUnclassifiedReadCounter + currentClassifiedReadCounter + currentUnclassifiedReadCounter);
+			currentAvgDurationBasecallRead += (dur.basecalling - currentAvgDurationBasecallRead) /
+												(currentClassifiedReadCounter + currentUnclassifiedReadCounter);
+			avgDurationClassifyRead += (dur.classification - avgDurationClassifyRead) / 
+				(totalClassifiedReadCounter + totalUnclassifiedReadCounter + currentClassifiedReadCounter + currentUnclassifiedReadCounter);
+			currentAvgDurationClassifyRead += (dur.classification - currentAvgDurationClassifyRead) / 
+												(currentClassifiedReadCounter + currentUnclassifiedReadCounter);
 
 			StopClock::TimePoint end = StopClock::Clock::now();
 			std::chrono::duration< StopClock::Seconds > elapsed = end - begin;
@@ -264,32 +303,40 @@ void compute_average_durations(SafeQueue<Durations>& duration_queue,
 						channel_stats.assign(std::pair(ch, 0));
 					}
 				}
+				totalClassifiedReadCounter += currentClassifiedReadCounter;
+				totalUnclassifiedReadCounter += currentUnclassifiedReadCounter;
 				nanolive_logger->info("----------------------------- Intermediate Results -------------------------------------------------------");
 				std::stringstream sstr;
-				sstr << "Number of classified reads                        :	" << classifiedReadCounter;
+				sstr << "Total Number of classified reads                            :	" << totalClassifiedReadCounter;
 				nanolive_logger->info(sstr.str());
 				sstr.str("");
-				sstr << "Number of unclassified reads                      :	" << unclassifiedReadCounter;
+				sstr << "Total Number of unclassified reads                          :	" << totalUnclassifiedReadCounter;
 				nanolive_logger->info(sstr.str());
 				sstr.str("");
-				sstr << "Number of active sequencing channels              :	" << activeChannels;
+				sstr << "Number of active sequencing channels                        :	" << activeChannels;
+				nanolive_logger->info(sstr.str());
+				sstr.str("");
+				sstr << "Number of classified reads during last interval             :	" << currentClassifiedReadCounter;
+				nanolive_logger->info(sstr.str());
+				sstr.str("");
+				sstr << "Number of unclassified reads during last interval           :	" << currentUnclassifiedReadCounter;
 				nanolive_logger->info(sstr.str());
 				sstr.str("");
 				avgReadLenMutex.lock();
-				sstr << "Average Read Length                               :	" << avgReadLen;
+				sstr << "Total Average Read Length                                   :	" << avgReadLen;
 				avgReadLenMutex.unlock();
 				nanolive_logger->info(sstr.str());
 				sstr.str("");
-				sstr << "Average Processing Time for classified Reads      :	" << avgDurationCompleteClassifiedRead;
+				sstr << "Average Processing Time for classified Reads (interval)     :	" << currentAvgDurCompleteClassifiedReads;
 				nanolive_logger->info(sstr.str());
 				sstr.str("");
-				sstr << "Average Processing Time for unclassified Reads    :	" << avgDurationCompleteUnClassifiedRead;
+				sstr << "Average Processing Time for unclassified Reads (interval)   :	" << currentAvgDurCompleteUnClassifiedRead;
 				nanolive_logger->info(sstr.str());
 				sstr.str("");
-				sstr << "Average Processing Time Read Basecalling          :	" << avgDurationBasecallRead;
+				sstr << "Average Processing Time Read Basecalling (interval)         :	" << currentAvgDurationBasecallRead;
 				nanolive_logger->info(sstr.str());
 				sstr.str("");
-				sstr << "Average Processing Time Read Classification       :	" << avgDurationClassifyRead;
+				sstr << "Average Processing Time Read Classification (interval)      :	" << currentAvgDurationClassifyRead;
 				nanolive_logger->info(sstr.str());
 				sstr.str("");
 				sstr << "Size of Basecall Queue                            :	" << basecall_queue.size();
@@ -300,6 +347,8 @@ void compute_average_durations(SafeQueue<Durations>& duration_queue,
 				nanolive_logger->info("----------------------------------------------------------------------------------------------------------");
 				nanolive_logger->flush();
 				begin = end;
+				currentClassifiedReadCounter = 0;
+				currentUnclassifiedReadCounter = 0;
 			}
 
 		}
@@ -307,11 +356,12 @@ void compute_average_durations(SafeQueue<Durations>& duration_queue,
 		if (acq->isFinished() && duration_queue.empty())
 			break;
 	}
-
+	totalClassifiedReadCounter += currentClassifiedReadCounter;
+	totalUnclassifiedReadCounter += currentUnclassifiedReadCounter;
 	// print average duration times 
 	std::cout << "---------------------------------------------------------------------------------------------------" << std::endl;
-	std::cout << "Number of classified reads						:	" << classifiedReadCounter << std::endl;
-	std::cout << "Number of unclassified reads						:	" << unclassifiedReadCounter << std::endl;
+	std::cout << "Number of classified reads						:	" << totalClassifiedReadCounter << std::endl;
+	std::cout << "Number of unclassified reads						:	" << totalUnclassifiedReadCounter << std::endl;
 	std::cout << "Average Processing Time for classified Reads		:	" << avgDurationCompleteClassifiedRead << std::endl;
 	std::cout << "Average Processing Time for unclassified Reads	:	" << avgDurationCompleteUnClassifiedRead << std::endl;
 	std::cout << "Average Processing Time Read Basecalling			:	" << avgDurationBasecallRead << std::endl;
