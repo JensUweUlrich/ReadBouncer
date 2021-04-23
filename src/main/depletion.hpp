@@ -497,6 +497,7 @@ void live_read_depletion(live_depletion_parser& parser)
 	readuntil::ReadUntilClient& client = readuntil::ReadUntilClient::getClient();
 	client.setHost(parser.host);
 	client.setPort(parser.port);
+	client.setRootPath(NanoLiveRoot);
 
 	// TODO: throw exception if connection could not be established
 	if (client.connect(parser.device))

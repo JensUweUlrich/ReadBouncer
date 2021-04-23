@@ -25,8 +25,9 @@ namespace readuntil
 	{
 		private:
 			std::unique_ptr<ManagerService::Stub> stub;
+			bool secure_connect = false;
 		public:
-			Manager(std::shared_ptr<::grpc::Channel> channel);
+			Manager(std::shared_ptr<::grpc::Channel> channel, bool secure_connect);
 			~Manager();
 
 			std::vector<FlowCellPosition> getFlowCells();
