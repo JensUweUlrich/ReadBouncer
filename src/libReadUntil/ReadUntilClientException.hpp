@@ -22,7 +22,7 @@ namespace readuntil
 
 		public:
 
-			explicit ReadUntilClientException();
+			explicit ReadUntilClientException() {};
 
 			explicit ReadUntilClientException(const std::string &msg) :
 							error_message(msg)
@@ -36,6 +36,31 @@ namespace readuntil
 			{
 				return error_message.c_str();
 			}
+
+	};
+
+	class MissingCertificateException : public ReadUntilClientException
+	{
+	private:
+		std::string error_message
+		{ };
+
+	public:
+
+		explicit MissingCertificateException() : ReadUntilClientException() {};
+
+		explicit MissingCertificateException(const std::string& msg) :
+			ReadUntilClientException(msg)
+		{
+		}
+		virtual ~MissingCertificateException() throw ()
+		{
+		}
+
+		virtual const char* what() const throw ()
+		{
+			return error_message.c_str();
+		}
 
 	};
 

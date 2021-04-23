@@ -15,9 +15,10 @@
 
 namespace readuntil
 {
-	Manager::Manager(std::shared_ptr<::grpc::Channel> channel)
+	Manager::Manager(std::shared_ptr<::grpc::Channel> channel, bool secure_connect)
 	{
 		stub = ManagerService::NewStub(channel);
+		this->secure_connect = secure_connect;
 	}
 
 	std::vector<FlowCellPosition> Manager::getFlowCells()
@@ -46,7 +47,10 @@ namespace readuntil
 
 	uint32_t Manager::getRpcPort(FlowCellPosition &dev)
 	{
-		return dev.rpc_ports().insecure();
+		if (this->secure_connect)
+			return dev.rpc_ports().secure();
+		else
+			return dev.rpc_ports().insecure();
 	}
 
 	uint32_t Manager::resolveRpcPort(std::string &deviceName)
@@ -65,7 +69,8 @@ namespace readuntil
 	{
 		GetVersionInfoRequest request;
 		GetVersionInfoResponse response;
-		::grpc::Status status = stub->get_version_info(&context, request, &response);
+		grpc::ClientContext c;
+		::grpc::Status status = stub->get_version_info(&c, request, &response);
 		if (status.ok())
 		{
 			return response.guppy_connected_version();

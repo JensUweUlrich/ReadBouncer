@@ -11,6 +11,7 @@
 #include <sstream>
 #include <thread>
 #include <chrono>
+#include <filesystem>
 #include <grpcpp/grpcpp.h>
 #include "Acquisition.hpp"
 #include "Analysis_Configuration.hpp"
@@ -34,10 +35,13 @@ namespace readuntil
 
 			std::shared_ptr<::grpc::Channel> channel;
 			std::string mk_host{ "127.0.0.1" };
+			std::filesystem::path NanoLiveRoot{};
 			uint16_t mk_port{9501};
 			bool connected{false};
 			//std::shared_ptr<spdlog::sinks::daily_file_sink_mt> daily_sink = std::make_shared<spdlog::sinks::daily_file_sink_mt>("RUClientLog", 23, 59);
 			std::shared_ptr<spdlog::logger> connection_logger;
+			grpc::ChannelArguments channel_args;
+			std::shared_ptr<grpc::ChannelCredentials> channel_creds;
 			ReadUntilClient() = default;
 			ReadUntilClient(const ReadUntilClient&) = delete;
 
@@ -62,6 +66,11 @@ namespace readuntil
 			inline void setPort(const uint16_t &newPort)
 			{
 				mk_port = newPort;
+			}
+
+			inline void setRootPath(std::filesystem::path& path)
+			{
+				NanoLiveRoot = path;
 			}
 
 			bool connect(std::string device);

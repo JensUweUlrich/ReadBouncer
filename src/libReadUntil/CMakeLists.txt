@@ -79,12 +79,15 @@ endforeach()
 set(spdlog_DIR ${CMAKE_CURRENT_BINARY_DIR}/../spdlog/spdlog/lib/cmake/spdlog)
 find_package(spdlog REQUIRED)
 
+# add certificates
+file(GLOB WEIGHTS "${CMAKE_CURRENT_SOURCE_DIR}/../rpc-certs/*")
+install(FILES ${WEIGHTS} DESTINATION rpc-certs COMPONENT certificates)
 
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/minknow/proto" "${CMAKE_CURRENT_SOURCE_DIR}/../util")
 
 add_library (ReadUntil STATIC ${READUNTILSRCS} ${READUNTILHDRS} ${minknow_srcs})
 target_include_directories (ReadUntil PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} "${CMAKE_CURRENT_BINARY_DIR}/minknow/proto")
-target_link_libraries (ReadUntil  ${_GRPC_GRPCPP_UNSECURE} ${_PROTOBUF_LIBPROTOBUF} mklcore mklseq mkllp64 spdlog::spdlog_header_only)
+target_link_libraries (ReadUntil grpc++ ${_PROTOBUF_LIBPROTOBUF} mklcore mklseq mkllp64 spdlog::spdlog_header_only)
 
 install(TARGETS ReadUntil DESTINATION lib COMPONENT libraries)
 

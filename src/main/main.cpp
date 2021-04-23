@@ -88,6 +88,7 @@ void test_connection(connection_test_parser& parser)
 	readuntil::ReadUntilClient& client = readuntil::ReadUntilClient::getClient();
 	client.setHost(parser.host);
 	client.setPort(parser.port);
+	client.setRootPath(NanoLiveRoot);
 
 	// TODO: throw exception if connection could not be established
 	try
