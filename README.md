@@ -1,4 +1,4 @@
-Test GUI with Qt6 for NanoLiveTk 
+GUI with Qt6 for NanoLiveTk 
 
 Deadline for first design: 15.05.2021
 
