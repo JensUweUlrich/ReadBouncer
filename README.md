@@ -1,7 +1,6 @@
 Test GUI with Qt6 for NanoLiveTk 
 
-c++ Toolkit making use of Oxford Nanopore's Read Until functionality. Instead of using the Read Until API NanoLiveTk directly uses grpc calls to pull live read data by communicating with the MinKNOW API. 
-
+Deadline for first design: 15.05.2021
 Installation
 
 From Source
