@@ -33,5 +33,12 @@ cmake.exe --build . --target ALL_BUILD
 
 ```
 
-Note: avoid using `cmake.exe --build . --target all` 
+Note: avoid using `cmake.exe --build . --target all`
 
+Using Qt6: 
+
+1- `Build as default Debug/Release`
+
+2- Using PS `cmake.exe --build . --config Debug`
+
+3- In Qt we run only in C:/NanoLive-Qt/build/main/Debug
