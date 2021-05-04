@@ -42,3 +42,7 @@ Using Qt6:
 2- Using PS `cmake.exe --build . --config Debug`
 
 3- In Qt we run only in C:/NanoLive-Qt/build/main/Debug
+
+--------------------------------------------------------------------------------------------------------------------
+First Design: 
+![Alt text](first_design.PNG "First design")
