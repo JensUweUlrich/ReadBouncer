@@ -1,5 +1,0 @@
-1- Compile NanoLive error free using Qt and -X first window --> Done! 30.04
-
-2- Create Test Buttons and compile error free with NanoLive --> 
-
-3- Check all NanoLive use cases and create a main first design --> 
