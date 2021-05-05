@@ -1,4 +1,38 @@
 
+# the location where protobuf-config.cmake will be installed varies by platform
+if (WIN32)
+  set(_FINDPACKAGE_PROTOBUF_CONFIG_DIR "${CMAKE_CURRENT_BINARY_DIR}/protobuf/cmake")
+else()
+  set(_FINDPACKAGE_PROTOBUF_CONFIG_DIR "${CMAKE_CURRENT_BINARY_DIR}/gRPC-build/protobuf/src/protobuf-build/lib/cmake/protobuf")
+endif()
+set(Protobuf_DIR ${_FINDPACKAGE_PROTOBUF_CONFIG_DIR})
+
+if (WIN32)
+  set(grpc_cache_args  "-DgRPC_INSTALL:BOOL=ON
+        -DgRPC_BUILD_TESTS:BOOL=OFF
+        -D_WIN32_WINNT:STRING=0x600
+        -DgRPC_PROTOBUF_PROVIDER:STRING=package
+        -DgRPC_PROTOBUF_PACKAGE_TYPE:STRING=CONFIG
+        -DProtobuf_DIR:PATH=${Protobuf_DIR}
+        -DgRPC_CARES_PROVIDER:STRING=package
+        -Dc-ares_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/c-ares/lib/cmake/c-ares
+        -DgRPC_ZLIB_PROVIDER:STRING=package
+        -DZLIB_ROOT:STRING=${CMAKE_CURRENT_BINARY_DIR}/zlib
+        -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/grpc")
+else()
+  set(grpc_cache_args  "-DgRPC_INSTALL:BOOL=ON
+        -DgRPC_BUILD_TESTS:BOOL=OFF
+        -DgRPC_PROTOBUF_PROVIDER:STRING=package
+        -DgRPC_PROTOBUF_PACKAGE_TYPE:STRING=CONFIG
+        -DProtobuf_DIR:PATH=${Protobuf_DIR}
+        -DgRPC_CARES_PROVIDER:STRING=package
+        -Dc-ares_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/c-ares/lib/cmake/c-ares
+        -DgRPC_ZLIB_PROVIDER:STRING=package
+        -DZLIB_ROOT:STRING=${CMAKE_CURRENT_BINARY_DIR}/zlib
+        -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/grpc")
+endif()
+
+
 configure_file(CMakeLists.txt.in gRPC-build/CMakeLists.txt)
 
 execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
@@ -87,7 +121,7 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}/minknow/proto" "${CMAKE_CURRENT
 
 add_library (ReadUntil STATIC ${READUNTILSRCS} ${READUNTILHDRS} ${minknow_srcs})
 target_include_directories (ReadUntil PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} "${CMAKE_CURRENT_BINARY_DIR}/minknow/proto")
-target_link_libraries (ReadUntil grpc++ ${_PROTOBUF_LIBPROTOBUF} mklcore mklseq mkllp64 spdlog::spdlog_header_only)
+target_link_libraries (ReadUntil grpc++ ${_PROTOBUF_LIBPROTOBUF} spdlog::spdlog_header_only)
 
 install(TARGETS ReadUntil DESTINATION lib COMPONENT libraries)
 

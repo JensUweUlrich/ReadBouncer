@@ -77,7 +77,8 @@ namespace interleave
                         stats.totalBinsBinId += (seqan::length( seqs[i] ) / config.fragment_length) + 1;
                         // add reference sequences to the queue
                         int counter = 1;
-                        for (std::string seq : cutOutNNNs(std::string(seqan::toCString(seqs[i])), seqan::length(seqs[i])))
+                        std::string seq = std::string(seqan::toCString(seqs[i]));
+                        for (std::string seq : cutOutNNNs(seq, seqan::length(seqs[i])))
                         {
                             std::stringstream buf;
                             buf << seqid << "_" << counter++;
