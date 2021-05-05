@@ -38,7 +38,7 @@ namespace readuntil
 		
 		std::stringstream info_str;
 		bool secure_connect = false;
-		if (mk_host.compare("127.0.0.1") == 0 || mk_host.compare("localhost") == 0 || mk_host.compare("LAPTOP-V9EGKF7P") == 0)
+		if (mk_host.compare("127.0.0.1") == 0 || mk_host.compare("localhost") == 0)
 		{
 			info_str << "Connect to MinKNOW instance via unsecure connection to " << mk_host << " on port " << mk_port;
 			connection_logger->info(info_str.str());
