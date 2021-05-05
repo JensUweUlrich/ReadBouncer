@@ -3,31 +3,24 @@ cmake_minimum_required (VERSION 3.16)
 
 project (NanoLive CXX C)
 
-#add_compile_options(-DDEBUG)
-#add_compile_options(-DBUILD_SHARED_LIBS=ON)
-#add_compile_options(-Wno-format)
-
-add_compile_options(-D_WIN32_WINNT=0x600)
-add_compile_options("/MT")
-add_compile_options("/std:c++17")
-#add_compile_options(-DMSVC_COMPILER)
-#add_compile_options("/std:c++latest")
-#add_definitions(-D_WIN32_WINNT=0x600)
 
 
-#set(CMAKE_GENERATORS "MinGW Makefiles")
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_CXX_STANDARD 17)
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17 /MT")
-#SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ")
-set(CMAKE_ASM_NASM_OBJECT_FORMAT win64)
 
 if (WIN32)
+    add_compile_options(-D_WIN32_WINNT=0x600)
+    add_compile_options("/MT")
+    add_compile_options("/std:c++17")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17 /MT")
+    set(CMAKE_ASM_NASM_OBJECT_FORMAT win64)
     set(CMAKE_INSTALL_PREFIX "C:/Apps/${PROJECT_NAME}")
     find_file(libbz2_DLL "libbz2-1__.dll")
     install(FILES ${libbz2_DLL} DESTINATION bin COMPONENT applications)
 else()
+#    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
     set(CMAKE_INSTALL_PREFIX "/usr/local/${PROJECT_NAME}")
+#    add_compile_options("-std=c++17")
 endif()
 
 # add all subdirectories

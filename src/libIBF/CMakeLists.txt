@@ -4,7 +4,9 @@ file(GLOB WEIGHTS "${CMAKE_CURRENT_SOURCE_DIR}/../weights/*")
 
 add_library (IBF STATIC ${IBF_SRC} ${IBF_HDRS})
 
-add_definitions(-DMSVC_COMPILER)
+if (WIN32)
+	add_definitions(-DMSVC_COMPILER)
+endif()
 
 # include spd fast logging
 set(spdlog_DIR ${CMAKE_CURRENT_BINARY_DIR}/../spdlog/spdlog/lib/cmake/spdlog)
