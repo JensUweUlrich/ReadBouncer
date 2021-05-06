@@ -13,6 +13,10 @@
 #include <iostream>
 #include <fstream>
 
+
+
+
+
 namespace Ui {
 class IBF_mainwindow;
 }
@@ -23,6 +27,7 @@ class IBF_mainwindow : public QDialog
 
 public:
     explicit IBF_mainwindow(QWidget *parent = nullptr);
+
     ~IBF_mainwindow();
 
 private slots:
@@ -30,10 +35,34 @@ private slots:
 
     void on_pushButton_3_clicked();
 
+    void on_spinBox_valueChanged(int arg1);//k
+
+    void on_spinBox_2_valueChanged(int arg1);//t
+
+    void on_spinBox_3_valueChanged(int arg1);//f
+
+    //void on_spinBox_4_valueChanged(int arg1);//s
+
+    void on_pushButton_clicked();// open ref
+
+    void on_pushButton_4_clicked();
+
+    void on_pushButton_6_clicked();
+
 private:
     Ui::IBF_mainwindow *ui;
+    // to build:
+    int k {};
+    int t {};
+    int f {};
+    //int s {};
     QString input_reference = "";
+    std::string refFile = ""; // make as std::string
+    std::string ref_file_Name = ""; // for test .. not used!
     QString output_file = "";
+    std::string output_file_Name = "";// for test
+
+
 };
 
 #endif // IBF_MAINWINDOW_H
