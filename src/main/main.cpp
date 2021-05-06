@@ -9,15 +9,6 @@
 #include <future>
 #include <filesystem>
 
-//Qt
-//#include "nanolivetk.h" //skip for now
-//#include "mainwindow.h"
-#include <QApplication>
-#include <QCoreApplication>
-#include <QAbstractAnimation>
-#include <QDialog>
-
-
 #include <SafeQueue.hpp>
 #include <SafeMap.hpp>
 #include <StopClock.hpp>
@@ -49,6 +40,10 @@
 
 #include "mainwindow.h"
 #include<QApplication>
+#include "ibf_mainwindow.h"
+#include "classify_mainwindow.h"
+#include "connection_test_mainwindow.h"
+#include "live_deplete_mainwindow.h"
 
 #pragma comment( lib, "psapi.lib" )
 
@@ -266,6 +261,36 @@ double cputime()
 }
 
 
+
+//Argument: IBF Build Step!!!
+void IBF_mainwindow::on_pushButton_3_clicked()
+{
+    //std::cout<<k+s+f<<std::endl;
+    QMessageBox::StandardButton ask;
+     ask = QMessageBox::question(this, "Building IBF", "The IBF will be built, are you sure?",
+                                   QMessageBox::Yes|QMessageBox::No);
+
+     if (ask == QMessageBox::Yes) {
+         QMessageBox::StandardButton reply;
+          reply = QMessageBox::question(this, "Verbose", "Show additional output as to what we are doing?",
+                                        QMessageBox::Yes|QMessageBox::No);
+          if (reply == QMessageBox::Yes) {
+            qDebug() << "Yes was clicked";
+            buildIBF_qt(k, 0, f, t, ref_file_Name, output_file_Name);
+            QApplication::quit();
+          } else {
+            qDebug() << "Yes was *not* clicked";
+          }
+     } else {
+       qDebug() << "Yes was *not* clicked";
+     }
+
+
+
+}
+
+
+
 int main(int argc, char *argv[])
 {
 	StopClock NanoLiveTime;
@@ -276,11 +301,13 @@ int main(int argc, char *argv[])
 	std::string binPath = argv[0];
 	NanoLiveRoot = binPath.substr(0, binPath.find("bin"));
 
-	auto cli = lyra::cli();
+    auto cli = lyra::cli();
 	std::string command;
 	bool show_help = false;
 	cli.add_argument(lyra::help(show_help));
 	ibf_build_parser ibfbuild_parser{cli};
+
+    //ibf_build_parser test_IBF{"from.txt", "Listeria_monocytogenes_ATCC_19115_.fasta", false, false, 13, 1, 100000, 3, false};
 	read_classify_parser classify_parser{cli};
 	live_depletion_parser deplete_parser{cli};
 	connection_test_parser connect_parser{ cli };
@@ -330,6 +357,7 @@ int main(int argc, char *argv[])
 
     QApplication a(argc, argv);
     MainWindow w;
+    //w.QWidget::showMaximized();
     w.show();
 
     return a.exec();
