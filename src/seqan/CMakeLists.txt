@@ -28,15 +28,15 @@ execute_process(COMMAND ${CMAKE_COMMAND} --build . --config Release
 #endif()
 
 add_library(sdsl STATIC IMPORTED GLOBAL)
-#if (WIN32)
-#  set_target_properties(sdsl PROPERTIES 
-#    IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/seqan2-download/sdsl-lite-prefix/src/sdsl-lite-build/lib/Release/sdsl.lib"
-#  )
-#else()
+if (WIN32)
+  set_target_properties(sdsl PROPERTIES 
+    IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/seqan2-download/sdsl-lite-prefix/src/sdsl-lite-build/lib/Release/sdsl.lib"
+  )
+else()
   set_target_properties(sdsl PROPERTIES 
     IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/seqan2-download/sdsl-lite-prefix/src/sdsl-lite-build/lib/libsdsl.a"
   )
-#endif()
+endif()
 target_include_directories( sdsl SYSTEM INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/sdsl-lite/include )
 
 #set(SeqAn3_DIR ${CMAKE_CURRENT_BINARY_DIR}/seqan3/seqan3-src/build_system)
