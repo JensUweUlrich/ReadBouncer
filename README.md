@@ -44,5 +44,3 @@ Using Qt6:
 3- In Qt we run only in C:/NanoLive-Qt/build/main/Debug
 
 --------------------------------------------------------------------------------------------------------------------
-First Design: 
-![Alt text](first_design.PNG "First design")
