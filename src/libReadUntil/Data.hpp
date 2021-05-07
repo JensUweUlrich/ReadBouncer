@@ -16,7 +16,14 @@
 #include <queue>
 #include <set>
 #include <mutex>
-#include <io.h>
+
+#if defined(_WIN32)
+    #include <io.h>
+#else
+    #include <inttypes.h>
+    #include <unistd.h>
+#endif
+
 #include <grpcpp/grpcpp.h>
 #include <google/protobuf/map.h>
 #include <minknow_api/data.grpc.pb.h>
@@ -80,7 +87,7 @@ namespace readuntil
             *   @signalString   : string of nanopore signals
             *   @return         : vector of float nanopore signals
             */
-            inline std::vector<float> Data::string_to_float(std::string const& signalString)
+            inline std::vector<float> string_to_float(std::string const& signalString)
             {
                 assert(signalString.size() % sizeof(float) == 0);
 

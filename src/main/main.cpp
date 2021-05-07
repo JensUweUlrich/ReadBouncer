@@ -36,13 +36,21 @@
 #include "classify.hpp"
 #include "depletion.hpp"
 
-#include <windows.h>
-#include <psapi.h>
-#pragma comment( lib, "psapi.lib" )
+#if defined(_WIN32)
+	#include <windows.h>
+	#include <psapi.h>
+	#pragma comment( lib, "psapi.lib" )
+	
+	static const unsigned __int64 epoch = ((unsigned __int64)116444736000000000ULL);
+#else
+	#include <sys/resource.h>
+	#include <sys/time.h>
+#endif
 
 std::shared_ptr<spdlog::logger> nanolive_logger;
+//std::filesystem::path NanoLiveRoot;
+//readuntil::Data* data;
 
-static const unsigned __int64 epoch = ((unsigned __int64)116444736000000000ULL);
 
 /**
 *	shift incoming signals directly as unblock response to action queue
@@ -68,8 +76,6 @@ void fill_action_queue(SafeQueue<readuntil::SignalRead>& signal_queue,
 			break;
 	}
 }
-
-
 
 /**
 *	core function for testing connection to MinKNOW software and testing unblock all reads
@@ -226,6 +232,7 @@ void initializeLogger()
 	}
 }
 
+#if defined(_WIN32)
 /**
  * Returns the peak (maximum so far) resident set size (physical
  * memory use) measured in bytes, or zero if the value cannot be
@@ -256,7 +263,21 @@ double cputime()
 
 	return kernelModeTime + userModeTime;
 }
+#else
+	double cputime(void)
+	{
+		struct rusage r;
+		getrusage(RUSAGE_SELF, &r);
+		return r.ru_utime.tv_sec + r.ru_stime.tv_sec + 1e-6 * (r.ru_utime.tv_usec + r.ru_stime.tv_usec);
+	}
 
+	long getPeakRSS(void)
+	{
+		struct rusage r;
+		getrusage(RUSAGE_SELF, &r);
+		return r.ru_maxrss * 1024;
+	}
+#endif
 
 int main(int argc, char const **argv)
 {
@@ -314,6 +335,7 @@ int main(int argc, char const **argv)
 		std::cerr << e.what() << std::endl;
 	}
 	NanoLiveTime.stop();
+
 	size_t peakSize = getPeakRSS();
 	int peakSizeMByte = (int)(peakSize / (1024 * 1024));
 

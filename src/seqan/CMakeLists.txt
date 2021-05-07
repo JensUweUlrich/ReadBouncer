@@ -1,4 +1,14 @@
 # Download and unpack seqan at configure time
+
+if (WIN32)
+  set(sdsl_cache_args  "-DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/sdsl-lite
+                        -DMSVC_COMPILER")
+else()
+  set(sdsl_cache_args  "-DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/sdsl-lite")
+endif()
+
+message(STATUS "${CMAKE_GENERATOR}")
+
 #configure_file(CMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/seqan3-download/CMakeLists.txt)
 configure_file(CMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/seqan2-download/CMakeLists.txt)
 execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
@@ -18,9 +28,15 @@ execute_process(COMMAND ${CMAKE_COMMAND} --build . --config Release
 #endif()
 
 add_library(sdsl STATIC IMPORTED GLOBAL)
-set_target_properties(sdsl PROPERTIES 
+if (WIN32)
+  set_target_properties(sdsl PROPERTIES 
     IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/seqan2-download/sdsl-lite-prefix/src/sdsl-lite-build/lib/Release/sdsl.lib"
-)
+  )
+else()
+  set_target_properties(sdsl PROPERTIES 
+    IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/seqan2-download/sdsl-lite-prefix/src/sdsl-lite-build/lib/libsdsl.a"
+  )
+endif()
 target_include_directories( sdsl SYSTEM INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/sdsl-lite/include )
 
 #set(SeqAn3_DIR ${CMAKE_CURRENT_BINARY_DIR}/seqan3/seqan3-src/build_system)

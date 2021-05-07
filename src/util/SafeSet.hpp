@@ -101,7 +101,7 @@ class SafeSet
         bool contains(T t)
         {
             std::lock_guard< std::mutex > lock(m);
-            std::set<T>::iterator it = s.find(t);
+            typename std::set<T>::iterator it = s.find(t);
             if (it != s.end())
                 return true;
             else
