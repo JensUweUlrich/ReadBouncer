@@ -95,7 +95,7 @@ void test_connection(connection_test_parser& parser)
 	readuntil::ReadUntilClient& client = readuntil::ReadUntilClient::getClient();
 	client.setHost(parser.host);
 	client.setPort(parser.port);
-	
+
 	// TODO: throw exception if connection could not be established
 	try
 	{
@@ -262,6 +262,8 @@ double cputime()
 
 
 
+// Qt6.0.3
+
 //Argument: IBF Build Step!!!
 void IBF_mainwindow::on_pushButton_3_clicked()
 {
@@ -271,23 +273,18 @@ void IBF_mainwindow::on_pushButton_3_clicked()
                                    QMessageBox::Yes|QMessageBox::No);
 
      if (ask == QMessageBox::Yes) {
-         QMessageBox::StandardButton reply;
-          reply = QMessageBox::question(this, "Verbose", "Show additional output as to what we are doing?",
-                                        QMessageBox::Yes|QMessageBox::No);
-          if (reply == QMessageBox::Yes) {
-            qDebug() << "Yes was clicked";
-            buildIBF_qt(k, 0, f, t, ref_file_Name, output_file_Name);
-            QApplication::quit();
-          } else {
-            qDebug() << "Yes was *not* clicked";
-          }
+         buildIBF_qt(k, 0, f, t, ref_file_Name, output_file_Name);
+            //qDebug() << "Yes was *not* clicked";
+
+         //QApplication::quit();
+
      } else {
-       qDebug() << "Yes was *not* clicked";
+       QApplication::quit();
      }
-
-
-
 }
+
+
+
 
 
 
