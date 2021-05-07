@@ -56,9 +56,6 @@ void buildIBF_qt (int k, int s, int f, int t, std::string ref_file_Name, std::st
     std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("NanoLiveLog");
     interleave::IBFConfig config{};
 
-    if (t < 1){t = 1;}
-    if (f < 10000){ f = 1000;}
-
     config.reference_files.emplace_back(ref_file_Name);
     config.output_filter_file =  output_file_Name;
     config.kmer_size = k;
@@ -87,5 +84,5 @@ void buildIBF_qt (int k, int s, int f, int t, std::string ref_file_Name, std::st
         nanolive_logger->flush();
         throw;
     }
-    std::cout<< "the new f" << f <<std::endl;
+    //std::cout<< "the new f" << f <<std::endl;
 }
