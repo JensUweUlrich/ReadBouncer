@@ -78,12 +78,6 @@ void IBF_mainwindow::on_spinBox_3_valueChanged(int fragment_size)
     IBF_mainwindow::f = fragment_size;
 }
 
-/*void IBF_mainwindow::on_spinBox_4_valueChanged(int filer_size)
-{
-    IBF_mainwindow::s = filer_size;
-}*/
-
-
 
 void IBF_mainwindow::on_pushButton_clicked()
 {
@@ -109,9 +103,6 @@ void IBF_mainwindow::on_pushButton_clicked()
 
 void IBF_mainwindow::on_pushButton_4_clicked()
 {
-    //output_file = QInputDialog::getText(this, "Output file", "Output file of Interleaved Bloom Filter (required)");
-    //std::string outputFile =output_file.toLocal8Bit().constData();
-    //std::cout<<"The converted String is:"<<outputFile<<std::endl;
 
     // This section is for storing IBF in a file
     IBF_mainwindow::output_file = QFileDialog::getSaveFileName(this, "save the IBF as");
@@ -132,23 +123,16 @@ void IBF_mainwindow::on_pushButton_4_clicked()
 
 void IBF_mainwindow::on_pushButton_6_clicked()
 {
-    //std::cout<< "K-mer size: " << k << "\n";
-    //std::cout<< "Number of threads: " << t << "\n";
-    //std::cout<< "Fragment size: " << f << "\n";
-    //std::cout<< "Filter size: " << s << "\n";
-    //std::cout << "Name of ref: " <<  ref_file_Name << "\n";
-    //std::cout << "And the sequence is : " <<  refFile << "\n";
-    //std::cout<< "The Name of outpt File : " << output_file_Name << "\n";
 
-    QString k_mer {"K-mer size: " + QString::number(k) + ", "};
-    QString threadsN {"Number of Threads: " + QString::number(t)+ ", "};
-    QString fragmentSize {"Fragment size: " + QString::number(f)+ ", "};
-    //QString filterSize {"Filter size: " + QString::number(s)+ ", "};
-    QString refF {"Name and location of reference: " + input_reference+ ", "};
-    QString outF {"Name and location of output file: " + output_file+ "."};
+    QString k_mer {"K-mer size                                : " + QString::number(k) + "\n"};
+    QString threadsN {"Building threads                       : " + QString::number(t)+ "\n"};
+    QString fragmentSize {"Size of reference fragments per bin: " + QString::number(f)+  "\n"};
+    QString filterSize {"IBF file size in MegaBytes           : " + QString::number(0)+ "\n"};
+    QString refF {"Input reference file                       : " + input_reference+ "\n"};
+    QString outF {"Output IBF file                            : " + output_file+"\n"};
 
     QString check {""};
-    check.append(k_mer+ threadsN+ fragmentSize+ refF+ outF);
-    QMessageBox::information(this, "The arguments for IBF", check);
+    check.append(k_mer+ threadsN+ fragmentSize + filterSize+ refF+ outF);
+    QMessageBox::information(this, "Build Interleaved Bloom Filter Arguments", check);
 
 }

@@ -49,12 +49,13 @@ private slots:
 
     void on_pushButton_6_clicked();
 
+
 private:
     Ui::IBF_mainwindow *ui;
     // to build:
-    int k {};
-    int t {};
-    int f {};
+    int k {13};
+    int t {1};
+    int f {10000};
     //int s {};
     QString input_reference = "";
     std::string refFile = ""; // make as std::string

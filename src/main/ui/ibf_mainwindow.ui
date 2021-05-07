@@ -97,7 +97,7 @@ border-color: rgb(170, 255, 0);</string>
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">color: rgb(78, 260, 150);
+    <string notr="true">color: rgb(11, 11, 11);
 background-color: rgb(50, 150, 220);</string>
    </property>
   </widget>
@@ -111,7 +111,7 @@ background-color: rgb(50, 150, 220);</string>
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">color: rgb(78, 260, 150);
+    <string notr="true">color: rgb(11, 11, 11);
 background-color: rgb(50, 150, 220);</string>
    </property>
   </widget>
@@ -125,8 +125,11 @@ background-color: rgb(50, 150, 220);</string>
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">color: rgb(78, 260, 150);
+    <string notr="true">color: rgb(11, 11, 11);
 background-color: rgb(50, 150, 220);</string>
+   </property>
+   <property name="maximum">
+    <number>100000000</number>
    </property>
   </widget>
   <widget class="QLabel" name="label_3">
@@ -224,7 +227,7 @@ font: 75 10pt &quot;MS Shell Dlg 2&quot;;</string>
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">color: rgb(78, 260, 150);
+    <string notr="true">color: rgb(11, 11, 11);
 background-color: rgb(50, 150, 220);
 font: 75 10pt &quot;MS Shell Dlg 2&quot;;</string>
    </property>
@@ -242,7 +245,7 @@ font: 75 10pt &quot;MS Shell Dlg 2&quot;;</string>
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">color: rgb(78, 260, 150);
+    <string notr="true">color: rgb(11, 11, 11);
 background-color: rgb(50, 150, 220);
 font: 75 10pt &quot;MS Shell Dlg 2&quot;;</string>
    </property>
@@ -266,7 +269,7 @@ font: 75 10pt &quot;MS Shell Dlg 2&quot;;
 border-color: rgb(170, 255, 0);</string>
    </property>
    <property name="text">
-    <string>Check arguments</string>
+    <string>Verbose</string>
    </property>
   </widget>
   <action name="actionAbout">
