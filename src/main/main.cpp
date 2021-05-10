@@ -44,6 +44,7 @@
 #include "classify_mainwindow.h"
 #include "connection_test_mainwindow.h"
 #include "live_deplete_mainwindow.h"
+#include "QDebugStream.h"
 
 #pragma comment( lib, "psapi.lib" )
 
@@ -273,19 +274,54 @@ void IBF_mainwindow::on_pushButton_3_clicked()
                                    QMessageBox::Yes|QMessageBox::No);
 
      if (ask == QMessageBox::Yes) {
+         //proBar();
+         third_party();
          buildIBF_qt(k, 0, f, t, ref_file_Name, output_file_Name);
-            //qDebug() << "Yes was *not* clicked";
-
-         //QApplication::quit();
-
-     } else {
-       QApplication::quit();
-     }
+     } else {}
 }
 
 
+//Argument: Classify
+void Classify_mainwindow::on_pushButton_4_clicked()
+{
+    if (ibf_deplete_file.length() < 1 && ibf_target_file.length() < 1)
+    {
+        QMessageBox::information(this, "Warning", "Please provide an IBF file for depletion and/or  an IBF file for targeted sequencing. ");
+        return;
+    }
+    QMessageBox::StandardButton ask;
+     ask = QMessageBox::question(this, "Classify", "Nanopore Reads will be classified, are you sure?",
+                                   QMessageBox::Yes|QMessageBox::No);
 
+     if (ask == QMessageBox::Yes) {
+        third_party();
+        classify_reads_qt(ibf_deplete_file_name, ibf_target_file_name, kmer_significance,
+                          error_rate, classified_file_name, unclassified_file_name,
+                          read_file_name, preLen, threads);
+         //close();
+     } else {}
+}
 
+//Argument:live-deplete
+
+void live_deplete_mainwindow::on_pushButton_4_clicked()
+{
+    if (ibf_deplete_file.length() < 1 && ibf_target_file.length() < 1)
+    {
+        QMessageBox::information(this, "Warning", "Please provide an IBF file for depletion and/or  an IBF file for targeted sequencing. ");
+        return;
+    }
+    QMessageBox::StandardButton ask;
+     ask = QMessageBox::question(this, "Live-Deplete", "Live classification and rejection of nanopore reads will start, Are you sure?",
+                                   QMessageBox::Yes|QMessageBox::No);
+
+     if (ask == QMessageBox::Yes) {
+        //third_party();
+        live_read_depletion_qt(ibf_deplete_file_name, ibf_target_file_name, host_name,
+                               port, device_name, weights_name, kmer_significance, error_rate);
+         //close();
+     } else {}
+}
 
 
 int main(int argc, char *argv[])
@@ -304,7 +340,6 @@ int main(int argc, char *argv[])
 	cli.add_argument(lyra::help(show_help));
 	ibf_build_parser ibfbuild_parser{cli};
 
-    //ibf_build_parser test_IBF{"from.txt", "Listeria_monocytogenes_ATCC_19115_.fasta", false, false, 13, 1, 100000, 3, false};
 	read_classify_parser classify_parser{cli};
 	live_depletion_parser deplete_parser{cli};
 	connection_test_parser connect_parser{ cli };
@@ -351,6 +386,8 @@ int main(int argc, char *argv[])
 	std::cout << "Real time : " << NanoLiveTime.elapsed() << " sec" << std::endl;
 	std::cout << "CPU time  : " << cputime() << " sec" << std::endl;
 	std::cout << "Peak RSS  : " << peakSizeMByte << " MByte" << std::endl;
+
+
 
     QApplication a(argc, argv);
     MainWindow w;
