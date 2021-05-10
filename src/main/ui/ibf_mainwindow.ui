@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>950</width>
+    <width>1087</width>
     <height>675</height>
    </rect>
   </property>
@@ -270,6 +270,37 @@ border-color: rgb(170, 255, 0);</string>
    </property>
    <property name="text">
     <string>Verbose</string>
+   </property>
+  </widget>
+  <widget class="QTextEdit" name="text1">
+   <property name="geometry">
+    <rect>
+     <x>620</x>
+     <y>130</y>
+     <width>451</width>
+     <height>281</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">color: rgb(255, 255, 255);
+font: 75 10pt &quot;MS Shell Dlg 2&quot;;</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_6">
+   <property name="geometry">
+    <rect>
+     <x>620</x>
+     <y>110</y>
+     <width>51</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">color: rgb(255, 255, 255);
+font: 75 10pt &quot;MS Shell Dlg 2&quot;;</string>
+   </property>
+   <property name="text">
+    <string>Results:</string>
    </property>
   </widget>
   <action name="actionAbout">

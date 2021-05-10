@@ -18,7 +18,8 @@ IBF_mainwindow::~IBF_mainwindow()
 
 void IBF_mainwindow::on_pushButton_2_clicked()
 {
-    QApplication::quit();
+    close();
+    //QApplication::quit();
 }
 
 /*
@@ -124,15 +125,37 @@ void IBF_mainwindow::on_pushButton_4_clicked()
 void IBF_mainwindow::on_pushButton_6_clicked()
 {
 
-    QString k_mer {"K-mer size                                : " + QString::number(k) + "\n"};
-    QString threadsN {"Building threads                       : " + QString::number(t)+ "\n"};
+    QString k_mer {"K-mer size: " + QString::number(k) + "\n"};
+    QString threadsN {"Building threads: " + QString::number(t)+ "\n"};
     QString fragmentSize {"Size of reference fragments per bin: " + QString::number(f)+  "\n"};
-    QString filterSize {"IBF file size in MegaBytes           : " + QString::number(0)+ "\n"};
-    QString refF {"Input reference file                       : " + input_reference+ "\n"};
-    QString outF {"Output IBF file                            : " + output_file+"\n"};
+    QString filterSize {"IBF file size in MegaBytes: " + QString::number(0)+ "\n"};
+    QString refF {"Input reference file: " + input_reference+ "\n"};
+    QString outF {"Output IBF file: " + output_file+"\n"};
 
     QString check {""};
     check.append(k_mer+ threadsN+ fragmentSize + filterSize+ refF+ outF);
     QMessageBox::information(this, "Build Interleaved Bloom Filter Arguments", check);
 
 }
+void IBF_mainwindow::third_party(){
+    QDebugStream* test_1 = new QDebugStream(std::cerr, ui->text1);
+    QDebugStream* test = new QDebugStream(std::cout, ui->text1);
+}
+
+/*void IBF_mainwindow::proBar(){
+
+  int numTasks = 100;
+
+        QProgressDialog progress("Task in progress...", "Cancel", 0, numTasks, this);
+        progress.setWindowModality(Qt::WindowModal);
+
+        for (int i = 0; i < numTasks; i++) {
+            progress.setValue(i);
+
+            if (progress.wasCanceled())
+                break;
+        }
+        progress.setValue(numTasks);
+}*/
+
+

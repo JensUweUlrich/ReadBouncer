@@ -7,6 +7,13 @@
 #include <QDebug>
 #include <QFile>          // for opening the files
 #include <QFileDialog>   // for pop up
+#include "QDebugStream.h"
+#include <QTextEdit>
+#include <QPlainTextEdit>
+#include <QProgressBar>
+#include <QObject>
+#include <QtCore>
+#include <QProgressDialog>
 
 // C++
 #include <string>
@@ -49,6 +56,8 @@ private slots:
 
     void on_pushButton_6_clicked();
 
+    void third_party();
+    //void proBar();
 
 private:
     Ui::IBF_mainwindow *ui;
