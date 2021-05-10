@@ -1,17 +1,27 @@
 #ifndef CLASSIFY_MAINWINDOW_H
 #define CLASSIFY_MAINWINDOW_H
 
+
 #include <QDialog>
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QDebug>
 #include <QFile>          // for opening the files
 #include <QFileDialog>   // for pop up
+#include <QTextEdit>
+#include <QPointer>
+
+
 
 // C++
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <QtDebug>
+#include <QObject>
+#include <QPlainTextEdit>
+#include <QMutex>
+#include "QDebugStream.h"
 
 
 namespace Ui {
@@ -24,10 +34,12 @@ class Classify_mainwindow : public QDialog
 
 public:
     explicit Classify_mainwindow(QWidget *parent = nullptr);
+
+
+
     ~Classify_mainwindow();
 
 private slots:
-
 
     void on_pushButton_3_clicked();
 
@@ -51,7 +63,14 @@ private slots:
 
     void on_pushButton_7_clicked();
 
+    void on_pushButton_4_clicked();
+
+    //void on_pushButton_11_clicked();// to test third party
+
+    void third_party();
+
 private:
+
     Ui::Classify_mainwindow *ui;
     // verbose
     QString read_file{""};
@@ -64,10 +83,10 @@ private:
     std::string ibf_target_file_name{""};
 
     QString classified_file{""};
-    QString classified_file_name{""};
+    std::string classified_file_name{""};
 
     QString unclassified_file{""};
-    QString unclassified_file_name{""};
+    std::string unclassified_file_name{""};
 
     double kmer_significance{0.95};
     double error_rate {0.1};
@@ -78,3 +97,5 @@ private:
 };
 
 #endif // CLASSIFY_MAINWINDOW_H
+
+

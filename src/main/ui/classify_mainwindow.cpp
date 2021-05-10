@@ -15,7 +15,8 @@ Classify_mainwindow::~Classify_mainwindow()
 
 void Classify_mainwindow::on_pushButton_3_clicked()
 {
-    QApplication::quit();
+    close();
+    //QApplication::quit();
 }
 
 
@@ -111,17 +112,37 @@ void Classify_mainwindow::on_pushButton_6_clicked()
 void Classify_mainwindow::on_pushButton_7_clicked()// Verbose
 {
 
-     QString readF {"Input read file            : " + read_file+"\n"};
-     QString depF  {"Depletion IBF file         : " +ibf_deplete_file+"\n"};
-     QString targetF {"Target IBF file          : " + ibf_target_file+"\n"};
-     QString classF {"Classified reads file     : " + classified_file+"\n"};
-     QString unclassF {"Unclassified reads file : " + unclassified_file+"\n"};
-     QString sigLe {"Significance level for confidence interval          : " + QString::number(kmer_significance)+ "\n"};
-     QString erRa {"Expected sequencing error rate                       : " + QString::number(error_rate)+ "\n"};
-     QString rePrefixLe {"Length of read prefix used for classification  : " + QString::number(preLen)+ "\n"};
-     QString threadsN {"Building threads                                 : " + QString::number(threads)+ "\n"};
+     QString readF {"Input read file: " + read_file+"\n"};
+     QString depF  {"Depletion IBF file: " +ibf_deplete_file+"\n"};
+     QString targetF {"Target IBF file: " + ibf_target_file+"\n"};
+     QString classF {"Classified reads file: " + classified_file+"\n"};
+     QString unclassF {"Unclassified reads file: " + unclassified_file+"\n"};
+     QString sigLe {"Significance level for confidence interval: " + QString::number(kmer_significance)+ "\n"};
+     QString erRa {"Expected sequencing error rate: " + QString::number(error_rate)+ "\n"};
+     QString rePrefixLe {"Length of read prefix used for classification: " + QString::number(preLen)+ "\n"};
+     QString threadsN {"Building threads: " + QString::number(threads)+ "\n"};
 
     QString check {""};
     check.append(readF + depF + targetF + classF + unclassF + sigLe + erRa + rePrefixLe + threadsN);
     QMessageBox::information(this, "Classify Reads Arguments", check);
+
 }
+
+void Classify_mainwindow::third_party(){
+    QDebugStream* test_1 = new QDebugStream(std::cerr, ui->text1);
+    QDebugStream* test = new QDebugStream(std::cout, ui->text1);
+}
+
+// this part is only for private use and tests
+/*void test1(){
+std::cout<<"text1"<<std::endl;
+std::cout<<"text2"<<std::endl;
+
+}
+void Classify_mainwindow::on_pushButton_11_clicked()
+{
+    third_party();
+    test1();
+}*/
+
+
