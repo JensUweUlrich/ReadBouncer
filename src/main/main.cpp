@@ -262,21 +262,147 @@ double cputime()
 }
 
 
+// Test connection using Qt
+void test_connection_qt(std::string host_name,int port,std::string device_name,
+                        bool unblock_all)
+{
+    std::cout << "Trying to connect to MinKNOW" << std::endl;
+    std::cout << "Host : " << host_name << std::endl;
+    std::cout << "Port : " << port << std::endl;
 
+    std::stringstream sstr;
+    sstr << "Port : " << port;
+
+    // create ReadUntilClient object and connect to specified device
+    readuntil::ReadUntilClient& client = readuntil::ReadUntilClient::getClient();
+    client.setHost(host_name);
+    client.setPort(port);
+
+    // TODO: throw exception if connection could not be established
+    try
+    {
+        if (client.connect(device_name))
+        {
+            std::cout << "Connection successfully established!" << std::endl;
+            std::cout << "You can start live-depletion using these settings." << std::endl;
+        }
+    }
+    catch (readuntil::DeviceServiceException& e)
+    {
+        std::cerr << "Connection to MinKNOW successfully established." << std::endl;
+        std::cerr << "But could not detect given device/flowcell" << std::endl;
+        std::cerr << "Please check whether the Flowcell has already been inserted. " << std::endl;
+        //throw;
+    }
+    catch (readuntil::ReadUntilClientException& e)
+    {
+        std::cerr << "Could not establish connection to MinKNOW." << std::endl;
+        std::cerr << "Please check the given host IP address and TCP port. " << std::endl;
+        //throw;
+    }
+
+    if (unblock_all)
+    {
+
+
+        // wait until sequencing run has been started
+        //if (parser.verbose)
+            std::cout << "Waiting for device to start sequencing!" << ::std::endl;
+
+        std::cout << "Please start the sequencing run now!" << ::std::endl;
+
+        readuntil::Acquisition* acq = (readuntil::Acquisition*)client.getMinKnowService(readuntil::MinKnowServiceType::ACQUISITION);
+        if (acq->hasStarted())
+        {
+            //if (parser.verbose)
+                //std::cout << "Sequencing has begun. Starting live signal processing!" << ::std::endl;
+                //std::cout <<"Sequencing has begun. Starting live signal processing!"<<std::endl;
+            nanolive_logger->info("Sequencing has begun. Starting live signal processing!");
+            nanolive_logger->flush();
+
+        }
+
+        // create Data Service object
+        // used for streaming live nanopore signals from MinKNOW and sending action messages back
+        data = (readuntil::Data*)client.getMinKnowService(readuntil::MinKnowServiceType::DATA);
+
+        // set unblock all reads
+
+        //(*data).setUnblockAll(true);
+        //std::cout<<"Unblocking all reads without basecalling or classification!"<<std::endl;
+        nanolive_logger->info("Unblocking all reads without basecalling or classification!");
+        nanolive_logger->flush();
+
+        // start live streaming of data
+        try
+        {
+            data->startLiveStream();
+        }
+        catch (readuntil::DataServiceException& e)
+        {
+            //std::cerr<<"Could not start streaming signals from device ("<<device_name<<")"<<std::endl;
+            //std::cerr<<"Error: " << std::string(e.what())<<std::endl;
+            nanolive_logger->error("Could not start streaming signals from device (" + device_name + ")");
+            nanolive_logger->error("Error message : " + std::string(e.what()));
+            nanolive_logger->flush();
+           // throw;
+        }
+
+
+
+        // thread safe queue storing reads ready for basecalling
+        SafeQueue<readuntil::SignalRead> read_queue{};
+        // thread safe queue storing classified reads ready for action creation
+        SafeQueue<readuntil::ActionResponse> action_queue{};
+        // thread safe queue storing for every read the duration for the different tasks to complete
+        SafeQueue<Durations> duration_queue{};
+
+        // start live signal streaming from ONT MinKNOW
+        std::vector< std::future< void > > tasks;
+
+       // if (parser.verbose)
+        //{
+          //  std::cout << "Start receiving live signals thread" << std::endl;
+           // std::cout << "Start sending unblock messages thread" << std::endl;
+        //}
+
+
+        // create thread for receiving signals from MinKNOW
+        tasks.emplace_back(std::async(std::launch::async, &readuntil::Data::getLiveSignals, data, std::ref(read_queue)));
+
+        // create thread for live basecalling
+        tasks.emplace_back(std::async(std::launch::async, &fill_action_queue, std::ref(read_queue),
+            std::ref(action_queue), acq));
+
+        // create thread/task for sending action messages back to MinKNOW
+        tasks.emplace_back(std::async(std::launch::async, &readuntil::Data::sendActions, data, std::ref(action_queue), std::ref(duration_queue)));
+
+        for (auto& task : tasks)
+        {
+            task.get();
+        }
+
+        data->stopLiveStream();
+    }
+
+}
 // Qt6.0.3
 
 //Argument: IBF Build Step!!!
+
+
 void IBF_mainwindow::on_pushButton_3_clicked()
 {
-    //std::cout<<k+s+f<<std::endl;
+
     QMessageBox::StandardButton ask;
      ask = QMessageBox::question(this, "Building IBF", "The IBF will be built, are you sure?",
                                    QMessageBox::Yes|QMessageBox::No);
 
      if (ask == QMessageBox::Yes) {
-         //proBar();
          third_party();
+         //proBar();
          buildIBF_qt(k, 0, f, t, ref_file_Name, output_file_Name);
+
      } else {}
 }
 
@@ -316,13 +442,27 @@ void live_deplete_mainwindow::on_pushButton_4_clicked()
                                    QMessageBox::Yes|QMessageBox::No);
 
      if (ask == QMessageBox::Yes) {
-        //third_party();
+        third_party();
         live_read_depletion_qt(ibf_deplete_file_name, ibf_target_file_name, host_name,
                                port, device_name, weights_name, kmer_significance, error_rate);
          //close();
      } else {}
 }
 
+
+//Argument:connection_test
+
+void connection_test_mainwindow::on_pushButton_4_clicked()
+{
+    QMessageBox::StandardButton ask;
+     ask = QMessageBox::question(this, "Test Connection", "Test connection to a working MinKNOW instance, Are you sure?",
+                                   QMessageBox::Yes|QMessageBox::No);
+
+     if (ask == QMessageBox::Yes) {
+        third_party();
+        test_connection_qt(host_name, port, device_name, unblock_all);
+     } else {}
+}
 
 int main(int argc, char *argv[])
 {
@@ -334,7 +474,7 @@ int main(int argc, char *argv[])
 	std::string binPath = argv[0];
 	NanoLiveRoot = binPath.substr(0, binPath.find("bin"));
 
-    auto cli = lyra::cli();
+    /*auto cli = lyra::cli();
 	std::string command;
 	bool show_help = false;
 	cli.add_argument(lyra::help(show_help));
@@ -378,14 +518,14 @@ int main(int argc, char *argv[])
 	catch (std::exception& e)
 	{
 		std::cerr << e.what() << std::endl;
-	}
+    }
 	NanoLiveTime.stop();
 	size_t peakSize = getPeakRSS();
 	int peakSizeMByte = (int)(peakSize / (1024 * 1024));
 
 	std::cout << "Real time : " << NanoLiveTime.elapsed() << " sec" << std::endl;
 	std::cout << "CPU time  : " << cputime() << " sec" << std::endl;
-	std::cout << "Peak RSS  : " << peakSizeMByte << " MByte" << std::endl;
+    std::cout << "Peak RSS  : " << peakSizeMByte << " MByte" << std::endl;*/
 
 
 
@@ -393,7 +533,6 @@ int main(int argc, char *argv[])
     MainWindow w;
     //w.QWidget::showMaximized();
     w.show();
-
     return a.exec();
 }
 
