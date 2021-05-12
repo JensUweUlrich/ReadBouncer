@@ -20,6 +20,7 @@ if (WIN32)
 else()
 #    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
     set(CMAKE_INSTALL_PREFIX "/usr/local/${PROJECT_NAME}")
+    add_compile_options("-Ofast")
 #    add_compile_options("-std=c++17")
 endif()
 

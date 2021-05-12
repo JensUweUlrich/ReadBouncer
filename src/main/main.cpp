@@ -77,8 +77,6 @@ void fill_action_queue(SafeQueue<readuntil::SignalRead>& signal_queue,
 	}
 }
 
-
-
 /**
 *	core function for testing connection to MinKNOW software and testing unblock all reads
 *	@parser : input from the command line
