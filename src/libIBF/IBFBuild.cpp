@@ -544,7 +544,7 @@ namespace interleave
         print all statistics describing the creation of the IBF
         @stats: all statistics describing the build process of the IBF
     */
-    void print_stats( interleave::FilterStats& stats)
+    void print_build_stats( interleave::FilterStats& stats)
     {
         double   elapsed_build = stats.timeBuild.elapsed();
         uint64_t validSeqs     = stats.totalSeqsFile - stats.invalidSeqs;
@@ -557,6 +557,12 @@ namespace interleave
             std::cerr << " - " << stats.newBins << " bins were added to the IBF" << std::endl;
         std::cerr << " - " << validSeqs << " sequences in " << stats.totalBinsFile + stats.newBins
                 << " bins were written to the IBF" << std::endl;
+    }
+
+    void print_load_stats(interleave::FilterStats& stats)
+    {
+        double   elapsed_load = stats.timeLoadFilter.elapsed();
+        std::cerr << stats.totalBinsFile << " bins were loaded in " << elapsed_load << " seconds from the IBF" << std::endl;
     }
 
 } // namespace interleave

@@ -441,7 +441,7 @@ void live_read_depletion(live_depletion_parser& parser)
 		config.input_filter_file = parser.ibf_deplete_file;
 		interleave::FilterStats stats = filter.load_filter(config);
 		if (parser.verbose)
-			interleave::print_stats(stats);
+			interleave::print_load_stats(stats);
 		DepletionFilters.emplace_back(filter.getFilter());
 	}
 	catch (interleave::IBFBuildException& e)
@@ -461,7 +461,8 @@ void live_read_depletion(live_depletion_parser& parser)
 			config.input_filter_file = parser.ibf_target_file;
 			interleave::FilterStats stats = filter.load_filter(config);
 			TargetFilters.emplace_back(filter.getFilter());
-			interleave::print_stats(stats);
+			if (parser.verbose)
+				interleave::print_load_stats(stats);
 			withTarget = true;
 		}
 		catch (interleave::ParseIBFFileException& e)

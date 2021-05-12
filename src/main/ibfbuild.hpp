@@ -27,7 +27,7 @@ void buildIBF(ibf_build_parser & parser)
 	try
 	{
 		interleave::FilterStats stats = filter.create_filter(config);
-		interleave::print_stats(stats);
+		interleave::print_build_stats(stats);
 	}
 	catch (const interleave::IBFBuildException& e)
 	{

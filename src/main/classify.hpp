@@ -68,7 +68,8 @@ void classify_reads(read_classify_parser& parser)
 			DepleteIBFconfig.input_filter_file = parser.ibf_deplete_file;
 			interleave::FilterStats stats = DepleteFilter.load_filter(DepleteIBFconfig);
 			DepletionFilters.emplace_back(DepleteFilter.getFilter());
-			interleave::print_stats(stats);
+			if (parser.verbose)
+				interleave::print_load_stats(stats);
 			deplete = true;
 		}
 		catch (interleave::ParseIBFFileException& e)
@@ -89,7 +90,8 @@ void classify_reads(read_classify_parser& parser)
 			TargetIBFconfig.input_filter_file = parser.ibf_target_file;
 			interleave::FilterStats stats = TargetFilter.load_filter(TargetIBFconfig);
 			TargetFilters.emplace_back(TargetFilter.getFilter());
-			interleave::print_stats(stats);
+			if (parser.verbose)
+				interleave::print_load_stats(stats);
 			target = true;
 		}
 		catch (interleave::ParseIBFFileException& e)

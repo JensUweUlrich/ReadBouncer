@@ -324,7 +324,8 @@ namespace interleave
         return ci;
     }
 
-    void print_stats( interleave::FilterStats& stats);
+    void print_build_stats( interleave::FilterStats& stats);
+    void print_load_stats(interleave::FilterStats& stats);
     void print_time( const interleave::IBFConfig& config, interleave::FilterStats& stats );
 
 } // namespace interleave
