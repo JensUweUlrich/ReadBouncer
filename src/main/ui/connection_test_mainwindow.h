@@ -56,6 +56,8 @@ private slots:
 
     void on_pushButton_4_clicked();
 
+    void on_checkBox_toggled(bool checked);
+
 private:
     Ui::connection_test_mainwindow *ui;
     bool unblock_all = false;

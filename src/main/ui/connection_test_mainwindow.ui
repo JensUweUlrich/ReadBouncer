@@ -10,6 +10,12 @@
     <height>675</height>
    </rect>
   </property>
+  <property name="maximumSize">
+   <size>
+    <width>1087</width>
+    <height>675</height>
+   </size>
+  </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
@@ -19,7 +25,7 @@
   <widget class="QLabel" name="label_2">
    <property name="geometry">
     <rect>
-     <x>10</x>
+     <x>50</x>
      <y>640</y>
      <width>941</width>
      <height>16</height>
@@ -53,7 +59,7 @@ color:rgb(255, 255, 255)</string>
    <property name="geometry">
     <rect>
      <x>490</x>
-     <y>230</y>
+     <y>260</y>
      <width>113</width>
      <height>21</height>
     </rect>
@@ -109,7 +115,7 @@ background-color: rgb(50, 150, 220);</string>
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>170</y>
+     <y>180</y>
      <width>461</width>
      <height>20</height>
     </rect>
@@ -142,7 +148,7 @@ font: 75 10pt &quot;MS Shell Dlg 2&quot;;</string>
   <widget class="QPushButton" name="pushButton_7">
    <property name="geometry">
     <rect>
-     <x>350</x>
+     <x>390</x>
      <y>580</y>
      <width>181</width>
      <height>51</height>
@@ -155,7 +161,7 @@ font: 75 10pt &quot;MS Shell Dlg 2&quot;;
 border-color: rgb(170, 255, 0);</string>
    </property>
    <property name="text">
-    <string>Verbose</string>
+    <string>Arguments</string>
    </property>
   </widget>
   <widget class="QLabel" name="label_5">
@@ -179,7 +185,7 @@ font: 75 10pt &quot;MS Shell Dlg 2&quot;;</string>
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>200</y>
+     <y>220</y>
      <width>461</width>
      <height>20</height>
     </rect>
@@ -189,13 +195,13 @@ font: 75 10pt &quot;MS Shell Dlg 2&quot;;</string>
 font: 75 10pt &quot;MS Shell Dlg 2&quot;;</string>
    </property>
    <property name="text">
-    <string>IP address on which MinKNOW software runs (default: localhost)</string>
+    <string>IP address for MinKNOW software (default: localhost)</string>
    </property>
   </widget>
   <widget class="QPushButton" name="pushButton_4">
    <property name="geometry">
     <rect>
-     <x>10</x>
+     <x>50</x>
      <y>580</y>
      <width>181</width>
      <height>51</height>
@@ -215,7 +221,7 @@ border-color: rgb(170, 255, 0);</string>
    <property name="geometry">
     <rect>
      <x>490</x>
-     <y>200</y>
+     <y>220</y>
      <width>113</width>
      <height>21</height>
     </rect>
@@ -232,7 +238,7 @@ font: 75 10pt &quot;MS Shell Dlg 2&quot;;</string>
   <widget class="QPushButton" name="pushButton_3">
    <property name="geometry">
     <rect>
-     <x>760</x>
+     <x>800</x>
      <y>580</y>
      <width>181</width>
      <height>51</height>
@@ -252,7 +258,7 @@ border-color: rgb(170, 255, 0);</string>
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>230</y>
+     <y>260</y>
      <width>461</width>
      <height>20</height>
     </rect>
@@ -265,19 +271,20 @@ font: 75 10pt &quot;MS Shell Dlg 2&quot;;</string>
     <string>Device or FlowCell name for live analysis (required)</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButton_2">
+  <widget class="QCheckBox" name="checkBox">
    <property name="geometry">
     <rect>
      <x>490</x>
-     <y>170</y>
-     <width>80</width>
-     <height>22</height>
+     <y>180</y>
+     <width>81</width>
+     <height>20</height>
     </rect>
    </property>
    <property name="styleSheet">
     <string notr="true">color: rgb(11, 11, 11);
-background-color: rgb(50, 150, 220);
-font: 75 10pt &quot;MS Shell Dlg 2&quot;;</string>
+background-color: rgb(50, 150, 200);
+font: 75 10pt &quot;MS Shell Dlg 2&quot;;
+</string>
    </property>
    <property name="text">
     <string>Unblock</string>

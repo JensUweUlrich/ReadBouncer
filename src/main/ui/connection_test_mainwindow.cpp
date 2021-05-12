@@ -60,3 +60,7 @@ void connection_test_mainwindow::on_pushButton_2_clicked()
 }
 
 
+void connection_test_mainwindow::on_checkBox_toggled(bool checked)
+{
+    connection_test_mainwindow::unblock_all = checked;
+}
