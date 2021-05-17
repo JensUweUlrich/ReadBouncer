@@ -14,6 +14,7 @@
 #include <SafeSet.hpp>
 #include <StopClock.hpp>
 #include <NanoLiveExceptions.hpp>
+#include <CSVfile.hpp>
 
 // spdlog library
 #include "spdlog/spdlog.h"

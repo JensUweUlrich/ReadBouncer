@@ -153,10 +153,12 @@ namespace readuntil
                         counter++;
                         
                     }
-
-                    // add stop_receiving_data message for every read in the queue
-                    addStopReceivingDataAction(actionList, readResponse);
-                    counter++;
+                    else
+                    {
+                        // add stop_receiving_data message for every read in the queue
+                        addStopReceivingDataAction(actionList, readResponse);
+                        counter++;
+                    }
                     readResponse.processingTimes.timeCompleteRead.stop();
                     if (readResponse.response)
                     {

@@ -148,9 +148,11 @@ void classify_live_reads(SafeQueue<interleave::Read>& classification_queue,
 	readuntil::Acquisition* acq)
 {
 	std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("NanoLiveLog");
+	csvfile csv("read_until_decision_stats.csv");
+	// header
+	csv << " " << "read_id" << "channel_nr" << "read_nr" << "sequence_length" << "decision" << endrow;
 	
-
-	
+	uint64_t read_counter = 0;
 	bool withTarget = !(TargetFilters.empty());
 
 	while (true)
@@ -184,6 +186,8 @@ void classify_live_reads(SafeQueue<interleave::Read>& classification_queue,
 					avgReadLenMutex.lock();
 					avgReadLen += ((double)read.getSeqLength() - avgReadLen) / (double) ++rCounter;
 					avgReadLenMutex.unlock();
+					csv << std::to_string(++read_counter) << toCString(read.getID()) << read.getChannelNr() 
+						<< read.getReadNr() << read.getSeqLength() << "unblock" << endrow;
 				}
 				else
 				{
@@ -199,6 +203,8 @@ void classify_live_reads(SafeQueue<interleave::Read>& classification_queue,
 						avgReadLenMutex.lock();
 						avgReadLen += ((double)read.getSeqLength() - avgReadLen) / (double) ++rCounter;
 						avgReadLenMutex.unlock();
+						csv << std::to_string(++read_counter) << toCString(read.getID()) << read.getChannelNr()
+							<< read.getReadNr() << read.getSeqLength() << "stop_receiving" << endrow;
 					}
 					else
 					{
