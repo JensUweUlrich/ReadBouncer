@@ -141,7 +141,7 @@ void basecall_live_reads(SafeQueue<readuntil::SignalRead>& basecall_queue,
 */
 void classify_live_reads(SafeQueue<interleave::Read>& classification_queue,
 	SafeQueue<readuntil::ActionResponse>& action_queue,
-	SafeSet<std::string>& once_seen,
+	SafeMap<std::string, interleave::Read>& once_seen,
 	std::vector<interleave::TIbf>& DepletionFilters,
 	std::vector<interleave::TIbf>& TargetFilters,
 	interleave::ClassifyConfig& conf,
@@ -186,31 +186,39 @@ void classify_live_reads(SafeQueue<interleave::Read>& classification_queue,
 					avgReadLenMutex.lock();
 					avgReadLen += ((double)read.getSeqLength() - avgReadLen) / (double) ++rCounter;
 					avgReadLenMutex.unlock();
+					std::map<std::string, interleave::Read>::iterator it = once_seen.find(readID);
+					uint32_t readlen = read.getSeqLength();
+					if (it != once_seen.end())
+					{
+						readlen += (*it).second.getSeqLength();
+						once_seen.erase(it);
+					}
 					csv << std::to_string(++read_counter) << toCString(read.getID()) << read.getChannelNr() 
-						<< read.getReadNr() << read.getSeqLength() << "unblock" << endrow;
+						<< read.getReadNr() << readlen << "unblock" << endrow;
 				}
 				else
 				{
 					// check if we already marked read as unclassified
 					// if read unclassified for the second time => stop receiving further data from this read 
-					std::set<std::string>::iterator it = once_seen.find(readID);
+					std::map<std::string, interleave::Read>::iterator it = once_seen.find(readID);
 					if (it != once_seen.end())
 					{
 						action_queue.push(readuntil::ActionResponse{ read.getChannelNr(), read.getReadNr(),
 												seqan::toCString(read.getID()), m , false });
 						unclassifiedReads.push(read);
+						uint32_t readlen = read.getSeqLength() + (*it).second.getSeqLength();
 						once_seen.erase(it);
 						avgReadLenMutex.lock();
 						avgReadLen += ((double)read.getSeqLength() - avgReadLen) / (double) ++rCounter;
 						avgReadLenMutex.unlock();
 						csv << std::to_string(++read_counter) << toCString(read.getID()) << read.getChannelNr()
-							<< read.getReadNr() << read.getSeqLength() << "stop_receiving" << endrow;
+							<< read.getReadNr() << readlen << "stop_receiving" << endrow;
 					}
 					else
 					{
 						// read unclassified for the first time => insert in Ste of already seen reads
 						// but erase from pendin if first chunks were too short for classification
-						once_seen.insert(readID);
+						once_seen.assign(std::pair(readID, read));
 					}
 				}
 				
