@@ -186,7 +186,7 @@ void classify_live_reads(SafeQueue<interleave::Read>& classification_queue,
 					avgReadLenMutex.lock();
 					avgReadLen += ((double)read.getSeqLength() - avgReadLen) / (double) ++rCounter;
 					avgReadLenMutex.unlock();
-					std::map<std::string, interleave::Read>::iterator it = once_seen.find(readID);
+					std::unordered_map<std::string, interleave::Read>::iterator it = once_seen.find(readID);
 					uint32_t readlen = read.getSeqLength();
 					if (it != once_seen.end())
 					{
@@ -200,7 +200,7 @@ void classify_live_reads(SafeQueue<interleave::Read>& classification_queue,
 				{
 					// check if we already marked read as unclassified
 					// if read unclassified for the second time => stop receiving further data from this read 
-					std::map<std::string, interleave::Read>::iterator it = once_seen.find(readID);
+					std::unordered_map<std::string, interleave::Read>::iterator it = once_seen.find(readID);
 					if (it != once_seen.end())
 					{
 						action_queue.push(readuntil::ActionResponse{ read.getChannelNr(), read.getReadNr(),
@@ -585,7 +585,7 @@ void live_read_depletion(live_depletion_parser& parser)
 	// thread safe queue storing for every read the duration for the different tasks to complete
 	SafeQueue<Durations> duration_queue{};
 	// thread safe set of reads which were too short after first basecalling
-	SafeSet<std::string> once_seen{};
+	SafeMap<std::string, interleave::Read> once_seen{};
 	// thread safe map storing number of send reads for every channel
 	SafeMap<uint16_t, uint32_t> channelStats{};
 	for (uint16_t ch = 1; ch < 513; ++ch)
