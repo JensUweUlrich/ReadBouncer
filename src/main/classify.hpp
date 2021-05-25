@@ -336,10 +336,14 @@ void classify_reads_qt(std::string ibf_deplete_file_name, std::string ibf_target
         }
         catch (interleave::ParseIBFFileException& e)
         {
-            nanolive_logger->error("Error parsing depletion IBF using the following parameters");
+            std::cerr<<"Error parsing depletion IBF using the following parameters"<<std::endl;
+            std::cerr<<"Depletion IBF file: "<<ibf_deplete_file_name<<std::endl;
+            std::cerr<<"Error message: "<<std::string(e.what())<<std::endl;
+
+            /*nanolive_logger->error("Error parsing depletion IBF using the following parameters");
             nanolive_logger->error("Depletion IBF file                : " + ibf_deplete_file_name);
             nanolive_logger->error("Error message : " + std::string(e.what()));
-            nanolive_logger->flush();
+            nanolive_logger->flush();*/
             throw;
         }
     }
@@ -357,10 +361,14 @@ void classify_reads_qt(std::string ibf_deplete_file_name, std::string ibf_target
         }
         catch (interleave::ParseIBFFileException& e)
         {
-            nanolive_logger->error("Error parsing target IBF using the following parameters");
+            std::cerr<<"Error parsing target IBF using the following parameters"<<std::endl;
+            std::cerr<<"Target IBF file"<<ibf_target_file_name<<std::endl;
+            std::cerr<<"Error message: "<<std::string(e.what())<<std::endl;
+
+            /*nanolive_logger->error("Error parsing target IBF using the following parameters");
             nanolive_logger->error("Target IBF file                : " + ibf_target_file_name);
             nanolive_logger->error("Error message : " + std::string(e.what()));
-            nanolive_logger->flush();
+            nanolive_logger->flush();*/
             throw;
         }
     }
@@ -525,7 +533,9 @@ void classify_reads_qt(std::string ibf_deplete_file_name, std::string ibf_target
             nanolive_logger->error(estr.str());
             estr.str("");
             estr << "Error message          : " << e.what();
-            nanolive_logger->error(estr.str());
+            std::cerr<<"Error message: "<<e.what()<<std::endl;
+            std::cerr<<estr.str()<<std::endl;
+            //nanolive_logger->error(estr.str());
             nanolive_logger->flush();
         }
         classifyRead.stop();
@@ -534,19 +544,26 @@ void classify_reads_qt(std::string ibf_deplete_file_name, std::string ibf_target
         if (elapsed.count() > 60.0)
         {
             std::stringstream sstr;
-            nanolive_logger->info("------------------------------- Intermediate Results -------------------------------");
+            std::cout<<"------------------------------- Intermediate Results -------------------------------"<<std::endl;
+            //nanolive_logger->info("------------------------------- Intermediate Results -------------------------------");
             sstr << "Number of classified reads                         :   " << found;
-            nanolive_logger->info(sstr.str());
+            std::cout<<sstr.str()<<std::endl;
+            //nanolive_logger->info(sstr.str());
             sstr.str("");
             sstr << "Number of of too short reads (len < " << preLen << ")   :   " << too_short;
-            nanolive_logger->info(sstr.str());
+            std::cout<<sstr.str()<<std::endl;
+            //nanolive_logger->info(sstr.str());
             sstr.str("");
             sstr << "Number of all reads                                :   " << readCounter;
-            nanolive_logger->info(sstr.str());
+            std::cout<<sstr.str()<<std::endl;
+            //nanolive_logger->info(sstr.str());
             sstr.str("");
             sstr << "Average Processing Time Read Classification        :   " << avgClassifyduration;
-            nanolive_logger->info(sstr.str());
-            nanolive_logger->info("-----------------------------------------------------------------------------------");
+            std::cout<<sstr.str()<<std::endl;
+            std::cout<<"-----------------------------------------------------------------------------------"<<std::endl;
+
+            //nanolive_logger->info(sstr.str());
+            //nanolive_logger->info("-----------------------------------------------------------------------------------");
             nanolive_logger->flush();
             begin = classifyRead.end();
         }

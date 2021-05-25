@@ -134,7 +134,7 @@ struct read_classify_parser
 		creates the classify group and adds it to the lyra cli
 		@cli: lyra command line interface object
 	*/
-	read_classify_parser(lyra::cli& cli)
+    /*read_classify_parser(lyra::cli& cli)
 	{
 		cli.add_argument(
 			lyra::command("classify",
@@ -263,14 +263,15 @@ struct live_depletion_parser
 	double error_rate = 0.1;
 	bool command = false;
 	bool show_help = false;
-	bool verbose = false;
+    bool verbose = false;};
 
 	/**
 		parser constructor
 		creates the live-deplete group and adds it to the lyra cli
 		@cli: lyra command line interface object
 	*/
-	live_depletion_parser(lyra::cli& cli)
+    /*
+    live_depletion_parser(lyra::cli& cli)
 	{
 		cli.add_argument(
 			lyra::command("live-deplete",
@@ -335,13 +336,13 @@ struct live_depletion_parser
 				.help("Deep Nano Weights (default: 48; other choices: 56, 64, 80, 96, 256)"))
 		);
 
-	}
+    }
 
 	/**
 		function is called after parsing the group parameters from the command line
 		prints the help page or the parameter values if option verbose is set
 	*/
-	void do_command(const lyra::group& g)
+    /*void do_command(const lyra::group& g)
 	{
 		if (show_help)
 			std::cout << g;
@@ -373,7 +374,7 @@ struct live_depletion_parser
 			}
 		}
 	}
-};
+};*/
 
 /**
 	class for generating the IBF build parser group
@@ -387,14 +388,14 @@ struct connection_test_parser
 	bool command = false;
 	bool show_help = false;
 	bool verbose = false;
-	bool unblock_all = false;
+    bool unblock_all = false;};
 
 	/**
 		parser constructor
 		creates the connection-test group and adds it to the lyra cli
 		@cli: lyra command line interface object
 	*/
-	connection_test_parser(lyra::cli& cli)
+  /*  connection_test_parser(lyra::cli& cli)
 	{
 		cli.add_argument(
 			lyra::command("connection-test",
@@ -435,13 +436,13 @@ struct connection_test_parser
 					"Unblock all reads"))
 		);
 
-	}
+    }
 
 	/**
 		function is called after parsing the group parameters from the command line
 		prints the help page or the parameter values if option verbose is set
 	*/
-	void do_command(const lyra::group& g)
+    /*void do_command(const lyra::group& g)
 	{
 		if (show_help)
 			std::cout << g;
@@ -461,7 +462,7 @@ struct connection_test_parser
 			}
 		}
 	}
-};
+};*/
 
 
 #endif //PARSER_HPP_

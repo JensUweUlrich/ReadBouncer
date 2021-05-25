@@ -83,6 +83,7 @@ void fill_action_queue(SafeQueue<readuntil::SignalRead>& signal_queue,
 *	core function for testing connection to MinKNOW software and testing unblock all reads
 *	@parser : input from the command line
 */
+
 void test_connection(connection_test_parser& parser)
 {
 	std::cout << "Trying to connect to MinKNOW" << std::endl;
@@ -262,9 +263,14 @@ double cputime()
 }
 
 
-// Test connection using Qt
+/*
+ *
+ *Test connection using Qt
+ *
+ *
+*/
 void test_connection_qt(std::string host_name,int port,std::string device_name,
-                        bool unblock_all)
+                        bool unblock_all = false)
 {
     std::cout << "Trying to connect to MinKNOW" << std::endl;
     std::cout << "Host : " << host_name << std::endl;
@@ -391,8 +397,12 @@ void test_connection_qt(std::string host_name,int port,std::string device_name,
 //Argument: IBF Build Step!!!
 
 
+
+
+
 void IBF_mainwindow::on_pushButton_3_clicked()
 {
+    StopClock NanoLiveTime;
 
     QMessageBox::StandardButton ask;
      ask = QMessageBox::question(this, "Building IBF", "The IBF will be built, are you sure?",
@@ -401,14 +411,30 @@ void IBF_mainwindow::on_pushButton_3_clicked()
      if (ask == QMessageBox::Yes) {
          third_party();
          //proBar();
+         NanoLiveTime.start();
          buildIBF_qt(k, 0, f, t, ref_file_Name, output_file_Name);
+         NanoLiveTime.stop();
+         size_t peakSize = getPeakRSS();
+         int peakSizeMByte = (int)(peakSize / (1024 * 1024));
+         std::cout<<"--------------------------------------------------------------"<<std::endl;
+         std::cout << "Real time : " << NanoLiveTime.elapsed() << " sec" << std::endl;
+         std::cout << "CPU time  : " << cputime() << " sec" << std::endl;
+         std::cout << "Peak RSS  : " << peakSizeMByte << " MByte" << std::endl;
+         std::cout<<"--------------------------------------------------------------"<<std::endl;
+         QMessageBox::StandardButton ask_1;
+          ask_1 = QMessageBox::question(this, "Clear Results", "Do you want to keep the last results in the output window?",
+                                        QMessageBox::Yes|QMessageBox::No);
 
-     } else {}
+          if (ask_1 == QMessageBox::Yes) {}
+
+          if (ask_1 == QMessageBox::No) {clearResults();}
+
+          }
 }
 
 
 //Argument: Classify
-void Classify_mainwindow::on_pushButton_4_clicked()
+/*void Classify_mainwindow::on_pushButton_4_clicked()
 {
     if (ibf_deplete_file.length() < 1 && ibf_target_file.length() < 1)
     {
@@ -426,11 +452,53 @@ void Classify_mainwindow::on_pushButton_4_clicked()
                           read_file_name, preLen, threads);
          //close();
      } else {}
+}*/
+
+void Classify_mainwindow::on_pushButton_4_clicked()
+{
+    StopClock NanoLiveTime;
+    if (ibf_deplete_file.length() < 1 && ibf_target_file.length() < 1)
+    {
+        QMessageBox::information(this, "Warning", "Please provide an IBF file for depletion and/or  an IBF file for targeted sequencing. ");
+        return;
+    }
+    QMessageBox::StandardButton ask;
+     ask = QMessageBox::question(this, "Classify", "Nanopore Reads will be classified, are you sure?",
+                                   QMessageBox::Yes|QMessageBox::No);
+
+     if (ask == QMessageBox::Yes) {
+         //std::string classified {"class_new.fasta"};
+         //std::string unclassified {"unclass_new.fasta"};
+        third_party();
+        NanoLiveTime.start();
+        read_classify_parser classify_parser{ibf_deplete_file_name, ibf_target_file_name, read_file_name, classified,
+                                            unclassified, false, false, kmer_significance, error_rate, threads,
+                                            preLen, true};
+        classify_reads(classify_parser);
+        NanoLiveTime.stop();
+        size_t peakSize = getPeakRSS();
+        int peakSizeMByte = (int)(peakSize / (1024 * 1024));
+        std::cout<<"--------------------------------------------------------------"<<std::endl;
+        std::cout << "Real time : " << NanoLiveTime.elapsed() << " sec" << std::endl;
+        std::cout << "CPU time  : " << cputime() << " sec" << std::endl;
+        std::cout << "Peak RSS  : " << peakSizeMByte << " MByte" << std::endl;
+        std::cout<<"--------------------------------------------------------------"<<std::endl;
+        QMessageBox::StandardButton ask_1;
+         ask_1 = QMessageBox::question(this, "Clear Results", "Do you want to keep the last results in the output window?",
+                                       QMessageBox::Yes|QMessageBox::No);
+
+         if (ask_1 == QMessageBox::Yes) {}
+
+         if (ask_1 == QMessageBox::No) {clearResults();}
+
+         //close();
+     } else {}
 }
+
 
 //Argument:live-deplete
 
-void live_deplete_mainwindow::on_pushButton_4_clicked()
+/*void live_deplete_mainwindow::on_pushButton_4_clicked()
 {
     if (ibf_deplete_file.length() < 1 && ibf_target_file.length() < 1)
     {
@@ -447,6 +515,49 @@ void live_deplete_mainwindow::on_pushButton_4_clicked()
                                port, device_name, weights_name, kmer_significance, error_rate);
          //close();
      } else {}
+}*/
+
+
+
+void live_deplete_mainwindow::on_pushButton_4_clicked()
+{
+    StopClock NanoLiveTime;
+    if (ibf_deplete_file.length() < 1 && ibf_target_file.length() < 1)
+    {
+        QMessageBox::information(this, "Warning", "Please provide an IBF file for depletion and/or  an IBF file for targeted sequencing. ");
+        return;
+    }
+    QMessageBox::StandardButton ask;
+     ask = QMessageBox::question(this, "Live-Deplete", "Live classification and rejection of nanopore reads will start, Are you sure?",
+                                   QMessageBox::Yes|QMessageBox::No);
+
+     if (ask == QMessageBox::Yes) {
+        live_depletion_parser deplete_parser{host_name, device_name, ibf_deplete_file_name,
+                                            ibf_target_file_name, weights_name, port,
+                                            kmer_significance, error_rate, false, false, true};
+
+        third_party();
+        NanoLiveTime.start();
+        live_read_depletion(deplete_parser);
+        NanoLiveTime.stop();
+        size_t peakSize = getPeakRSS();
+        int peakSizeMByte = (int)(peakSize / (1024 * 1024));
+        std::cout<<"--------------------------------------------------------------"<<std::endl;
+        std::cout << "Real time : " << NanoLiveTime.elapsed() << " sec" << std::endl;
+        std::cout << "CPU time  : " << cputime() << " sec" << std::endl;
+        std::cout << "Peak RSS  : " << peakSizeMByte << " MByte" << std::endl;
+        std::cout<<"--------------------------------------------------------------"<<std::endl;
+        /*live_read_depletion_qt(ibf_deplete_file_name, ibf_target_file_name, host_name,
+                               port, device_name, weights_name, kmer_significance, error_rate);*/
+         //close();
+        QMessageBox::StandardButton ask_1;
+         ask_1 = QMessageBox::question(this, "Clear Results", "Do you want to keep the last results in the output window?",
+                                       QMessageBox::Yes|QMessageBox::No);
+
+         if (ask_1 == QMessageBox::Yes) {}
+
+         if (ask_1 == QMessageBox::No) {clearResults();}
+     } else {}
 }
 
 
@@ -454,20 +565,54 @@ void live_deplete_mainwindow::on_pushButton_4_clicked()
 
 void connection_test_mainwindow::on_pushButton_4_clicked()
 {
+    StopClock NanoLiveTime;
     QMessageBox::StandardButton ask;
      ask = QMessageBox::question(this, "Test Connection", "Test connection to a working MinKNOW instance, Are you sure?",
                                    QMessageBox::Yes|QMessageBox::No);
 
      if (ask == QMessageBox::Yes) {
         third_party();
+        NanoLiveTime.start();
         test_connection_qt(host_name, port, device_name, unblock_all);
+        NanoLiveTime.stop();
+        size_t peakSize = getPeakRSS();
+        int peakSizeMByte = (int)(peakSize / (1024 * 1024));
+        std::cout<<"--------------------------------------------------------------"<<std::endl;
+        std::cout << "Real time : " << NanoLiveTime.elapsed() << " sec" << std::endl;
+        std::cout << "CPU time  : " << cputime() << " sec" << std::endl;
+        std::cout << "Peak RSS  : " << peakSizeMByte << " MByte" << std::endl;
+        std::cout<<"--------------------------------------------------------------"<<std::endl;
+        QMessageBox::StandardButton ask_1;
+         ask_1 = QMessageBox::question(this, "Clear Results", "Do you want to keep the last results in the output window?",
+                                       QMessageBox::Yes|QMessageBox::No);
+
+         if (ask_1 == QMessageBox::Yes) {}
+
+         if (ask_1 == QMessageBox::No) {clearResults();}
      } else {}
 }
 
+/*void connection_test_mainwindow::on_pushButton_4_clicked()
+{
+    QMessageBox::StandardButton ask;
+     ask = QMessageBox::question(this, "Test Connection", "Test connection to a working MinKNOW instance, Are you sure?",
+                                   QMessageBox::Yes|QMessageBox::No);
+
+     if (ask == QMessageBox::Yes) {
+         third_party();
+         //auto cli = lyra::cli();
+         connection_test_parser connect_parser{host_name, device_name,
+                                              port, false, false, false, unblock_all};
+
+         test_connection(connect_parser);
+        //test_connection_qt(host_name, port, device_name, unblock_all);
+     } else {}
+}
+*/
 int main(int argc, char *argv[])
 {
-	StopClock NanoLiveTime;
-	NanoLiveTime.start();
+    StopClock NanoLiveTime;
+    NanoLiveTime.start();
 	std::signal(SIGINT, signalHandler);	
 
 	initializeLogger();
@@ -519,7 +664,7 @@ int main(int argc, char *argv[])
 	{
 		std::cerr << e.what() << std::endl;
     }
-	NanoLiveTime.stop();
+    NanoLiveTime.stop();
 	size_t peakSize = getPeakRSS();
 	int peakSizeMByte = (int)(peakSize / (1024 * 1024));
 
@@ -532,6 +677,7 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     MainWindow w;
     //w.QWidget::showMaximized();
+    //w.resize(800, 120);
     w.show();
     return a.exec();
 }

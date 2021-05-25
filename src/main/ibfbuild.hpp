@@ -63,7 +63,6 @@ void buildIBF_qt (int k, int s, int f, int t, std::string ref_file_Name, std::st
     config.fragment_length = f;
     config.filter_size = s;
     //config.verbose = parser.verbose;
-
     interleave::IBF filter{};
     try
     {
@@ -72,7 +71,16 @@ void buildIBF_qt (int k, int s, int f, int t, std::string ref_file_Name, std::st
     }
     catch (const interleave::IBFBuildException& e)
     {
-        nanolive_logger->error("Error building IBF using the following parameters");
+        std::cerr<<"Error building IBF using the following parameters"<<std::endl;
+        std::cerr<<"Input reference file: "<<ref_file_Name<<std::endl;
+        std::cerr<<"Output IBF file: "<<output_file_Name<<std::endl;
+        std::cerr<<"Kmer size: "<<k<<std::endl;
+        std::cerr<<"Size of reference fragments per bin: "<<f<<std::endl;
+        std::cerr<<"IBF file size in MegaBytes: "<<s<<std::endl;
+        std::cerr<<"Building threads: "<<t<<std::endl;
+        std::cerr<<"Error message :"<<std::string(e.what())<<std::endl;
+
+        /*nanolive_logger->error("Error building IBF using the following parameters");
         nanolive_logger->error("Input reference file                : " +ref_file_Name);
         nanolive_logger->error("Output IBF file                     : " + output_file_Name);
         nanolive_logger->error("Kmer size                           : " + k);
@@ -81,8 +89,7 @@ void buildIBF_qt (int k, int s, int f, int t, std::string ref_file_Name, std::st
         nanolive_logger->error("Building threads                    : " + t);
         nanolive_logger->error("Error message : " + std::string(e.what()));
         nanolive_logger->error("---------------------------------------------------------------------------------------------------");
-        nanolive_logger->flush();
+        nanolive_logger->flush();*/
         throw;
     }
-    //std::cout<< "the new f" << f <<std::endl;
 }
