@@ -247,12 +247,8 @@ struct read_classify_parser
 	}
 };
 
-/**
-	class for generating the IBF build parser group
-*/
-struct live_depletion_parser
+struct live_parser
 {
-	// default host & port to communicate with MinKNOW
 	std::string host = "127.0.0.1";
 	std::string device{};
 	std::string ibf_deplete_file{ };
@@ -266,7 +262,14 @@ struct live_depletion_parser
 	bool command = false;
 	bool show_help = false;
 	bool verbose = false;
+};
 
+/**
+	class for generating the IBF build parser group
+*/
+struct live_depletion_parser : live_parser
+{
+	
 	/**
 		parser constructor
 		creates the live-deplete group and adds it to the lyra cli
@@ -275,17 +278,16 @@ struct live_depletion_parser
 	live_depletion_parser(lyra::cli& cli)
 	{
 		cli.add_argument(
-			lyra::command("live-deplete",
+			lyra::command("deplete",
 				[this](const lyra::group& g) { this->do_command(g); })
-			.help("Live classification and rejection of nanopore reads")
+			.help("Live classification and rejection of nanopore reads that match the depletion filter, and not the taget filter (if provided)")
 			.add_argument(lyra::help(show_help))
 			.add_argument(
 				lyra::opt(verbose)
 				.name("-v")
 				.name("--verbose")
 				.optional()
-				.help(
-					"Show additional output as to what we are doing."))
+				.help("This subcommand will reject all reads that do match the depletion filter, but do not match to a target filter if one was provided by the user"))
 			.add_argument(
 				lyra::opt(device, "device")
 				.name("-f")
@@ -361,9 +363,9 @@ struct live_depletion_parser
 			std::cout << g;
 		else
 		{
-			if (ibf_deplete_file.length() < 1 && ibf_target_file.length() < 1)
+			if (ibf_deplete_file.length() < 1)
 			{
-				std::cerr << "Please provide an IBF file for depletion and/or  an IBF file for targeted sequencing." << std::endl;
+				std::cerr << "Please provide an IBF file for live depletion." << std::endl;
 				command = false;
 				return;
 			}
@@ -373,6 +375,132 @@ struct live_depletion_parser
 			{
 				std::cout << "---------------------------------------------------------------------------------------------------" << std::endl;
 				std::cout << "Live Nanopore Read Depletion                 : " << "verbose=" << (verbose ? "true" : "false") << std::endl;
+				std::cout << "Host IP address                              : " << host << std::endl;
+				std::cout << "MinKNOW communication port                   : " << port << std::endl;
+				std::cout << "Device or Flowcell name                      : " << device << std::endl;
+				if (ibf_deplete_file.length() > 0)
+					std::cout << "Depletion IBF file                           : " << ibf_deplete_file << std::endl;
+				if (ibf_target_file.length() > 0)
+					std::cout << "Target IBF file                              : " << ibf_target_file << std::endl;
+				std::cout << "Significance level for confidence interval   : " << kmer_significance << std::endl;
+				std::cout << "Expected sequencing error rate               : " << error_rate << std::endl;
+				std::cout << "Deep Nano Weights for Live Basecalling       : " << weights << std::endl;
+				std::cout << "Base calling threads                         : " << basecall_threads << std::endl;
+				std::cout << "Classification threads                       : " << classify_threads << std::endl;
+				std::cout << "---------------------------------------------------------------------------------------------------" << std::endl;
+			}
+		}
+	}
+};
+
+struct live_target_parser : live_parser
+{
+
+	/**
+		parser constructor
+		creates the live-deplete group and adds it to the lyra cli
+		@cli: lyra command line interface object
+	*/
+	live_target_parser(lyra::cli& cli)
+	{
+		cli.add_argument(
+			lyra::command("target",
+				[this](const lyra::group& g) { this->do_command(g); })
+			.help("Live classification and rejection of nanopore reads that not match the target reference filter (Targeted Sequencing)")
+			.add_argument(lyra::help(show_help))
+			.add_argument(
+				lyra::opt(verbose)
+				.name("-v")
+				.name("--verbose")
+				.optional()
+				.help("This subcommand will reject all reads that do not match the target filter, but match to a depletion filter if one was provided by the user"))
+			.add_argument(
+				lyra::opt(device, "device")
+				.name("-f")
+				.name("--flowcell")
+				.required()
+				.help("Device or FlowCell name for live analysis (required)"))
+			.add_argument(
+				lyra::opt(host, "ip")
+				.name("-i")
+				.name("--host-ip")
+				.optional()
+				.help("IP address on which MinKNOW software runs (default: localhost)"))
+			.add_argument(
+				lyra::opt(port, "port")
+				.name("-p")
+				.name("--port")
+				.optional()
+				.help("MinKNOW communication port (default: 9501)"))
+			.add_argument(
+				lyra::opt(ibf_deplete_file, "ibf-file")
+				.name("-d")
+				.name("--depletion-file")
+				.optional()
+				.help("Interleaved Bloom Filter file with depletion references"))
+			.add_argument(
+				lyra::opt(ibf_target_file, "ibf-file")
+				.name("-t")
+				.name("--target-file")
+				.optional()
+				.help("Interleaved Bloom Filter file with target references"))
+			.add_argument(
+				lyra::opt(kmer_significance, "probability")
+				.name("-s")
+				.name("--significance")
+				.optional()
+				.help("significance level for confidence interval of number of errorneous kmers (default: 0.95)"))
+			.add_argument(
+				lyra::opt(error_rate, "err")
+				.name("-e")
+				.name("--error-rate")
+				.optional()
+				.help("expected per read sequencing error rate (default: 0.1)"))
+			.add_argument(
+				lyra::opt(weights, "weights")
+				.name("-w")
+				.name("--weights")
+				.optional()
+				.choices("48", "56", "64", "80", "96", "256")
+				.help("Deep Nano Weights (default: 48; other choices: 56, 64, 80, 96, 256)"))
+			.add_argument(
+				lyra::opt(basecall_threads, "t")
+				.name("-b")
+				.name("--basecall-threads")
+				.optional()
+				.help("Number of threads used for base calling (default: 1)"))
+			.add_argument(
+				lyra::opt(classify_threads, "t")
+				.name("-c")
+				.name("--classification-threads")
+				.optional()
+				.help("Number of threads used for read classification (default: 1)"))
+		);
+
+	}
+
+	/**
+		function is called after parsing the group parameters from the command line
+		prints the help page or the parameter values if option verbose is set
+	*/
+	void do_command(const lyra::group& g)
+	{
+		if (show_help)
+			std::cout << g;
+		else
+		{
+			if (ibf_target_file.length() < 1)
+			{
+				std::cerr << "Please provide an IBF file for targeted sequencing." << std::endl;
+				command = false;
+				return;
+			}
+			// trigger for calling the correct function after parsing the group parameters
+			command = true;
+			if (verbose)
+			{
+				std::cout << "---------------------------------------------------------------------------------------------------" << std::endl;
+				std::cout << "Live Nanopore Targeted Sequencing            : " << "verbose=" << (verbose ? "true" : "false") << std::endl;
 				std::cout << "Host IP address                              : " << host << std::endl;
 				std::cout << "MinKNOW communication port                   : " << port << std::endl;
 				std::cout << "Device or Flowcell name                      : " << device << std::endl;

@@ -298,6 +298,7 @@ int main(int argc, char const **argv)
 	ibf_build_parser ibfbuild_parser{cli};
 	read_classify_parser classify_parser{cli};
 	live_depletion_parser deplete_parser{cli};
+	live_target_parser target_parser{ cli };
 	connection_test_parser connect_parser{ cli };
 	auto result = cli.parse({ argc, argv });
 	if (!result)
@@ -325,7 +326,9 @@ int main(int argc, char const **argv)
 		else if (classify_parser.command)
 			classify_reads(classify_parser);
 		else if (deplete_parser.command)
-			live_read_depletion(deplete_parser);
+			live_read_depletion(deplete_parser, false);
+		else if (target_parser.command)
+			live_read_depletion(target_parser, true);
 		else
 			std::cout << cli << std::endl;
 			
