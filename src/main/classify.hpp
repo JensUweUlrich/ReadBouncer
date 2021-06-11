@@ -161,13 +161,7 @@ void classify_reads(read_classify_parser& parser)
 		try
 		{
 			seqan::readRecord(id, seq, seqFileIn);
-
-			uint64_t fragend = parser.preLen;
-			// make sure that last fragment ends at last position of the reference sequence
-			if (fragend > length(seq)) fragend = length(seq);
-			seqan::Infix< seqan::CharString >::Type fragment = seqan::infix(seq, 0, fragend);
-			r = interleave::Read(id, fragment);
-
+			readCounter++;
 		}
 		catch (seqan::Exception const& e)
 		{
@@ -175,68 +169,61 @@ void classify_reads(read_classify_parser& parser)
 			continue;
 		}
 
-
+		// read length has to be at least the size of the prefix used for read classification
+		if (seqan::length(seq) < parser.preLen)
+		{
+			too_short++;
+			continue;
+		}
 	
-		readCounter++;
+		
 		StopClock classifyRead;
+		bool classified = false;
 		classifyRead.start();
 		try
 		{
-			// read length has to be at least the size of the prefix used for read classification
-			if (r.getSeqLength() < parser.preLen)
-			{
-				too_short++;
-				continue;
+			// as long as rea
+			uint8_t i = 0;
+			// try to classify read parser.max_chunks times
+			while (i < parser.max_chunks)
+			{ 
+				uint64_t fragend = (i+1) * parser.preLen;
+				uint64_t fragstart = i * parser.preLen;
+				// make sure that last fragment ends at last position of the reference sequence
+				if (fragend > length(seq)) fragend = length(seq);
+				seqan::Infix< seqan::CharString >::Type fragment = seqan::infix(seq, fragstart, fragend);
+				r = interleave::Read(id, fragment);
+				if (deplete && target)
+					classified = r.classify(DepletionFilters, Conf) && !r.classify(TargetFilters, Conf);
+				else if (deplete)
+					classified = r.classify(DepletionFilters, Conf);
+				else
+					classified = r.classify(TargetFilters, Conf);
+				if (classified)
+					break;
+				i++;
 			}
+			classifyRead.stop();
+
+			
 
 			// only classify if read is in depletion filter but NOT in target filter
-			if (deplete && target)
+			
+			if (classified)
 			{
-				if (r.classify(DepletionFilters, Conf) && !r.classify(TargetFilters, Conf))
+				found++;
+				if (parser.classified_file.length() > 0)
 				{
-					found++;
-					if (parser.classified_file.length() > 0)
-					{
-						seqan::writeRecord(ClassifiedOut, id, seq);
-					}
-				}
-				else if (parser.unclassified_file.length() > 0)
-				{
-					seqan::writeRecord(UnclassifiedOut, id, seq);
+					seqan::writeRecord(ClassifiedOut, id, seq);
 				}
 			}
+			else if (parser.unclassified_file.length() > 0)
+			{
+				seqan::writeRecord(UnclassifiedOut, id, seq);
+			}
+			
 			// only classify if read is in depletion filter
-			else if (deplete)
-			{
-				if (r.classify(DepletionFilters, Conf))
-				{
-					found++;
-					if (parser.classified_file.length() > 0)
-					{
-						seqan::writeRecord(ClassifiedOut, id, seq);
-					}
-				}
-				else if (parser.unclassified_file.length() > 0)
-				{
-					seqan::writeRecord(UnclassifiedOut, id, seq);
-				}
-			}
-			// only classify if read is in target filter
-			else
-			{
-				if (r.classify(TargetFilters, Conf))
-				{
-					found++;
-					if (parser.classified_file.length() > 0)
-					{
-						seqan::writeRecord(ClassifiedOut, id, seq);
-					}
-				}
-				else if (parser.unclassified_file.length() > 0)
-				{
-					seqan::writeRecord(UnclassifiedOut, id, seq);
-				}
-			}
+			
 		}
 		catch (std::exception& e)
 		{
@@ -249,7 +236,7 @@ void classify_reads(read_classify_parser& parser)
 			nanolive_logger->error(estr.str());
 			nanolive_logger->flush();
 		}
-		classifyRead.stop();
+		
 		avgClassifyduration += (classifyRead.elapsed() - avgClassifyduration) / readCounter;
 		std::chrono::duration< StopClock::Seconds > elapsed = classifyRead.end() - begin;
 		if (elapsed.count() > 60.0)

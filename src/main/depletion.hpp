@@ -204,7 +204,7 @@ void classify_target_reads(SafeQueue<interleave::Read>& classification_queue,
 					// store all read data and time measures for classified read
 					action_queue.push(readuntil::ActionResponse{ read.getChannelNr(), read.getReadNr(),
 									seqan::toCString(read.getID()), m, true });
-					classifiedReads.push(read);
+					unclassifiedReads.push(read);
 					avgReadLenMutex.lock();
 					avgReadLen += ((double)read.getSeqLength() - avgReadLen) / (double) ++rCounter;
 					avgReadLenMutex.unlock();
@@ -351,7 +351,9 @@ void classify_deplete_reads(SafeQueue<interleave::Read>& classification_queue,
 					std::unordered_map<std::string, std::pair<interleave::Read, uint8_t>>::iterator it = once_seen.find(readID);
 					if (it != once_seen.end())
 					{
-						if ((*it).second.second == 2)
+						uint8_t iterstep = (*it).second.second;
+						// after 10 kb of sequencing the read => stop receiving further data
+						if (iterstep >= 40)
 						{
 							action_queue.push(readuntil::ActionResponse{ read.getChannelNr(), read.getReadNr(),
 											seqan::toCString(read.getID()), m , false });
@@ -367,7 +369,7 @@ void classify_deplete_reads(SafeQueue<interleave::Read>& classification_queue,
 						else
 						{
 							// if read unclassified for the second time => try another chunk
-							once_seen.assign(std::pair(readID, std::pair(read, 2)));
+							once_seen.assign(std::pair(readID, std::pair(read, ++iterstep)));
 						}
 					}
 					else

@@ -127,6 +127,7 @@ struct read_classify_parser
 	double error_rate = 0.1;
 	int threads = 1;
 	int preLen = 360;
+	int max_chunks = 1;
 	bool verbose = false;
 
 	/**
@@ -192,10 +193,16 @@ struct read_classify_parser
 				.help("expected per read sequencing error rate (default: 0.1)"))
 			.add_argument(
 				lyra::opt(preLen, "length")
-				.name("-p")
-				.name("--prefix-length")
+				.name("-l")
+				.name("--chunk-length")
 				.optional()
-				.help("Length of read prefix used for classification (default: 360)"))
+				.help("Length of read chunks used for classification (default: 360)"))
+			.add_argument(
+				lyra::opt(max_chunks, "number")
+				.name("-m")
+				.name("--max-chunks")
+				.optional()
+				.help("Number of tries to classify a read using chunk-length bases (default: 1)"))
 			.add_argument(
 				lyra::opt(threads, "threads")
 				.name("-n")
@@ -240,6 +247,7 @@ struct read_classify_parser
 				std::cout << "Significance level for confidence interval    : " << kmer_significance << std::endl;
 				std::cout << "Expected sequencing error rate                : " << error_rate << std::endl;
 				std::cout << "Length of read prefix used for classification : " << preLen << std::endl;
+				std::cout << "Number of classification iterations           : " << max_chunks << std::endl;
 				std::cout << "Classification threads                            : " << threads << std::endl;
 				std::cout << "---------------------------------------------------------------------------------------------------" << std::endl;
 			}
