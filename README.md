@@ -248,8 +248,8 @@ add a field:
 ```
 On Linux, open a terminal and change to the MinKNOW binary directory, located in `/opt/ont/minknow/bin`, and call the config editor with the following two commands:
 ```
-config_editor --conf application --filename ../conf/app_conf --set data_generation.simulated_device=1
-config_editor --conf application --filename ../conf/app_conf --set device.simulator_device_count=1
+sudo ./config_editor --conf application --filename ../conf/app_conf --set data_generation.simulated_device=1
+sudo ./config_editor --conf application --filename ../conf/app_conf --set device.simulator_device_count=1
 ```
 
 4. In the MinKNOW GUI, right click on a sequencing position and select `Reload Scripts` (In some cases you need to reboot your operating system). Your MinKNOW instance will now show a simulated device named `MS00000` that will playback the bulkfile rather than live sequencing.
