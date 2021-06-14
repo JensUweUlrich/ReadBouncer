@@ -125,3 +125,17 @@ void IBF_mainwindow::proBar(void){
 
 
 
+
+/*void IBF_mainwindow::on_pushButton_5_clicked()
+{
+    this->hide();
+    QWidget *parent = this->parentWidget();
+    parent->show();
+}*/
+
+void IBF_mainwindow::on_pushButton_7_clicked()
+{
+    this->hide();
+    QWidget *parent = this->parentWidget();
+    parent->show();
+}

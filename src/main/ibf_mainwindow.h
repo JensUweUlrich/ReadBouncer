@@ -24,8 +24,6 @@
 
 
 
-
-
 namespace Ui {
 class IBF_mainwindow;
 }
@@ -62,6 +60,10 @@ private slots:
 
     void proBar(void);
 
+
+    //void on_pushButton_5_clicked();
+
+    void on_pushButton_7_clicked();
 
 private:
     Ui::IBF_mainwindow *ui;

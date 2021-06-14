@@ -74,7 +74,7 @@ void MainWindow::on_actionExit_triggered()
 
 void MainWindow::on_actionNanoLive_triggered()
 {
-    QString windowTitel = "About NanoLive Tool";
+    QString windowTitel = "About ReadBouncer Tool";
 
     QString boxInformations = "C++ based for live classification of Nanopore reads (aka adaptive sequencing) on Windows without the need for GPUs."
                               " The Toolkit uses Oxford Nanopore's Read Until functionality to unblock reads that match to a given reference sequence database."
@@ -121,25 +121,28 @@ void MainWindow::on_pushButton_2_clicked()
     ibf_multi_window.exec();
     */
 
-    //hide(); // this will hide the first mainWindow
+    hide(); // this will hide the first mainWindow
     ibf_multi_window = new IBF_mainwindow(this); // this: is mainwindow class
     ibf_multi_window -> show();
 }
 
 void MainWindow::on_pushButton_3_clicked()
 {
+    hide();
     classify_multi_window = new Classify_mainwindow(this); // this: is mainwindow class
     classify_multi_window -> show();
 }
 
 void MainWindow::on_pushButton_4_clicked()
 {
+    hide();
     live_deplete_multi_window = new live_deplete_mainwindow(this);
     live_deplete_multi_window -> show();
 }
 
 void MainWindow::on_pushButton_5_clicked()
 {
+    hide();
     connection_test_multi_window = new connection_test_mainwindow(this);
     connection_test_multi_window -> show();
 }

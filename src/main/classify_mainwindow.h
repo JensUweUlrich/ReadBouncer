@@ -75,6 +75,9 @@ private slots:
 
     void clearResults();
 
+
+    void on_pushButton_9_clicked();
+
 private:
 
     Ui::Classify_mainwindow *ui;

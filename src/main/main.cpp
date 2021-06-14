@@ -298,13 +298,13 @@ void test_connection_qt(std::string host_name,int port,std::string device_name,
         std::cerr << "Connection to MinKNOW successfully established." << std::endl;
         std::cerr << "But could not detect given device/flowcell" << std::endl;
         std::cerr << "Please check whether the Flowcell has already been inserted. " << std::endl;
-        //throw;
+        //throw 1;
     }
     catch (readuntil::ReadUntilClientException& e)
     {
         std::cerr << "Could not establish connection to MinKNOW." << std::endl;
         std::cerr << "Please check the given host IP address and TCP port. " << std::endl;
-        //throw;
+        //throw 1;
     }
 
     if (unblock_all)
@@ -351,7 +351,7 @@ void test_connection_qt(std::string host_name,int port,std::string device_name,
             nanolive_logger->error("Could not start streaming signals from device (" + device_name + ")");
             nanolive_logger->error("Error message : " + std::string(e.what()));
             nanolive_logger->flush();
-           // throw;
+           //throw 1;
         }
 
 

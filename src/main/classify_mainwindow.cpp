@@ -169,3 +169,10 @@ void Classify_mainwindow::on_lineEdit_4_textEdited(const QString &unclassify)
 void Classify_mainwindow::clearResults(){
     ui->text1->QTextEdit::clear();
 }
+
+void Classify_mainwindow::on_pushButton_9_clicked()
+{
+    this->hide();
+    QWidget *parent = this->parentWidget();
+    parent->show();
+}

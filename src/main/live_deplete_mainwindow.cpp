@@ -113,3 +113,10 @@ void live_deplete_mainwindow::on_pushButton_7_clicked()
 void live_deplete_mainwindow::clearResults(){
     ui->text1->QTextEdit::clear();
 }
+
+void live_deplete_mainwindow::on_pushButton_6_clicked()
+{
+    this->hide();
+    QWidget *parent = this->parentWidget();
+    parent->show();
+}

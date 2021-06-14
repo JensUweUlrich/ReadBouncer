@@ -62,6 +62,8 @@ private slots:
 
     void clearResults();
 
+    void on_pushButton_6_clicked();
+
 private:
     Ui::live_deplete_mainwindow *ui;
 

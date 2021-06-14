@@ -1,4 +1,4 @@
-  
+
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(CMAKE_AUTOUIC ON)
@@ -30,6 +30,7 @@ set(Main_SRC
     connection_test_mainwindow.h
     connection_test_mainwindow.ui
     QDebugStream.h
+    pics.qrc
     )
 
 #WIN32 is to delete the second momitor from the APP

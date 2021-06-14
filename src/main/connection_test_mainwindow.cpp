@@ -68,3 +68,10 @@ void connection_test_mainwindow::on_checkBox_toggled(bool checked)
 void connection_test_mainwindow::clearResults(){
     ui->text1->QTextEdit::clear();
 }
+
+void connection_test_mainwindow::on_pushButton_8_clicked()
+{
+    this->hide();
+    QWidget *parent = this->parentWidget();
+    parent->show();
+}

@@ -552,21 +552,21 @@ void live_read_depletion(live_depletion_parser& parser)
     // first check if basecalling file exists
     std::filesystem::path weights_file = NanoLiveRoot;
     //weights_file.append("data");
-   // weights_file.append("weights");
+    //weights_file.append("/weights/");
     weights_file = "rnn" + parser.weights + ".txt";
     if (std::filesystem::exists(weights_file))
     {
         std::cout<<"Found the weights file: "<<weights_file.string()<<std::endl;
         nanolive_logger->info("Found the weights file: " + weights_file.string());
         nanolive_logger->flush();
-        throw;
+        //throw;
     }
     if (!std::filesystem::exists(weights_file))
     {
         std::cerr<<"Could not find DeepNano weights file: "<<weights_file.string()<<std::endl;
         nanolive_logger->error("Could not find DeepNano weights file : " + weights_file.string());
         nanolive_logger->flush();
-        throw;
+        //throw;
     }
 
     std::vector<interleave::TIbf> DepletionFilters{};
@@ -591,7 +591,7 @@ void live_read_depletion(live_depletion_parser& parser)
         nanolive_logger->error("Could not load IBF File : " + std::string(e.what()));
         nanolive_logger->flush();
         std::cerr<<"Could not load IBF File: "<<std::string(e.what())<<std::endl;
-        throw;
+        //throw;
     }
 
     // parse target IBF if given as parameter
@@ -616,7 +616,7 @@ void live_read_depletion(live_depletion_parser& parser)
             nanolive_logger->error("Target IBF file                : " + parser.ibf_target_file);
             nanolive_logger->error("Error message : " + std::string(e.what()));
             nanolive_logger->flush();
-            throw;
+            //throw;
         }
     }
 
@@ -696,7 +696,7 @@ void live_read_depletion(live_depletion_parser& parser)
         nanolive_logger->error("Could not start streaming signals from device (" + parser.device + ")");
         nanolive_logger->error("Error message : " + std::string(e.what()));
         nanolive_logger->flush();
-        throw;
+        //throw;
     }
 
     // thread safe queue storing reads ready for basecalling

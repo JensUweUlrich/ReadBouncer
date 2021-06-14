@@ -23,7 +23,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>ReadBouncer Tool for Nanopore Sequencing (ONT's MinKNOW)</string>
   </property>
   <property name="autoFillBackground">
    <bool>false</bool>
@@ -48,7 +48,7 @@ font: 75 10pt &quot;MS Shell Dlg 2&quot;;
 border-color: rgb(170, 255, 0);</string>
     </property>
     <property name="text">
-     <string>Close</string>
+     <string>Exit</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_2">
@@ -151,39 +151,6 @@ border-color: rgb(170, 255, 0);</string>
      <string>Connection-test</string>
     </property>
    </widget>
-   <widget class="QLabel" name="label">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>10</y>
-      <width>941</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">font: 11pt &quot;MS Shell Dlg 2&quot;;
-color:rgb(255, 255, 255)</string>
-    </property>
-    <property name="text">
-     <string>NanoLive Tool for Nanopore Sequencing (ONT's MinKNOW)</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_2">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>620</y>
-      <width>941</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">color:rgb(6, 6, 6)</string>
-    </property>
-    <property name="text">
-     <string>Copyright ©</string>
-    </property>
-   </widget>
    <widget class="QLabel" name="label_pic">
     <property name="geometry">
      <rect>
@@ -197,7 +164,28 @@ color:rgb(255, 255, 255)</string>
      <bool>false</bool>
     </property>
     <property name="text">
-     <string>TextLabel</string>
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap resource="pics.qrc">:/pics/dna.jpg</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>20</y>
+      <width>191</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: rgb(255, 255, 255);
+font: 75 10pt &quot;MS Shell Dlg 2&quot;;
+font: 15pt &quot;Segoe UI Symbol&quot;;</string>
+    </property>
+    <property name="text">
+     <string>ReadBouncer</string>
     </property>
    </widget>
   </widget>
@@ -287,6 +275,8 @@ color:rgb(255, 255, 255)</string>
    </property>
   </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="pics.qrc"/>
+ </resources>
  <connections/>
 </ui>
