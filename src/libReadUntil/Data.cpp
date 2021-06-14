@@ -197,7 +197,8 @@ namespace readuntil
                 {
                     data_logger->error("Failed sending action request to MinKNOW");
                     data_logger->flush();
-                    throw FailedActionRequestException("Could not send unblock actions to MinKNOW!");
+                    //throw FailedActionRequestException("Could not send unblock actions to MinKNOW!");
+                    FailedActionRequestException("Could not send unblock actions to MinKNOW!");
                 }
                 data_logger->warn("Failed sending action request number " + i);
                 data_logger->flush();
@@ -284,7 +285,8 @@ namespace readuntil
         {
             data_logger->error("Failed starting live stream : Could not send setup message!");
             data_logger->flush();
-            throw FailedSetupMessageException("Failed starting live stream : Could not send setup message!");
+            FailedSetupMessageException("Failed starting live stream : Could not send setup message!");
+            //throw FailedSetupMessageException("Failed starting live stream : Could not send setup message!");
         }
 
         data_logger->info("Setup message successfully send to MinKNOW.");

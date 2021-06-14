@@ -32,7 +32,8 @@ namespace readuntil
                 request.set_stop(true);
                 if (!stream->Write(request))
                 {
-                    throw ReadUntilClientException("Unable to stop status acquisition!");
+                    ReadUntilClientException("Unable to stop status acquisition!");
+                    //throw ReadUntilClientException("Unable to stop status acquisition!");
                 }
                 stream->WritesDone();
             }
@@ -63,7 +64,8 @@ namespace readuntil
 		}
 		else
 		{
-			throw ReadUntilClientException(status.error_message());
+            ReadUntilClientException(status.error_message());
+            //throw ReadUntilClientException(status.error_message());
 		}
     }
 
