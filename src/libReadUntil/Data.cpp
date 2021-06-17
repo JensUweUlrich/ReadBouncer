@@ -126,6 +126,10 @@ namespace readuntil
         // as long as signals are received from MinKnow
         // iterate over received data and stop further data allocation for every odd read on every odd channel
         
+        csvfile csv("read_until_decision_stats.csv");
+        // header
+        csv << " " << "read_id" << "channel_nr" << "read_nr" << "sequence_length" << "decision" << "duration" << endrow;
+
         // only send action messages while sequencing is still ongoing
         while (isRunning())
         {
@@ -151,15 +155,22 @@ namespace readuntil
                     {
                         addUnblockAction(actionList, readResponse, 0.1);
                         counter++;
-                        
+                        readResponse.processingTimes.timeCompleteRead.stop();
+                        csv << std::to_string(counter) << readResponse.id << readResponse.channelNr
+                            << readResponse.readNr << readResponse.readlen << "unblock" 
+                            << std::to_string(readResponse.processingTimes.timeCompleteRead.elapsed()) << endrow;
                     }
                     else
                     {
                         // add stop_receiving_data message for every read in the queue
                         addStopReceivingDataAction(actionList, readResponse);
                         counter++;
+                        readResponse.processingTimes.timeCompleteRead.stop();
+                        csv << std::to_string(counter) << readResponse.id << readResponse.channelNr
+                            << readResponse.readNr << readResponse.readlen << "stop_receiving"
+                            << std::to_string(readResponse.processingTimes.timeCompleteRead.elapsed()) << endrow;
                     }
-                    readResponse.processingTimes.timeCompleteRead.stop();
+                    
                     if (readResponse.response)
                     {
                         duration_queue.push(Durations{

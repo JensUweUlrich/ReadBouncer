@@ -182,12 +182,6 @@ void classify_target_reads(SafeQueue<interleave::Read>& classification_queue,
 				if (stop_further)
 				{
 					// store all read data and time measures for classified read
-					action_queue.push(readuntil::ActionResponse{ read.getChannelNr(), read.getReadNr(),
-									seqan::toCString(read.getID()), m, false });
-					classifiedReads.push(read);
-					avgReadLenMutex.lock();
-					avgReadLen += ((double)read.getSeqLength() - avgReadLen) / (double) ++rCounter;
-					avgReadLenMutex.unlock();
 					std::unordered_map<std::string, std::pair<interleave::Read, uint8_t>>::iterator it = once_seen.find(readID);
 					uint32_t readlen = read.getSeqLength();
 					if (it != once_seen.end())
@@ -195,19 +189,17 @@ void classify_target_reads(SafeQueue<interleave::Read>& classification_queue,
 						readlen += (*it).second.first.getSeqLength();
 						once_seen.erase(it);
 					}
-					csv << std::to_string(++read_counter) << toCString(read.getID()) << read.getChannelNr()
-						<< read.getReadNr() << readlen << "stop_receiving" << endrow;
+					action_queue.push(readuntil::ActionResponse{ read.getChannelNr(), read.getReadNr(),
+									seqan::toCString(read.getID()), readlen, m, false });
+					classifiedReads.push(read);
+					avgReadLenMutex.lock();
+					avgReadLen += ((double)read.getSeqLength() - avgReadLen) / (double) ++rCounter;
+					avgReadLenMutex.unlock();
 				}
 				// if read is not in target filter but in depletion filter => unblock read
 				else if (unblock)
 				{
 					// store all read data and time measures for classified read
-					action_queue.push(readuntil::ActionResponse{ read.getChannelNr(), read.getReadNr(),
-									seqan::toCString(read.getID()), m, true });
-					unclassifiedReads.push(read);
-					avgReadLenMutex.lock();
-					avgReadLen += ((double)read.getSeqLength() - avgReadLen) / (double) ++rCounter;
-					avgReadLenMutex.unlock();
 					std::unordered_map<std::string, std::pair<interleave::Read, uint8_t>>::iterator it = once_seen.find(readID);
 					uint32_t readlen = read.getSeqLength();
 					if (it != once_seen.end())
@@ -215,8 +207,12 @@ void classify_target_reads(SafeQueue<interleave::Read>& classification_queue,
 						readlen += (*it).second.first.getSeqLength();
 						once_seen.erase(it);
 					}
-					csv << std::to_string(++read_counter) << toCString(read.getID()) << read.getChannelNr()
-						<< read.getReadNr() << readlen << "unblock" << endrow;
+					action_queue.push(readuntil::ActionResponse{ read.getChannelNr(), read.getReadNr(),
+									seqan::toCString(read.getID()), readlen, m, true });
+					unclassifiedReads.push(read);
+					avgReadLenMutex.lock();
+					avgReadLen += ((double)read.getSeqLength() - avgReadLen) / (double) ++rCounter;
+					avgReadLenMutex.unlock();
 				}
 				else
 				{
@@ -227,16 +223,15 @@ void classify_target_reads(SafeQueue<interleave::Read>& classification_queue,
 					{
 						//if ((*it).second.second == 1)
 						//{
-							action_queue.push(readuntil::ActionResponse{ read.getChannelNr(), read.getReadNr(),
-											seqan::toCString(read.getID()), m , true });
-							unclassifiedReads.push(read);
 							uint32_t readlen = read.getSeqLength() + (*it).second.first.getSeqLength();
 							once_seen.erase(it);
+							action_queue.push(readuntil::ActionResponse{ read.getChannelNr(), read.getReadNr(),
+											seqan::toCString(read.getID()), readlen, m , true });
+							unclassifiedReads.push(read);
+							
 							avgReadLenMutex.lock();
 							avgReadLen += ((double)read.getSeqLength() - avgReadLen) / (double) ++rCounter;
 							avgReadLenMutex.unlock();
-							csv << std::to_string(++read_counter) << toCString(read.getID()) << read.getChannelNr()
-								<< read.getReadNr() << readlen << "unblock" << endrow;
 						/*}
 						else
 						{
@@ -292,9 +287,7 @@ void classify_deplete_reads(SafeQueue<interleave::Read>& classification_queue,
 	readuntil::Acquisition* acq)
 {
 	std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("NanoLiveLog");
-	csvfile csv("read_until_decision_stats.csv");
-	// header
-	csv << " " << "read_id" << "channel_nr" << "read_nr" << "sequence_length" << "decision" << endrow;
+	
 	
 	uint64_t read_counter = 0;
 	bool withTarget = !(TargetFilters.empty());
@@ -327,13 +320,6 @@ void classify_deplete_reads(SafeQueue<interleave::Read>& classification_queue,
 
 				if (classified)
 				{
-					// store all read data and time measures for classified read
-					action_queue.push(readuntil::ActionResponse{ read.getChannelNr(), read.getReadNr(),
-									seqan::toCString(read.getID()), m, true });
-					classifiedReads.push(read);
-					avgReadLenMutex.lock();
-					avgReadLen += ((double)read.getSeqLength() - avgReadLen) / (double) ++rCounter;
-					avgReadLenMutex.unlock();
 					std::unordered_map<std::string, std::pair<interleave::Read, uint8_t>>::iterator it = once_seen.find(readID);
 					uint32_t readlen = read.getSeqLength();
 					if (it != once_seen.end())
@@ -341,8 +327,15 @@ void classify_deplete_reads(SafeQueue<interleave::Read>& classification_queue,
 						readlen += (*it).second.first.getSeqLength();
 						once_seen.erase(it);
 					}
-					csv << std::to_string(++read_counter) << toCString(read.getID()) << read.getChannelNr()
-						<< read.getReadNr() << readlen << "unblock" << endrow;
+					// store all read data and time measures for classified read
+					action_queue.push(readuntil::ActionResponse{ read.getChannelNr(), read.getReadNr(),
+									seqan::toCString(read.getID()), readlen, m, true });
+					classifiedReads.push(read);
+					avgReadLenMutex.lock();
+					avgReadLen += ((double)read.getSeqLength() - avgReadLen) / (double) ++rCounter;
+					avgReadLenMutex.unlock();
+					
+					
 				}
 				else
 				{
@@ -355,16 +348,15 @@ void classify_deplete_reads(SafeQueue<interleave::Read>& classification_queue,
 						// after 10 kb of sequencing the read => stop receiving further data
 						if (iterstep >= 40)
 						{
-							action_queue.push(readuntil::ActionResponse{ read.getChannelNr(), read.getReadNr(),
-											seqan::toCString(read.getID()), m , false });
-							unclassifiedReads.push(read);
 							uint32_t readlen = read.getSeqLength() + (*it).second.first.getSeqLength();
 							once_seen.erase(it);
+							action_queue.push(readuntil::ActionResponse{ read.getChannelNr(), read.getReadNr(),
+											seqan::toCString(read.getID()), readlen, m , false });
+							unclassifiedReads.push(read);
+							
 							avgReadLenMutex.lock();
 							avgReadLen += ((double)read.getSeqLength() - avgReadLen) / (double) ++rCounter;
 							avgReadLenMutex.unlock();
-							csv << std::to_string(++read_counter) << toCString(read.getID()) << read.getChannelNr()
-								<< read.getReadNr() << readlen << "stop_receiving" << endrow;
 						}
 						else
 						{

@@ -14,7 +14,7 @@
 #include <SafeSet.hpp>
 #include <StopClock.hpp>
 #include <NanoLiveExceptions.hpp>
-#include <CSVfile.hpp>
+
 
 // spdlog library
 #include "spdlog/spdlog.h"
@@ -70,7 +70,7 @@ void fill_action_queue(SafeQueue<readuntil::SignalRead>& signal_queue,
 		{
 			readuntil::SignalRead read = signal_queue.pop();
 			action_queue.push(readuntil::ActionResponse{ read.channelNr, read.readNr,
-										read.id, read.processingTimes, true });
+										read.id, 0 ,read.processingTimes, true });
 		}
 
 		if (acq->isFinished())

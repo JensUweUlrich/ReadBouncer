@@ -33,6 +33,7 @@
 
 #include "SafeQueue.hpp"
 #include "StopClock.hpp"
+#include <CSVfile.hpp>
 
 #include "Acquisition.hpp"
 #include "Analysis_Configuration.hpp"
@@ -59,6 +60,7 @@ namespace readuntil
         uint32 channelNr{};
         uint32 readNr{};
         string id{};
+        uint32_t readlen;
         TimeMeasures processingTimes{};
         bool response;
     };
