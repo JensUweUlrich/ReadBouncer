@@ -231,9 +231,9 @@ namespace readuntil
             // otherwise MinKNOW action request queue is overflooded and drops requests
             end = std::chrono::system_clock::now();
             int elapsed_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
-            if(elapsed_milliseconds < 100)
+            if(elapsed_milliseconds < 400)
             {
-                std::this_thread::sleep_for(std::chrono::milliseconds(100 - elapsed_milliseconds));
+                std::this_thread::sleep_for(std::chrono::milliseconds(400 - elapsed_milliseconds));
             }
             
         }
