@@ -30,8 +30,10 @@ set(Main_SRC
     connection_test_mainwindow.h
     connection_test_mainwindow.ui
     QDebugStream.h
-    pics.qrc
     )
+
+
+qt_add_resources(Main_SRC pics.qrc)
 
 #WIN32 is to delete the second momitor from the APP
 file(GLOB MAIN_HDRS "*.hpp")
