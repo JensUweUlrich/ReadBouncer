@@ -15,12 +15,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 
     ui->setupUi(this);
-    //this->showMaximized();
-    // add pic
-    //QPixmap pix("C:/NanoLive_Qt-test/src/main/550285a-i2.jpg");
-    //QPixmap pix("C:/NanoLive_Qt-test/src/main/ONT-diagram.png");
-    QPixmap pix("C:/NanoLive_Qt-test/src/main/dna.jpg");
-    ui -> label_pic ->setPixmap(pix);
+
 }
 
 MainWindow::~MainWindow()
@@ -113,15 +108,8 @@ void MainWindow::on_actionConnection_test_triggered()
 
 void MainWindow::on_pushButton_2_clicked()
 {
-    // see the header file of mainwindow
-    // here we are working with heap not stack
-    /*
-    IBF_mainwindow ibf_multi_window;
-    ibf_multi_window.setModal(true);// but now we cannot access the mainWindow!
-    ibf_multi_window.exec();
-    */
 
-    hide(); // this will hide the first mainWindow
+    hide();
     ibf_multi_window = new IBF_mainwindow(this); // this: is mainwindow class
     ibf_multi_window -> show();
 }

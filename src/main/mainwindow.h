@@ -2,13 +2,13 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QFile>          // for opening the files
-#include <QFileDialog>    // for pop up
-#include <QTextStream>    // for reading text from file
-#include <QMessageBox>    // for opening a message box i.e type of user errors
+#include <QFile>
+#include <QFileDialog>
+#include <QTextStream>
+#include <QMessageBox>
 #include <QString>
-#include<QtPrintSupport/QPrinter>  // to use the funcionality of printer
-#include<QtPrintSupport/QPrintDialog>  // to open a dialog box and let the user choose things from it
+#include<QtPrintSupport/QPrinter>
+#include<QtPrintSupport/QPrintDialog>
 #include<QtWidgets>
 #include <QPalette>
 #include <QColor>

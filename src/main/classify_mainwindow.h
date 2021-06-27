@@ -6,8 +6,8 @@
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QDebug>
-#include <QFile>          // for opening the files
-#include <QFileDialog>   // for pop up
+#include <QFile>
+#include <QFileDialog>
 #include <QTextEdit>
 #include <QPointer>
 

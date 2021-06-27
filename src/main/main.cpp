@@ -392,9 +392,6 @@ void test_connection_qt(std::string host_name,int port,std::string device_name,
     }
 
 }
-// Qt6.0.3
-
-//Argument: IBF Build Step!!!
 
 
 
@@ -432,27 +429,6 @@ void IBF_mainwindow::on_pushButton_3_clicked()
           }
 }
 
-
-//Argument: Classify
-/*void Classify_mainwindow::on_pushButton_4_clicked()
-{
-    if (ibf_deplete_file.length() < 1 && ibf_target_file.length() < 1)
-    {
-        QMessageBox::information(this, "Warning", "Please provide an IBF file for depletion and/or  an IBF file for targeted sequencing. ");
-        return;
-    }
-    QMessageBox::StandardButton ask;
-     ask = QMessageBox::question(this, "Classify", "Nanopore Reads will be classified, are you sure?",
-                                   QMessageBox::Yes|QMessageBox::No);
-
-     if (ask == QMessageBox::Yes) {
-        third_party();
-        classify_reads_qt(ibf_deplete_file_name, ibf_target_file_name, kmer_significance,
-                          error_rate, classified_file_name, unclassified_file_name,
-                          read_file_name, preLen, threads);
-         //close();
-     } else {}
-}*/
 
 void Classify_mainwindow::on_pushButton_4_clicked()
 {
@@ -495,27 +471,6 @@ void Classify_mainwindow::on_pushButton_4_clicked()
      } else {}
 }
 
-
-//Argument:live-deplete
-
-/*void live_deplete_mainwindow::on_pushButton_4_clicked()
-{
-    if (ibf_deplete_file.length() < 1 && ibf_target_file.length() < 1)
-    {
-        QMessageBox::information(this, "Warning", "Please provide an IBF file for depletion and/or  an IBF file for targeted sequencing. ");
-        return;
-    }
-    QMessageBox::StandardButton ask;
-     ask = QMessageBox::question(this, "Live-Deplete", "Live classification and rejection of nanopore reads will start, Are you sure?",
-                                   QMessageBox::Yes|QMessageBox::No);
-
-     if (ask == QMessageBox::Yes) {
-        third_party();
-        live_read_depletion_qt(ibf_deplete_file_name, ibf_target_file_name, host_name,
-                               port, device_name, weights_name, kmer_significance, error_rate);
-         //close();
-     } else {}
-}*/
 
 
 
