@@ -62,4 +62,4 @@ GUI with Qt6.0.3 for ReadBouncer How to use:
   - Copy the `ReadBouncer/src/rpc-certs/ca.crt` to `C:\NanoLive\build\main\Debug\` .    
 -------------------------------------------------------------------------------------------------------------------------
 **Note**:
-* While using c++ exception, **avoid using** `throw` because of CDB-debugger, using `throw` as exception will stop the software, without using `throw` Qt and CDB debugger will do the job also. 
+* While using c++ exception, **avoid using** `throw` because of CDB-debugger, using `throw` as exception will stop the software, without using `throw` Qt and CDB debugger will do the job also. Use  e.g. `try { /* */ } catch (const std::exception& e) { /* */ }` as usual but without `throw` also `//throw`
