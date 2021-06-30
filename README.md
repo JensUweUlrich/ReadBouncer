@@ -1,7 +1,16 @@
 GUI with Qt6.0.3 for ReadBouncer How to use:
 
-Deadline for Readme: 29.06.2021
+**Deadline for TODO: 15.07.2021**
 
+**TODO**:
+* Merge Master with Windows Branche together (local) and debug.
+* Run the new Branche on Linux and test Live-Run.
+* Minimize the number of plugins data -> to reduce memory! from 1GB to 600-700 MB.
+* See toDelete file in local to reduce Run Time.
+* Create new installer .exe/linux.
+* Run Test.
+* If passed: Rechnage read me.
+* Add Linux section with Bash-Script.
 -------------------------------------------------------------------------------------------------------------------------
 **Requirements for Qt (All this kits are automatically installed with Qt)**: 
 
