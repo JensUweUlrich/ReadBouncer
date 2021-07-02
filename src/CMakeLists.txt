@@ -1,7 +1,7 @@
 
 cmake_minimum_required (VERSION 3.16)
 
-project (NanoLive CXX C)
+project (ReadBouncer CXX C)
 
 
 
@@ -38,9 +38,9 @@ add_subdirectory(main)
 
 set(CPACK_SOURCE_GENERATOR "NSIS")
 set(CPACK_NSIS_EXECUTION_LEVEL "user")
-set(CPACK_PACKAGE_NAME "NanoLive")
+set(CPACK_PACKAGE_NAME "ReadBouncer")
 set(CPACK_PACKAGE_VENDOR "Jens-Uwe Ulrich")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "NanoLive - Installer")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "ReadBouncer - Installer")
 set(CPACK_PACKAGE_VERSION "0.3.0")
 set(CPACK_PACKAGE_VERSION_MAJOR "0")
 set(CPACK_PACKAGE_VERSION_MINOR "3")
@@ -49,7 +49,7 @@ set(CPACK_PACKAGE_INSTALL_DIRECTORY ${PROJECT_NAME})
 
 set(CPACK_COMPONENTS_ALL applications libraries headers addfiles certificates)
 
-set(CPACK_COMPONENT_APPLICATIONS_DISPLAY_NAME "NanoLive App")
+set(CPACK_COMPONENT_APPLICATIONS_DISPLAY_NAME "ReadBouncer App")
 set(CPACK_COMPONENT_LIBRARIES_DISPLAY_NAME "Libraries")
 set(CPACK_COMPONENT_HEADERS_DISPLAY_NAME "C++ Headers")
 set(CPACK_COMPONENT_ADDFILES_DISPLAY_NAME "Additional Files")
@@ -58,9 +58,9 @@ set(CPACK_COMPONENT_CERTIFICATES_DISPLAY_NAME "Certificates")
 set(CPACK_COMPONENT_APPLICATIONS_DESCRIPTION
   "Application for real-time Oxford Nanopore Sequencing data analysis using MinKNOW API and ReadUntil")
 set(CPACK_COMPONENT_LIBRARIES_DESCRIPTION
-  "Static libraries used to build NanoLive")
+  "Static libraries used to build ReadBouncer")
 set(CPACK_COMPONENT_HEADERS_DESCRIPTION
-  "C/C++ header files for use with NanoLive")
+  "C/C++ header files for use with ReadBouncer")
 set(CPACK_COMPONENT_ADDFILES_DESCRIPTION
   "Additional Files for Basecalling")
 set(CPACK_COMPONENT_CERTIFICATES_DESCRIPTION

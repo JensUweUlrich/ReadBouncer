@@ -73,19 +73,20 @@ namespace interleave
                         std::string cid   = seqan::toCString( ids[i] );
                         // delete everything after first space in seq identifier
                         std::string seqid = cid.substr( 0, cid.find( ' ' ) );
-                        //stats.sumSeqLen += seqan::length( seqs[i] );
-                        stats.totalBinsBinId += (seqan::length( seqs[i] ) / config.fragment_length) + 1;
                         // add reference sequences to the queue
                         int counter = 1;
                         std::string seq = std::string(seqan::toCString(seqs[i]));
+			// remove all Ns from the sequence
+			std::stringstream buf; 
                         for (std::string seq : cutOutNNNs(seq, seqan::length(seqs[i])))
                         {
-                            std::stringstream buf;
-                            buf << seqid << "_" << counter++;
-                            queue_refs.push(Seqs{ buf.str(), ((seqan::Dna5String) seq) });
-                            stats.totalBinsBinId++;
-                            stats.sumSeqLen += seq.length();
+                            buf << seq;			   
                         }
+			std::string newseq = buf.str();
+			queue_refs.push(Seqs{ seqid, ((seqan::Dna5String) newseq) });
+			// calculate bins needed for that sequence
+	                stats.totalBinsBinId += ( newseq.length() / config.fragment_length) + 1;
+                        stats.sumSeqLen += newseq.length();
                     }
                 }
                 seqan::close( seqFileIn );
