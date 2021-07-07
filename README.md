@@ -1,3 +1,4 @@
+# submaster contains the master branch with Qt files   
 # ReadBouncer
 
 ## Table of Contents
