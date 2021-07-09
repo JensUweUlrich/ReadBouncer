@@ -1,4 +1,9 @@
 # submaster contains the master branch with Qt files   
+
+common error:   
+`MSBUILD : error MSB1009: Project file does not exist.   
+Switch: all.vcxproj`
+
 # ReadBouncer
 
 ## Table of Contents
