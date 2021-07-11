@@ -2,7 +2,9 @@
 
 common error:   
 `MSBUILD : error MSB1009: Project file does not exist.   
-Switch: all.vcxproj`
+Switch: all.vcxproj` --> solved (TODO add to doco)   
+## New Error:  
+Qt on Windows is not seeing the Qt libraries, see yes but not working with! so we have an error here with the name:  `The process "C:\Program Files\CMake\bin\cmake.exe" exited with code 1. Error while building/deploying project "projectName" (kit: Desktop Qt 6.0.3 MSVC2019 64bit) When executing step "Build"` This error is not occuring on Linux Ubuntu 20. 
 
 # ReadBouncer
 
