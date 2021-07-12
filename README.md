@@ -4,7 +4,14 @@ common error:
 `MSBUILD : error MSB1009: Project file does not exist.   
 Switch: all.vcxproj` --> solved (TODO add to doco)   
 ## New Error:  
+`C:\projectName\build\seqan\seqan2\seqan2-src\include\seqan/basic/debug_test_system.h(796,8): error C2664: 'BOOL RemoveDirectoryW(LPCWSTR)': cannot convert argument 1 from 'const _Elem *' to 'LPCWSTR' [C:\projectName\build\main\projectName.vcxproj]    
+with    
+[    
+_Elem=char     
+]`    
 Qt on Windows is not seeing the Qt libraries, see yes but not working with! so we have an error here with the name:  `The process "C:\Program Files\CMake\bin\cmake.exe" exited with code 1. Error while building/deploying project "projectName" (kit: Desktop Qt 6.0.3 MSVC2019 64bit) When executing step "Build"` This error is not occuring on Linux Ubuntu 20. 
+
+The New Error occurs only on Windows because of `BOOL RemoveDirectoryW(LPCWSTR)` - this is Windows API I guess which is not used on Linux.
 
 # ReadBouncer
 
