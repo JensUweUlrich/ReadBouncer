@@ -13,11 +13,25 @@ Qt on Windows is not seeing the Qt libraries, see yes but not working with! so w
 
 The New Error occurs only on Windows because of `BOOL RemoveDirectoryW(LPCWSTR)` - this is Windows API I guess which is not used on Linux.   
 
-Why we have this error? because of seqAn2 libs see: **solving.......**    
+Why we have this error? because of seqAn2 libs see: **solving....... Finaly solved................ ;)**    
 https://github.com/seqan/seqan/issues/2301    
 https://github.com/labsquare/bamviewer-poc/compare/win    
 https://forum.qt.io/topic/89404/compiling-qt-with-seqan-on-windows/2     
 
+----------------------------------------------------------------------------- 
+
+## How to solve this issue? 
+
+* Install this Qt Kit Desktop Qt 5.15.0 MSVC2019 64bit   
+* Use **ONLY** CDB Debugger   
+* The Initial CMake parameters should **ONLY** be:    
+`-GVisual Studio 16 2019`   
+`-DCMAKE_BUILD_TYPE:String=Release`   
+`-DQT_QMAKE_EXECUTABLE:STRING=%{Qt:qmakeExecutable}  `     
+`-DCMAKE_PREFIX_PATH:STRING=%{Qt:QT_INSTALL_PREFIX}`   
+`-DCMAKE_C_COMPILER:STRING=%{Compiler:Executable:C}`   
+`-DCMAKE_CXX_COMPILER:STRING=%{Compiler:Executable:Cxx}`    
+* See PDF (in Bearbeitung....)
 # ReadBouncer
 
 ## Table of Contents
