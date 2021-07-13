@@ -29,7 +29,7 @@ set(gui_SRC
     )
 
 
-qt_add_resources(gui_SRC pics.qrc)
+qt_add_resources(gui_QRC pics.qrc)
 
 set(gui_HDRS
     mainwindow.h
@@ -41,9 +41,11 @@ set(gui_HDRS
     )
 
 file(GLOB gui_SRC "*.cpp")
-file(GLOB gui_HDRS "*.hpp")
+file(GLOB gui_HDRS "*.h")
+file(GLOB gui_UI "*.ui")
+file(GLOB gui_QRC "*.qrc")
 
-add_library (gui STATIC ${gui_SRC} ${gui_HDRS})
+add_library (gui STATIC ${gui_SRC} ${gui_HDRS} ${gui_UI} ${gui_QRC})
 
 target_include_directories (gui PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} )
 target_link_libraries (gui PUBLIC Qt${QT_VERSION_MAJOR}::Widgets)
