@@ -11,7 +11,12 @@ _Elem=char
 ]`    
 Qt on Windows is not seeing the Qt libraries, see yes but not working with! so we have an error here with the name:  `The process "C:\Program Files\CMake\bin\cmake.exe" exited with code 1. Error while building/deploying project "projectName" (kit: Desktop Qt 6.0.3 MSVC2019 64bit) When executing step "Build"` This error is not occuring on Linux Ubuntu 20. 
 
-The New Error occurs only on Windows because of `BOOL RemoveDirectoryW(LPCWSTR)` - this is Windows API I guess which is not used on Linux.
+The New Error occurs only on Windows because of `BOOL RemoveDirectoryW(LPCWSTR)` - this is Windows API I guess which is not used on Linux.   
+
+Why we have this error? because of seqAn2 libs see: **solving.......**    
+https://github.com/seqan/seqan/issues/2301    
+https://github.com/labsquare/bamviewer-poc/compare/win    
+https://forum.qt.io/topic/89404/compiling-qt-with-seqan-on-windows/2     
 
 # ReadBouncer
 
