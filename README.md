@@ -2,7 +2,7 @@
 
 common error:   
 `MSBUILD : error MSB1009: Project file does not exist.   
-Switch: all.vcxproj` --> solved (TODO add to doco)   
+Switch: all.vcxproj` --> solved (project->buildsteps-> `Build: cmake.exe --build . --target ALL_BUILD` **NOT** all)     
 ## New Error:  
 `C:\projectName\build\seqan\seqan2\seqan2-src\include\seqan/basic/debug_test_system.h(796,8): error C2664: 'BOOL RemoveDirectoryW(LPCWSTR)': cannot convert argument 1 from 'const _Elem *' to 'LPCWSTR' [C:\projectName\build\main\projectName.vcxproj]    
 with    
