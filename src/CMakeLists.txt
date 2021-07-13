@@ -5,8 +5,11 @@ project (ReadBouncer CXX C)
 
 
 
+
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_CXX_STANDARD 17)
+
+
 
 if (WIN32)
     add_compile_options(-D_WIN32_WINNT=0x600)
@@ -25,12 +28,14 @@ else()
 endif()
 
 # add all subdirectories
+
 add_subdirectory(spdlog)
 add_subdirectory(seqan)
 add_subdirectory(libIBF)
 add_subdirectory(libBaseCaller)
 add_subdirectory(libReadUntil)
 add_subdirectory(lyra)
+add_subdirectory(gui)
 add_subdirectory(main)
 #add_subdirectory(test)
 
