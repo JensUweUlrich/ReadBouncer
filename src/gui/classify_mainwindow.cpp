@@ -130,9 +130,10 @@ void Classify_mainwindow::on_pushButton_7_clicked()// Verbose
      QString erRa {"Expected sequencing error rate: " + QString::number(error_rate)+ "\n"};
      QString rePrefixLe {"Length of read prefix used for classification: " + QString::number(preLen)+ "\n"};
      QString threadsN {"Building threads: " + QString::number(threads)+ "\n"};
+     QString chunks {"Max Chunks: " + QString::number(max_chunks)+ "\n"};
 
     QString check {""};
-    check.append(readF + depF + targetF + classF + unclassF + sigLe + erRa + rePrefixLe + threadsN);
+    check.append(readF + depF + targetF + classF + unclassF + sigLe + erRa + rePrefixLe + threadsN+ chunks);
     QMessageBox::information(this, "Classify Reads Arguments", check);
 
 }
@@ -175,4 +176,9 @@ void Classify_mainwindow::on_pushButton_9_clicked()
     this->hide();
     QWidget *parent = this->parentWidget();
     parent->show();
+}
+
+void Classify_mainwindow::on_spinBox_5_valueChanged(int chuncks)
+{
+    Classify_mainwindow::max_chunks = chuncks;
 }

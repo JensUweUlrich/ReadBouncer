@@ -69,7 +69,7 @@ private:
     Ui::IBF_mainwindow *ui;
     int k {13};
     int t {1};
-    int f {10000};
+    int f {100000};
 
     QString input_reference = "";
     std::string refFile = "";// for test only!

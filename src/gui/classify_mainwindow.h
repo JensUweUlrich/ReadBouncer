@@ -78,6 +78,8 @@ private slots:
 
     void on_pushButton_9_clicked();
 
+    void on_spinBox_5_valueChanged(int arg1);
+
 private:
 
     Ui::Classify_mainwindow *ui;
@@ -104,6 +106,8 @@ private:
     double error_rate {0.1};
     int threads {1};
     int preLen {360};//prefix-length
+
+    int max_chunks {1};
 
 
 };

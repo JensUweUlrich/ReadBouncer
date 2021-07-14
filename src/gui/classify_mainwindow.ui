@@ -167,7 +167,7 @@ font: 75 10pt &quot;MS Shell Dlg 2&quot;;</string>
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>350</y>
+     <y>390</y>
      <width>461</width>
      <height>20</height>
     </rect>
@@ -184,7 +184,7 @@ font: 75 10pt &quot;MS Shell Dlg 2&quot;;</string>
    <property name="geometry">
     <rect>
      <x>530</x>
-     <y>350</y>
+     <y>390</y>
      <width>80</width>
      <height>31</height>
     </rect>
@@ -219,7 +219,7 @@ font: 75 10pt &quot;MS Shell Dlg 2&quot;;</string>
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>310</y>
+     <y>350</y>
      <width>461</width>
      <height>20</height>
     </rect>
@@ -253,7 +253,7 @@ font: 75 10pt &quot;MS Shell Dlg 2&quot;;</string>
    <property name="geometry">
     <rect>
      <x>530</x>
-     <y>310</y>
+     <y>350</y>
      <width>80</width>
      <height>31</height>
     </rect>
@@ -290,7 +290,7 @@ border-color: rgb(170, 255, 0);</string>
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>390</y>
+     <y>430</y>
      <width>461</width>
      <height>20</height>
     </rect>
@@ -307,7 +307,7 @@ font: 75 10pt &quot;MS Shell Dlg 2&quot;;</string>
    <property name="geometry">
     <rect>
      <x>530</x>
-     <y>390</y>
+     <y>430</y>
      <width>80</width>
      <height>31</height>
     </rect>
@@ -325,7 +325,7 @@ font: 75 10pt &quot;MS Shell Dlg 2&quot;;</string>
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>430</y>
+     <y>470</y>
      <width>461</width>
      <height>20</height>
     </rect>
@@ -342,7 +342,7 @@ font: 75 10pt &quot;MS Shell Dlg 2&quot;;</string>
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>470</y>
+     <y>510</y>
      <width>461</width>
      <height>20</height>
     </rect>
@@ -439,7 +439,7 @@ p, li { white-space: pre-wrap; }
    <property name="geometry">
     <rect>
      <x>480</x>
-     <y>430</y>
+     <y>470</y>
      <width>131</width>
      <height>31</height>
     </rect>
@@ -457,7 +457,7 @@ font: 75 10pt &quot;MS Shell Dlg 2&quot;;</string>
    <property name="geometry">
     <rect>
      <x>480</x>
-     <y>470</y>
+     <y>510</y>
      <width>131</width>
      <height>31</height>
     </rect>
@@ -506,6 +506,40 @@ border-color: rgb(170, 255, 0);</string>
    </property>
    <property name="text">
     <string>Back</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_13">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>310</y>
+     <width>461</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">color: rgb(255, 255, 255);
+font: 75 10pt &quot;MS Shell Dlg 2&quot;;</string>
+   </property>
+   <property name="text">
+    <string>Number of tries to classify read  (default: 1)</string>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="spinBox_5">
+   <property name="geometry">
+    <rect>
+     <x>530</x>
+     <y>310</y>
+     <width>71</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">color: rgb(11, 11, 11);
+background-color: rgb(50, 150, 220);</string>
+   </property>
+   <property name="maximum">
+    <number>100000000</number>
    </property>
   </widget>
  </widget>
