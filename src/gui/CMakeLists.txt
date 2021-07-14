@@ -26,10 +26,12 @@ set(gui_SRC
     live_deplete_mainwindow.ui
     connection_test_mainwindow.cpp
     connection_test_mainwindow.ui
+ #   pics.qrc
     )
 
 
-qt_add_resources(gui_QRC pics.qrc)
+#qt_add_resources(gui_SRC pics.qrc)
+#qt5_add_resources(gui_SRC pics.qrc)
 
 set(gui_HDRS
     mainwindow.h
@@ -40,20 +42,21 @@ set(gui_HDRS
     QDebugStream.h
     )
 
+#qt_add_resources(gui_QRC pics.qrc)
 file(GLOB gui_SRC "*.cpp")
 file(GLOB gui_HDRS "*.h")
 file(GLOB gui_UI "*.ui")
-file(GLOB gui_QRC "*.qrc")
+#file(GLOB gui_QRC "*.qrc")
 
-add_library (gui STATIC ${gui_SRC} ${gui_HDRS} ${gui_UI} ${gui_QRC})
+add_library (gui STATIC ${gui_SRC} ${gui_HDRS} ${gui_UI})
 
-target_include_directories (gui PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} )
+target_include_directories (gui  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} )
 target_link_libraries (gui PUBLIC Qt${QT_VERSION_MAJOR}::Widgets)
 
 
 install(TARGETS gui DESTINATION lib COMPONENT libraries)
 
-install(FILES ${gui_HDRS} DESTINATION include COMPONENT headers)
+install(FILES ${gui_HDRS}  DESTINATION include COMPONENT headers)
 
 
 find_package(Qt${QT_VERSION_MAJOR}Widgets)
