@@ -255,26 +255,7 @@ struct read_classify_parser
 	}
 };
 
-/**
-    class for generating the IBF build parser group for Qt input
-*/
-struct read_classify_parser_qt
-{
-    std::string ibf_deplete_file{ };
-    std::string ibf_target_file{ };
-    std::string read_file{};
-    std::string classified_file{};
-    std::string unclassified_file{};
-    bool command = false;
-    bool show_help = false;
-    double kmer_significance = 0.95;
-    double error_rate = 0.1;
-    int threads = 1;
-    int preLen = 360;
-    int max_chunks = 1;
-    bool verbose = false;
 
-};
 
 struct live_parser
 {
@@ -637,4 +618,40 @@ struct connection_test_parser
 };
 
 
+/**
+    class for generating the IBF build parser group for Qt input
+*/
+struct read_classify_parser_qt
+{
+    std::string ibf_deplete_file{ };
+    std::string ibf_target_file{ };
+    std::string read_file{};
+    std::string classified_file{};
+    std::string unclassified_file{};
+    bool command = false;
+    bool show_help = false;
+    double kmer_significance = 0.95;
+    double error_rate = 0.1;
+    int threads = 1;
+    int preLen = 360;
+    int max_chunks = 1;
+    bool verbose = false;
+
+};
+
+/**
+    class for test connection parser group for Qt input
+*/
+
+struct connection_test_parser_qt
+{
+    // default host & port to communicate with MinKNOW
+    std::string host = "127.0.0.1";
+    std::string device{};
+    int port = 9501;
+    bool command = false;
+    bool show_help = false;
+    bool verbose = false;
+    //bool unblock_all_reads = false;
+};
 #endif //PARSER_HPP_

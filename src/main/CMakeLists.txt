@@ -27,6 +27,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/..
 # using seqan
 if (WIN32)
         add_definitions(-DMSVC_COMPILER)
+        add_definitions(-fexceptions )
         target_link_libraries (${PROJECT_NAME} gui IBF  ReadUntil  mklcore  mklseq  mkllp64  deepnano2  spdlog::spdlog_header_only) #Qt
         #target_link_libraries (${PROJECT_NAME} IBF  ReadUntil  mklcore  mklseq  mkllp64  deepnano2  spdlog::spdlog_header_only)
 
