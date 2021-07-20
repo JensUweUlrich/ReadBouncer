@@ -21,8 +21,8 @@ void live_deplete_mainwindow::on_pushButton_clicked()
 }
 
 void live_deplete_mainwindow::third_party(){
-    QDebugStream* test_1 = new QDebugStream(std::cerr, ui->text1);
-    QDebugStream* test = new QDebugStream(std::cout, ui->text1);
+    //QDebugStream* test_1 = new QDebugStream(std::cerr, ui->text1);
+    //QDebugStream* test = new QDebugStream(std::cout, ui->text1);
 }
 
 void live_deplete_mainwindow::on_pushButton_3_clicked()
@@ -102,16 +102,18 @@ void live_deplete_mainwindow::on_pushButton_7_clicked()
     QString sigLe {"Significance level for confidence interval: " + QString::number(kmer_significance)+ "\n"};
     QString erRa {"Expected sequencing error rate: " + QString::number(error_rate)+ "\n"};
     QString weights_v {"Deep Nano Weights: " +weights+ "\n"};
+    QString classThreads {"Number of threads (base calling): " +QString::number(basecall_threads)+ "\n"};
+    QString baseCallThreads {"Number of threads (classification):  " +QString::number(classify_threads)+ "\n"};
 
    QString check {""};
-   check.append(host_v + port_v + device_v + depF + targetF + sigLe + erRa + weights_v);
+   check.append(host_v + port_v + device_v + depF + targetF + sigLe + erRa + weights_v +classThreads + baseCallThreads);
    QMessageBox::information(this, "Live Classification Arguments", check);
 }
 
 
 
 void live_deplete_mainwindow::clearResults(){
-    ui->text1->QTextEdit::clear();
+    //ui->text1->QTextEdit::clear();
 }
 
 void live_deplete_mainwindow::on_pushButton_6_clicked()
@@ -120,3 +122,14 @@ void live_deplete_mainwindow::on_pushButton_6_clicked()
     QWidget *parent = this->parentWidget();
     parent->show();
 }
+
+void live_deplete_mainwindow::on_spinBox_4_valueChanged(int classificationThreads)
+{
+    live_deplete_mainwindow::classify_threads = classificationThreads;
+}
+
+void live_deplete_mainwindow::on_spinBox_5_valueChanged(int basscallingThreads)
+{
+    live_deplete_mainwindow::basecall_threads = basscallingThreads;
+}
+

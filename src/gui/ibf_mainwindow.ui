@@ -242,7 +242,7 @@ font: 75 10pt &quot;MS Shell Dlg 2&quot;;
 border-color: rgb(170, 255, 0);</string>
    </property>
    <property name="text">
-    <string>Verbose</string>
+    <string>Arguments</string>
    </property>
   </widget>
   <widget class="QTextEdit" name="text1">

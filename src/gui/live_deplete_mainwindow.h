@@ -64,6 +64,12 @@ private slots:
 
     void on_pushButton_6_clicked();
 
+    void on_spinBox_4_valueChanged(int arg1);
+
+    void on_spinBox_5_valueChanged(int arg1);
+
+    void on_pushButton_9_clicked();
+
 private:
     Ui::live_deplete_mainwindow *ui;
 
@@ -81,6 +87,8 @@ private:
 
     QString weights = "48";
     std::string weights_name = "48";
+    int basecall_threads {1};
+    int classify_threads {1};
 
     int port {9501};
     double kmer_significance{0.95};

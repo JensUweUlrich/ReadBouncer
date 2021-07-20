@@ -55,7 +55,7 @@ border-color: rgb(170, 255, 0);</string>
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>150</y>
+      <y>110</y>
       <width>191</width>
       <height>71</height>
      </rect>
@@ -80,7 +80,7 @@ border-color: rgb(170, 255, 0);</string>
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>250</y>
+      <y>220</y>
       <width>191</width>
       <height>71</height>
      </rect>
@@ -105,7 +105,7 @@ border-color: rgb(170, 255, 0);</string>
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>350</y>
+      <y>330</y>
       <width>191</width>
       <height>71</height>
      </rect>
@@ -123,14 +123,14 @@ font: 75 12pt &quot;MS Shell Dlg 2&quot;;
 border-color: rgb(170, 255, 0);</string>
     </property>
     <property name="text">
-     <string>Live-deplete</string>
+     <string>Live Classification</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_5">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>450</y>
+      <y>440</y>
       <width>191</width>
       <height>71</height>
      </rect>
@@ -167,7 +167,7 @@ border-color: rgb(170, 255, 0);</string>
      <string/>
     </property>
     <property name="pixmap">
-     <pixmap resource="pics.qrc">:/pics/dna.jpg</pixmap>
+     <pixmap resource="../main/pics.qrc">:/pics/dna.jpg</pixmap>
     </property>
    </widget>
    <widget class="QLabel" name="label_3">
@@ -276,7 +276,7 @@ font: 15pt &quot;Segoe UI Symbol&quot;;</string>
   </action>
  </widget>
  <resources>
-  <include location="pics.qrc"/>
+  <include location="../main/pics.qrc"/>
  </resources>
  <connections/>
 </ui>
