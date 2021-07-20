@@ -654,4 +654,21 @@ struct connection_test_parser_qt
     bool verbose = false;
     //bool unblock_all_reads = false;
 };
+
+struct live_parser_qt
+{
+    std::string host = "127.0.0.1";
+    std::string device{};
+    std::string ibf_deplete_file{ };
+    std::string ibf_target_file{ };
+    std::string weights = "48";
+    int port = 9501;
+    int basecall_threads = 1;
+    int classify_threads = 1;
+    double kmer_significance = 0.95;
+    double error_rate = 0.1;
+    bool command = false;
+    bool show_help = false;
+    bool verbose = false;
+};
 #endif //PARSER_HPP_

@@ -61,7 +61,7 @@
 #include "connection_test_mainwindow.h"
 #include "live_deplete_mainwindow.h"
 #include "QDebugStream.h"
-
+#include "depletionQt.hpp"
 
 std::shared_ptr<spdlog::logger> nanolive_logger;
 //std::filesystem::path NanoLiveRoot;
@@ -510,7 +510,6 @@ void test_connection_qt(connection_test_parser_qt& parser, bool unblock_all_read
 
 
     }
-//Argument:connection_test
 
 void connection_test_mainwindow::on_pushButton_4_clicked()
     {
@@ -544,7 +543,7 @@ void connection_test_mainwindow::on_pushButton_4_clicked()
     }
 
 //###################################################################################################################
-
+//deplete
 void live_deplete_mainwindow::on_pushButton_4_clicked()
     {
         StopClock NanoLiveTime;
@@ -558,10 +557,11 @@ void live_deplete_mainwindow::on_pushButton_4_clicked()
                                        QMessageBox::Yes|QMessageBox::No);
 
          if (ask == QMessageBox::Yes) {
-            /*live_depletion_parser deplete_parser{host_name, device_name, ibf_deplete_file_name,
-                                                ibf_target_file_name, weights_name, port,
-                                                kmer_significance, error_rate, false, false, true};*/
+            live_parser_qt deplete_parser_qt{host_name, device_name, ibf_deplete_file_name,
+                                                ibf_target_file_name, weights_name, port, basecall_threads,
+                                                classify_threads, kmer_significance, error_rate, false, false, true};
 
+            live_read_depletion_qt(deplete_parser_qt, false);
             third_party();
             NanoLiveTime.start();
             //live_read_depletion(deplete_parser);
@@ -586,8 +586,52 @@ void live_deplete_mainwindow::on_pushButton_4_clicked()
          } else {}
     }
 
+// target
+void live_deplete_mainwindow::on_pushButton_9_clicked()
+{
+    StopClock NanoLiveTime;
+    if (ibf_deplete_file.length() < 1 && ibf_target_file.length() < 1)
+    {
+        QMessageBox::information(this, "Warning", "Please provide an IBF file for depletion and/or  an IBF file for targeted sequencing. ");
+        return;
+    }
+    QMessageBox::StandardButton ask;
+     ask = QMessageBox::question(this, "Live-Deplete", "Live classification and rejection of nanopore reads will start, Are you sure?",
+                                   QMessageBox::Yes|QMessageBox::No);
+
+     if (ask == QMessageBox::Yes) {
+        live_parser_qt deplete_parser_qt{host_name, device_name, ibf_deplete_file_name,
+                                            ibf_target_file_name, weights_name, port, basecall_threads,
+                                            classify_threads, kmer_significance, error_rate, false, false, true};
+
+        live_read_depletion_qt(deplete_parser_qt, true);
+        third_party();
+        NanoLiveTime.start();
+        //live_read_depletion(deplete_parser);
+        NanoLiveTime.stop();
+        size_t peakSize = getPeakRSS();
+        int peakSizeMByte = (int)(peakSize / (1024 * 1024));
+        std::cout<<"--------------------------------------------------------------"<<std::endl;
+        std::cout << "Real time : " << NanoLiveTime.elapsed() << " sec" << std::endl;
+        std::cout << "CPU time  : " << cputime() << " sec" << std::endl;
+        std::cout << "Peak RSS  : " << peakSizeMByte << " MByte" << std::endl;
+        std::cout<<"--------------------------------------------------------------"<<std::endl;
+        /*live_read_depletion_qt(ibf_deplete_file_name, ibf_target_file_name, host_name,
+                               port, device_name, weights_name, kmer_significance, error_rate);*/
+         //close();
+        QMessageBox::StandardButton ask_1;
+         ask_1 = QMessageBox::question(this, "Clear Results", "Do you want to keep the last results in the output window?",
+                                       QMessageBox::Yes|QMessageBox::No);
+
+         if (ask_1 == QMessageBox::Yes) {}
+
+         if (ask_1 == QMessageBox::No) {clearResults();}
+     } else {}
+}
+
 //###################################################################################################################
-int main(int argc, char *argv[])
+int main(int argc, char *argv[])//They are entirely equivalent. char *argv[] must be read as array of pointers to char
+//and an array argument is demoted to a pointer, so pointer to pointer to char, or char **
 //int main(int argc, char const **argv)
 {
     QApplication a(argc, argv);
