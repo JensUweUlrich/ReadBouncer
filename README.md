@@ -35,17 +35,17 @@ https://forum.qt.io/topic/89404/compiling-qt-with-seqan-on-windows/2
 
 GUI with Qt6.0.3 for ReadBouncer How to use:
 
-**Deadline for TODO: 15.07.2021**   
+**Deadline for TODO: 25.07.2021**   
 **Note for me:**    
 `Running C:\Program Files\CMake\bin\cmake.exe -S C:/ReadBouncerQt/src -B C:/ReadBouncerQt/build "-GVisual Studio 16 2019" "-DCMAKE_BUILD_TYPE:String=Debug" "-DQT_QMAKE_EXECUTABLE:STRING=C:/QT/QT5.12.10/6.0.3/msvc2019_64/bin/qmake.exe" "-DCMAKE_PREFIX_PATH:STRING=C:/QT/QT5.12.10/6.0.3/msvc2019_64" "-DCMAKE_C_COMPILER:STRING=C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Tools/MSVC/14.28.29333/bin/HostX64/x64/cl.exe" "-DCMAKE_CXX_COMPILER:STRING=C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Tools/MSVC/14.28.29333/bin/HostX64/x64/cl.exe" in C:\ReadBouncerQt\build.`
 
 **TODO**:
-* Merge Master with Windows Branche together (local) and debug. -----> In progress 
-* Run the new Branche on Linux and test Live-Run.
-* Minimize the number of plugins data -> to reduce memory! from 1GB to 600-700 MB. (Almost done)
-* See toDelete file in local to reduce Run Time. (Almost done)
+* Merge Master with Windows Branche together (local) and debug. -----> Done
+* Run the new Branche on Linux and test Live-Run. --> Windows Done, working on Linux
+* Minimize the number of plugins data -> to reduce memory! from 1GB to 600-700 MB. (Done)
+* See toDelete file in local to reduce Run Time. (Done)
 * Create new installer .exe/linux. -----> In progress
-* Run Test. 
+* Run Test. (windows Done working on Linux)
 * If passed: Rechnage read me.
 * Add Linux section with Bash-Script.
 -------------------------------------------------------------------------------------------------------------------------
