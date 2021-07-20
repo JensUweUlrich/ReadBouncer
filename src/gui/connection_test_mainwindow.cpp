@@ -63,6 +63,7 @@ void connection_test_mainwindow::on_pushButton_7_clicked()
 void connection_test_mainwindow::on_checkBox_toggled(bool checked)
 {
     connection_test_mainwindow::unblock_all = checked;
+    //std::cout<<connection_test_mainwindow::unblock_all<<std::endl;
 }
 
 void connection_test_mainwindow::clearResults(){
