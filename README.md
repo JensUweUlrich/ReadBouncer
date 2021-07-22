@@ -94,7 +94,7 @@ _Elem=char
 
 The New Error occurs only on Windows because of `BOOL RemoveDirectoryW(LPCWSTR)` - this is Windows API (***which is not used on Linux***).   
 
-** Similar issues:    **    
+** Similar issues:**         
 https://github.com/seqan/seqan/issues/2301    
 https://github.com/labsquare/bamviewer-poc/compare/win    
 https://forum.qt.io/topic/89404/compiling-qt-with-seqan-on-windows/2     
@@ -144,6 +144,10 @@ Line 35: `target_link_libraries (${PROJECT_NAME} IBF   ReadUntil  deepnano2  mkl
 
 * **Qt methods in `ReadBouncer/src/main/main.cpp`  *Lines*: from 301 to 602**      
 * **`ReadBouncer/src/main/main.cpp`  *Lines*: 607, 608, 675 and 676**      
+
+
+-------------------------------------------------------------------------
+# Qt on Linux:   
 
 
 
