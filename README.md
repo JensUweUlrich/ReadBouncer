@@ -67,7 +67,7 @@
   - Copy the `ReadBouncer/src/rpc-certs/ca.crt` to `C:\ReadBouncer\build\main\Debug\` .    
 -------------------------------------------------------------------------------------------------------------------------
 **Note**:
-* In the GUI we have 4 buttons:    
+* The GUI has 4 buttons:    
 1- Builibf: build the IBF from reference (**No need to Nanopore Sequencer (instance)**)    
 2- Classiy: classify reads (**No need to Nanopore Sequencer (instance)**)    
 3- Live classification (Deplete & Target):  (**Only with Nanopore Sequencer (instance)**) 
