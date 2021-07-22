@@ -70,7 +70,7 @@
 * The GUI has 4 buttons:    
 1- Builibf: build the IBF from reference (**No need to Nanopore Sequencer (instance)**)    
 2- Classiy: classify reads (**No need to Nanopore Sequencer (instance)**)    
-3- Live classification (Deplete & Target):  (**Only with Nanopore Sequencer (instance)**) 
+3- Live classification (Deplete & Target):  (**Only with Nanopore Sequencer (instance)**)      
 4- Connection-test: test connection to Nanopore sequencer (**Only with Nanopore Sequencer (instance)**)
 
 ------------------------------------------------------------------------------------------------
@@ -78,7 +78,7 @@
 **MSBUILD**
 `MSBUILD : error MSB1009: Project file does not exist.   
 Switch: all.vcxproj`    
-project->buildsteps-> `Build: cmake.exe --build . --target ALL_BUILD` **NOT** all     
+project->buildsteps-> `Build: cmake.exe --build . --target ALL_BUILD` **NOT** `cmake.exe --build . --target all`       
 
 ----------------------------------------------------------------------------- 
 
