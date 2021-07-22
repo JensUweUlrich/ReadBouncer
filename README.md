@@ -1,39 +1,5 @@
-# submaster contains the master branch with Qt files   
+# GUI with Qt 5.15.0 for ReadBouncer How to use:
 
-common error:   
-`MSBUILD : error MSB1009: Project file does not exist.   
-Switch: all.vcxproj` --> solved (project->buildsteps-> `Build: cmake.exe --build . --target ALL_BUILD` **NOT** all)     
-## New Error:  
-`C:\projectName\build\seqan\seqan2\seqan2-src\include\seqan/basic/debug_test_system.h(796,8): error C2664: 'BOOL RemoveDirectoryW(LPCWSTR)': cannot convert argument 1 from 'const _Elem *' to 'LPCWSTR' [C:\projectName\build\main\projectName.vcxproj]    
-with    
-[    
-_Elem=char     
-]`    
-Qt on Windows is not seeing the Qt libraries, see yes but not working with! so we have an error here with the name:  `The process "C:\Program Files\CMake\bin\cmake.exe" exited with code 1. Error while building/deploying project "projectName" (kit: Desktop Qt 6.0.3 MSVC2019 64bit) When executing step "Build"` This error is not occuring on Linux Ubuntu 20. 
-
-The New Error occurs only on Windows because of `BOOL RemoveDirectoryW(LPCWSTR)` - this is Windows API I guess which is not used on Linux.   
-
-Why we have this error? because of seqAn2 libs see: **solving....... Finaly solved................ ;)**    
-https://github.com/seqan/seqan/issues/2301    
-https://github.com/labsquare/bamviewer-poc/compare/win    
-https://forum.qt.io/topic/89404/compiling-qt-with-seqan-on-windows/2     
-
------------------------------------------------------------------------------ 
-
-## How to solve this issue? 
-
-* Install this Qt Kit Desktop Qt 5.15.0 MSVC2019 64bit   
-* Use **ONLY** CDB Debugger   
-* The Initial CMake parameters should **ONLY** be:    
-`-GVisual Studio 16 2019`   
-`-DCMAKE_BUILD_TYPE:String=Release`   
-`-DQT_QMAKE_EXECUTABLE:STRING=%{Qt:qmakeExecutable}  `     
-`-DCMAKE_PREFIX_PATH:STRING=%{Qt:QT_INSTALL_PREFIX}`   
-`-DCMAKE_C_COMPILER:STRING=%{Compiler:Executable:C}`   
-`-DCMAKE_CXX_COMPILER:STRING=%{Compiler:Executable:Cxx}`    
-* See PDF (in Bearbeitung....)
-
-GUI with Qt6.0.3 for ReadBouncer How to use:
 
 **Deadline for TODO: 25.07.2021**   
 **Note for me:**    
@@ -41,10 +7,10 @@ GUI with Qt6.0.3 for ReadBouncer How to use:
 
 **TODO**:
 * Merge Master with Windows Branche together (local) and debug. -----> Done
-* Run the new Branche on Linux and test Live-Run. --> Windows Done, working on Linux
-* Minimize the number of plugins data -> to reduce memory! from 1GB to 600-700 MB. (Done)
+* Run the new Branche on Linux and test Live-Run. --> Windows Done, **working on Linux**
+* Minimize the number of plugins data -> to reduce memory! from 1GB to 600-700 MB. (Done) Installer File 87 MB, after installation: about 284.41 MB
 * See toDelete file in local to reduce Run Time. (Done)
-* Create new installer .exe/linux. -----> In progress
+* Create new installer .exe/linux. -----> Windows done 
 * Run Test. (windows Done working on Linux)
 * If passed: Rechnage read me.
 * Add Linux section with Bash-Script.
@@ -56,7 +22,7 @@ GUI with Qt6.0.3 for ReadBouncer How to use:
 * QMake 
 * CMake tool for QT 
 * UI Designer 
-* To run on Windows you need Qt 5.15.0 no Qt 6 because of some seqAn2 errors (see issues above).
+* To run on Windows you need <= Qt 5.15.0 no Qt 6 because of some seqAn2 errors (see similar issues above).
 
 -------------------------------------------------------------------------------------------------------------------------
 **Installing Qt (Windows + Linux)**: 
@@ -84,7 +50,7 @@ GUI with Qt6.0.3 for ReadBouncer How to use:
   `-DCMAKE_CXX_COMPILER:STRING=%{Compiler:Executable:Cxx}`  
    
 * Under Build Steps: `cmake.exe --build . --target ALL_BUILD`  **NOT**  `cmake.exe --build . --target all`.
-* Under Run change the executable to: `C:\NanoLive\build\main\Debug\NanoLive.exe` and the working directory should be: `C:\NanoLive\build\main\Debug\`.
+* Under Run change the executable to: `C:\ReadBouncer\build\main\Debug\ReadBouncer.exe` and the working directory should be: `C:\NanoLive\build\main\Debug\`.
 * Just save the changes (**Ctrl+S**) and Qt should rebuild ReadBouncer again automatically.
 * After finishing the build step (need about 40-60 minutes), just click on run (**Ctrl+R**) and the GUI will open.  
 -------------------------------------------------------------------------------------------------------------------------
@@ -94,17 +60,93 @@ GUI with Qt6.0.3 for ReadBouncer How to use:
 * Changing the `.ui` files from IDE and not from the designer could cause some errors! (syntax errors are common)
 -------------------------------------------------------------------------------------------------------------------------
 **Deploy Executable**:
-* To run the ReadBouncer.exe from `C:\NanoLive\build\main\Debug\NanoLive.exe` you have to add some Qt files, which allow to deploy the executable from there, this libraries should do the Job:   
-  - Copy the directory `C:\QT\QT5.12.10\6.0.3\msvc2019_64\plugins` to `C:\NanoLive\build\main\Debug\`      
+* To run the ReadBouncer.exe from `C:\ReadBouncer\build\main\Debug\ReadBouncere.exe` you have to add some Qt files, which allow to deploy the executable from there, this libraries should do the Job:   
+  - Copy the directory `C:\QT\QT5.15.0\msvc2019_64\plugins` to `C:\ReadBouncer\build\main\Debug\`      
   - Copy the files: `Qt5Core.dll` `Qt5Cored.dll` `Qt5Guid.dll` `Qt5Widgetsd.dll`   
-  - Copy all weights files from `ReadBouncer\weights` to  `C:\NanoLive\build\main\Debug\` .   
-  - Copy the `ReadBouncer/src/rpc-certs/ca.crt` to `C:\NanoLive\build\main\Debug\` .    
+  - Copy all weights files from `ReadBouncer\weights` to  `C:\ReadBouncer\build\main\Debug\` .   
+  - Copy the `ReadBouncer/src/rpc-certs/ca.crt` to `C:\ReadBouncer\build\main\Debug\` .    
 -------------------------------------------------------------------------------------------------------------------------
 **Note**:
-* While using c++ exception, **avoid using** `throw` because of CDB-debugger, using `throw` as exception will stop the software, without using `throw` Qt and CDB debugger will do the job also. Use  e.g. `try { /* */ } catch (const std::exception& e) { /* */ }` as usual but without `throw` also `//throw`
-
+* In the GUI we have 4 buttons:    
+1- Builibf: build the IBF from reference (**No need to Nanopore Sequencer (instance)**)    
+2- Classiy: classify reads (**No need to Nanopore Sequencer (instance)**)    
+3- Live classification (Deplete & Target):  (**Only with Nanopore Sequencer (instance)**) 
+4- Connection-test: test connection to Nanopore sequencer (**Only with Nanopore Sequencer (instance)**)
 
 ------------------------------------------------------------------------------------------------
+## Common Errors: 
+**MSBUILD**
+`MSBUILD : error MSB1009: Project file does not exist.   
+Switch: all.vcxproj`    
+project->buildsteps-> `Build: cmake.exe --build . --target ALL_BUILD` **NOT** all     
+
+----------------------------------------------------------------------------- 
+
+**Using Qt > 5.15.0 will cause the error:**  
+`C:\projectName\build\seqan\seqan2\seqan2-src\include\seqan/basic/debug_test_system.h(796,8): error C2664: 'BOOL RemoveDirectoryW(LPCWSTR)': cannot convert argument 1 from 'const _Elem *' to 'LPCWSTR' [C:\projectName\build\main\projectName.vcxproj]    
+with    
+[    
+_Elem=char     
+]`    
+***Qt on Windows is not seeing the Qt libraries, see yes but not working with! so we have an error here with the name:***    
+`The process "C:\Program Files\CMake\bin\cmake.exe" exited with code 1. Error while building/deploying project "projectName" (kit: Desktop Qt 6.0.3 MSVC2019 64bit) When executing step "Build"`
+***This error is not occuring on Linux Ubuntu 20 --> it is possible to run/build the GUI with ReadBouncer on Linux with Qt versions >= 5.15.0***       
+
+The New Error occurs only on Windows because of `BOOL RemoveDirectoryW(LPCWSTR)` - this is Windows API (***which is not used on Linux***).   
+
+** Similar issues:    **    
+https://github.com/seqan/seqan/issues/2301    
+https://github.com/labsquare/bamviewer-poc/compare/win    
+https://forum.qt.io/topic/89404/compiling-qt-with-seqan-on-windows/2     
+
+## To solve this issue      
+
+* Install this Qt Kit Desktop Qt 5.15.0 MSVC2019 64bit   
+* Use **ONLY** CDB Debugger   
+* The Initial CMake parameters should **ONLY** be:    
+`-GVisual Studio 16 2019`   
+`-DCMAKE_BUILD_TYPE:String=Release`   
+`-DQT_QMAKE_EXECUTABLE:STRING=%{Qt:qmakeExecutable}`     
+`-DCMAKE_PREFIX_PATH:STRING=%{Qt:QT_INSTALL_PREFIX}`   
+`-DCMAKE_C_COMPILER:STRING=%{Compiler:Executable:C}`   
+`-DCMAKE_CXX_COMPILER:STRING=%{Compiler:Executable:Cxx}`    
+* See PDF (in Bearbeitung....)
+---------------------------------------------------------------
+
+# Run ReadBouncer without Qt (no GUI)    
+**To run ReadBouncer using only C++ librarys you need to remove alle linkers to Qt and GUI libs**    
+**Remove:**     
+* From ReadBouncer/src/main/CMakeLists.txt the Lines: 3, 4, 11, 14, 22, 31 and 35:  
+Line 3: `find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets REQUIRED) #Qt`    
+Line 4: `find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets REQUIRED) #Qt` 
+Line 11: `qt_add_resources(Main_SRC pics.qrc) #Qt` 
+Line14: `add_executable (${PROJECT_NAME} WIN32 ${MAIN_HDRS} ${Main_SRC})`         
+Line 22: `target_link_libraries (${PROJECT_NAME} Qt${QT_VERSION_MAJOR}::Widgets) #Qt`    
+Line 31: `target_link_libraries (${PROJECT_NAME} gui IBF  ReadUntil  mklcore  mklseq  mkllp64  deepnano2  spdlog::spdlog_header_only) #Qt`  
+Line 35: `target_link_libraries (${PROJECT_NAME} gui IBF   ReadUntil  deepnano2  mkllp64  mklseq  mklcore  spdlog::spdlog_header_only) #Qt` 
+* Line 14 should be without WIN32 only `add_executable (${PROJECT_NAME} ${MAIN_HDRS} ${Main_SRC})`     
+* Line 31 and 35 should be without the library `gui`     
+Line 31: `target_link_libraries (${PROJECT_NAME} IBF  ReadUntil  mklcore  mklseq  mkllp64  deepnano2  spdlog::spdlog_header_only)`  
+Line 35: `target_link_libraries (${PROJECT_NAME} IBF   ReadUntil  deepnano2  mkllp64  mklseq  mklcore  spdlog::spdlog_header_only)`  
+
+* **All Qt Headers in `ReadBouncer/src/main/main.cpp` have to be deleted:**      
+
+`#include <QApplication>`     
+`#include <QAbstractButton>`      
+`#include <QDebug>`     
+`#include "mainwindow.h"`      
+`#include "ibf_mainwindow.h"`     
+`#include "classify_mainwindow.h"`     
+`#include "connection_test_mainwindow.h"`     
+`#include "live_deplete_mainwindow.h"`      
+`#include "QDebugStream.h"`      
+`#include "depletionQt.hpp"`      
+
+* **Qt methods in `ReadBouncer/src/main/main.cpp`  *Lines*: from 301 to 602**      
+* **`ReadBouncer/src/main/main.cpp`  *Lines*: 607, 608, 675 and 676**      
+
+
+
 
 # ReadBouncer
 
