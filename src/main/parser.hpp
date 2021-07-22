@@ -617,7 +617,6 @@ struct connection_test_parser
 	}
 };
 
-
 /**
     class for generating the IBF build parser group for Qt input
 */
@@ -671,4 +670,8 @@ struct live_parser_qt
     bool show_help = false;
     bool verbose = false;
 };
+
+
+
+
 #endif //PARSER_HPP_

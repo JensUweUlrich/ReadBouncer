@@ -11,7 +11,7 @@ set(Main_SRC main.cpp)
 qt_add_resources(Main_SRC pics.qrc) #Qt
 
 file(GLOB MAIN_HDRS "*.hpp")
-add_executable (${PROJECT_NAME} ${MAIN_HDRS} ${Main_SRC})
+add_executable (${PROJECT_NAME} WIN32 ${MAIN_HDRS} ${Main_SRC})
 
 FIND_PATH(DEEPNANO_INCLUDE_DIR DeepNano2.h "${CMAKE_CURRENT_SOURCE_DIR}/../libBaseCaller" DOC "Deepnano2 includes")
 

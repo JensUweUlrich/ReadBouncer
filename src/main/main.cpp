@@ -51,10 +51,6 @@
 #include <QApplication>
 #include <QAbstractButton>
 #include <QDebug>
-
-// this Qt libs are in src/main/gui
-
-//#include "guiButtons.hpp"
 #include "mainwindow.h"
 #include "ibf_mainwindow.h"
 #include "classify_mainwindow.h"
@@ -62,6 +58,8 @@
 #include "live_deplete_mainwindow.h"
 #include "QDebugStream.h"
 #include "depletionQt.hpp"
+
+
 
 std::shared_ptr<spdlog::logger> nanolive_logger;
 //std::filesystem::path NanoLiveRoot;
@@ -546,7 +544,6 @@ void connection_test_mainwindow::on_pushButton_4_clicked()
 //deplete
 void live_deplete_mainwindow::on_pushButton_4_clicked()
     {
-        StopClock NanoLiveTime;
         if (ibf_deplete_file.length() < 1 && ibf_target_file.length() < 1)
         {
             QMessageBox::information(this, "Warning", "Please provide an IBF file for depletion and/or  an IBF file for targeted sequencing. ");
@@ -562,20 +559,6 @@ void live_deplete_mainwindow::on_pushButton_4_clicked()
                                                 classify_threads, kmer_significance, error_rate, false, false, true};
 
             live_read_depletion_qt(deplete_parser_qt, false);
-            third_party();
-            NanoLiveTime.start();
-            //live_read_depletion(deplete_parser);
-            NanoLiveTime.stop();
-            size_t peakSize = getPeakRSS();
-            int peakSizeMByte = (int)(peakSize / (1024 * 1024));
-            std::cout<<"--------------------------------------------------------------"<<std::endl;
-            std::cout << "Real time : " << NanoLiveTime.elapsed() << " sec" << std::endl;
-            std::cout << "CPU time  : " << cputime() << " sec" << std::endl;
-            std::cout << "Peak RSS  : " << peakSizeMByte << " MByte" << std::endl;
-            std::cout<<"--------------------------------------------------------------"<<std::endl;
-            /*live_read_depletion_qt(ibf_deplete_file_name, ibf_target_file_name, host_name,
-                                   port, device_name, weights_name, kmer_significance, error_rate);*/
-             //close();
             QMessageBox::StandardButton ask_1;
              ask_1 = QMessageBox::question(this, "Clear Results", "Do you want to keep the last results in the output window?",
                                            QMessageBox::Yes|QMessageBox::No);
@@ -589,7 +572,7 @@ void live_deplete_mainwindow::on_pushButton_4_clicked()
 // target
 void live_deplete_mainwindow::on_pushButton_9_clicked()
 {
-    StopClock NanoLiveTime;
+
     if (ibf_deplete_file.length() < 1 && ibf_target_file.length() < 1)
     {
         QMessageBox::information(this, "Warning", "Please provide an IBF file for depletion and/or  an IBF file for targeted sequencing. ");
@@ -605,20 +588,7 @@ void live_deplete_mainwindow::on_pushButton_9_clicked()
                                             classify_threads, kmer_significance, error_rate, false, false, true};
 
         live_read_depletion_qt(deplete_parser_qt, true);
-        third_party();
-        NanoLiveTime.start();
-        //live_read_depletion(deplete_parser);
-        NanoLiveTime.stop();
-        size_t peakSize = getPeakRSS();
-        int peakSizeMByte = (int)(peakSize / (1024 * 1024));
-        std::cout<<"--------------------------------------------------------------"<<std::endl;
-        std::cout << "Real time : " << NanoLiveTime.elapsed() << " sec" << std::endl;
-        std::cout << "CPU time  : " << cputime() << " sec" << std::endl;
-        std::cout << "Peak RSS  : " << peakSizeMByte << " MByte" << std::endl;
-        std::cout<<"--------------------------------------------------------------"<<std::endl;
-        /*live_read_depletion_qt(ibf_deplete_file_name, ibf_target_file_name, host_name,
-                               port, device_name, weights_name, kmer_significance, error_rate);*/
-         //close();
+
         QMessageBox::StandardButton ask_1;
          ask_1 = QMessageBox::question(this, "Clear Results", "Do you want to keep the last results in the output window?",
                                        QMessageBox::Yes|QMessageBox::No);
@@ -636,9 +606,6 @@ int main(int argc, char *argv[])//They are entirely equivalent. char *argv[] mus
 {
     QApplication a(argc, argv);
     MainWindow w;
-
-    QString testQt = "Window has been added...";
-    qDebug() <<testQt;
 
 	StopClock NanoLiveTime;
 	NanoLiveTime.start();
