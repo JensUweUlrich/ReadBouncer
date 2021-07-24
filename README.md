@@ -7,11 +7,11 @@
 
 **TODO**:
 * Merge Master with Windows Branche together (local) and debug. -----> Done
-* Run the new Branche on Linux and test Live-Run. --> Windows Done, **working on Linux**
+* Run the new Branche on Linux and test Live-Run. --> Windows Done, **Done**
 * Minimize the number of plugins data -> to reduce memory! from 1GB to 600-700 MB. (Done) Installer File 87 MB, after installation: about 284.41 MB
 * See toDelete file in local to reduce Run Time. (Done)
 * Create new installer .exe/linux. -----> Windows done 
-* Run Test. (windows Done working on Linux)
+* Run Test. (Done)
 * If passed: Rechnage read me.
 * Add Linux section with Bash-Script.
 -------------------------------------------------------------------------------------------------------------------------
@@ -148,6 +148,11 @@ Line 35: `target_link_libraries (${PROJECT_NAME} IBF   ReadUntil  deepnano2  mkl
 
 -------------------------------------------------------------------------
 # Qt on Linux:   
+
+* Same Code without any changes, we run ReadBouncer GUI on Ubuntu 20 with QT 6.0.3, also tested with Qt 5.     
+* Deploy Qt Application on Ubuntu 20 is hard issue [e.g] (https://github.com/probonopd/linuxdeployqt/issues/340) and some errors will occur! We did the deployment manuell.    
+* By using Ubuntu < 16 or Linux Mint, Linux Debian you can use [linuxdeployqt](https://github.com/probonopd/linuxdeployqt).     
+* For doing manuell deploy you need this libraries:       
 
 
 
