@@ -116,7 +116,7 @@ https://forum.qt.io/topic/89404/compiling-qt-with-seqan-on-windows/2
 # Run ReadBouncer without Qt (no GUI)    
 **To run ReadBouncer using only C++ librarys you need to remove alle linkers to Qt and GUI libs**    
 **Remove:**     
-* From ReadBouncer/src/main/CMakeLists.txt the Lines: 3, 4, 11, 14, 22, 31 and 35:  
+* From `ReadBouncer/src/main/CMakeLists.txt` the Lines: 3, 4, 11, 14, 22, 31 and 35:  
 Line 3: `find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets REQUIRED) #Qt`    
 Line 4: `find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets REQUIRED) #Qt` 
 Line 11: `qt_add_resources(Main_SRC pics.qrc) #Qt` 
