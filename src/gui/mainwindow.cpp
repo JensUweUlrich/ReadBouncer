@@ -70,11 +70,13 @@ void MainWindow::on_actionExit_triggered()
 
 void MainWindow::on_actionNanoLive_triggered()
 {
+    //QString windowTitel = QString("<span style='color:#ff0000;'>%1</span>").arg(">>>");
     QString windowTitel = "About ReadBouncer Tool";
 
     QString boxInformations = "C++ based for live classification of Nanopore reads (aka adaptive sequencing) on Windows without the need for GPUs."
                               " The Toolkit uses Oxford Nanopore's Read Until functionality to unblock reads that match to a given reference sequence database."
                               " The database is indexed as Interleaved Bloom Filter for fast classification.";
+    //setStyleSheet("QMessageBox{background-color: rgb(90, 90, 90);  border: none;font-family: Arial; font-style: normal;  font-size: 15pt; color: #000000 ; }");
     QMessageBox::information(this, windowTitel, boxInformations);
     //QMessageBox::setStyleSheet("background-color:red");
 }

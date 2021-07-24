@@ -256,7 +256,7 @@ font: 15pt &quot;Segoe UI Symbol&quot;;</string>
   </action>
   <action name="actionNanoLive">
    <property name="text">
-    <string>NanoLive</string>
+    <string>ReadBouncer</string>
    </property>
   </action>
   <action name="actionClassify">
