@@ -1,16 +1,13 @@
 # GUI with Qt 5.15.0 for ReadBouncer How to use:
   
-**Note for me:**    
-`Running C:\Program Files\CMake\bin\cmake.exe -S C:/ReadBouncerQt/src -B C:/ReadBouncerQt/build "-GVisual Studio 16 2019" "-DCMAKE_BUILD_TYPE:String=Debug" "-DQT_QMAKE_EXECUTABLE:STRING=C:/QT/QT5.12.10/6.0.3/msvc2019_64/bin/qmake.exe" "-DCMAKE_PREFIX_PATH:STRING=C:/QT/QT5.12.10/6.0.3/msvc2019_64" "-DCMAKE_C_COMPILER:STRING=C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Tools/MSVC/14.28.29333/bin/HostX64/x64/cl.exe" "-DCMAKE_CXX_COMPILER:STRING=C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Tools/MSVC/14.28.29333/bin/HostX64/x64/cl.exe" in C:\ReadBouncerQt\build.`
-
 **TODO**:
-* Merge Master with Windows Branche together (local) and debug. -----> Done
+* Merge Master with Windows Branche together (local) and debug. -----> **Done**
 * Run the new Branche on Linux and test Live-Run. --> Windows Done, **Done**
-* Minimize the number of plugins data -> to reduce memory! from 1GB to 600-700 MB. (Done) Installer File 87 MB, after installation: about 284.41 MB
-* See toDelete file in local to reduce Run Time. (Done)
-* Create new installer .exe/linux. -----> Windows done 
-* Run Test. (Done)
-* If passed: Rechnage read me.
+* Minimize the number of plugins data -> to reduce memory! from 1GB to 600-700 MB. (Done) Installer File 87 MB, after installation: about 284.41 MB **Done**
+* See toDelete file in local to reduce Run Time. **Done**
+* Create new installer .exe/linux. **Done**
+* Run Test. **Done**
+* If passed: Rechnage read me. **Done**
 -------------------------------------------------------------------------------------------------------------------------
 **Requirements for Qt 5.15.0 (All this kits are automatically installed with Qt)**: 
 
@@ -56,7 +53,7 @@
 * The libraries are designed to generate the files in the right order, sothat you don't need to open any other files.  
 * Changing the `.ui` files from IDE and not from the designer could cause some errors! (syntax errors are common)
 -------------------------------------------------------------------------------------------------------------------------
-**Deploy Executable**:
+**Deploy Executable(only if you want to run from directory, if running using Qr Creator skip)**:
 * To run the ReadBouncer.exe from `C:\ReadBouncer\build\main\Debug\ReadBouncere.exe` you have to add some Qt files, which allow to deploy the executable from there, this libraries should do the Job:   
   - Copy the directory `C:\QT\QT5.15.0\msvc2019_64\plugins` to `C:\ReadBouncer\build\main\Debug\`      
   - Copy the files: `Qt5Core.dll` `Qt5Cored.dll` `Qt5Guid.dll` `Qt5Widgetsd.dll`   
@@ -107,10 +104,9 @@ https://forum.qt.io/topic/89404/compiling-qt-with-seqan-on-windows/2
 `-DCMAKE_PREFIX_PATH:STRING=%{Qt:QT_INSTALL_PREFIX}`   
 `-DCMAKE_C_COMPILER:STRING=%{Compiler:Executable:C}`   
 `-DCMAKE_CXX_COMPILER:STRING=%{Compiler:Executable:Cxx}`    
-* See PDF (in Bearbeitung....)
 ---------------------------------------------------------------
 
-# Run ReadBouncer without Qt (no GUI)    
+# Run ReadBouncer without Qt (without GUI)    
 **To run ReadBouncer using only C++ librarys you need to remove alle linkers to Qt and GUI libs**    
 **Remove:**     
 * From `ReadBouncer/src/main/CMakeLists.txt` the Lines: 3, 4, 11, 14, 22, 31 and 35:  
@@ -144,7 +140,7 @@ Line 35: `target_link_libraries (${PROJECT_NAME} IBF   ReadUntil  deepnano2  mkl
 
 
 -------------------------------------------------------------------------
-# Qt on Linux:   
+# Qt on Linux (if you are running the ReadBouncer from Qt Creator skip this points):   
 
 * Same Code without any changes, we run ReadBouncer GUI on Ubuntu 20 with QT 6.0.3, also tested with Qt 5.     
 * Deploy Qt Application on Ubuntu 20 is hard issue [e.g](https://github.com/probonopd/linuxdeployqt/issues/340) and some errors will occur! We did the deployment manuell.    
