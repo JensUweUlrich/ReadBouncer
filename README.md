@@ -34,7 +34,7 @@
 * While Qt start building ReadBouncer, stop the process and go to `Projects` under Debug in Qt-Creator main window. 
 * Check that Qt-Creator is building the ReadBouncer with the MSVC2019 kit. 
 * Under CMake in `Projects` change the build directory to the `ReadBouncer/build`.
-* Make sure that the initial CMake parameters are:  
+* Make sure that the initial CMake parameters are (**Qt should set it automatically**):  
    
   `-GVisual Studio 16 2019`  
   `-DCMAKE_BUILD_TYPE:String=RelWithDebInfo`  
@@ -44,14 +44,15 @@
   `-DCMAKE_CXX_COMPILER:STRING=%{Compiler:Executable:Cxx}`  
    
 * Under Build Steps: `cmake.exe --build . --target ALL_BUILD`  **NOT**  `cmake.exe --build . --target all`.
+* Wait until Qt finish building ReadBouncer (about 30-40 min).
 * Under Run change the executable to: `C:\ReadBouncer\build\main\Debug\ReadBouncer.exe` and the working directory should be: `C:\NanoLive\build\main\Debug\`.
 * Just save the changes (**Ctrl+S**) and Qt should rebuild ReadBouncer again automatically.
-* After finishing the build step (need about 40-60 minutes), just click on run (**Ctrl+R**) and the GUI will open.  
+* After finishing the build step just click on run (**Ctrl+R**) and the GUI will open.  
 -------------------------------------------------------------------------------------------------------------------------
 **Changing the GUI**:
 * For changing you can open the `.ui` files such as `MainWindow.ui`.
-* The libraries are designed to generate the files in the right order, sothat you don't need to open any other files.  
-* Changing the `.ui` files from IDE and not from the designer could cause some errors! (syntax errors are common)
+* The libraries are designed to generate the files in the right order, so that you don't need to open any other files.  
+* Changing the `.ui` files from IDE and not from the designer could cause some errors! (syntax errors are common).
 -------------------------------------------------------------------------------------------------------------------------
 **Deploy Executable(only if you want to run from directory, if running using Qr Creator skip)**:
 * To run the ReadBouncer.exe from `C:\ReadBouncer\build\main\Debug\ReadBouncere.exe` you have to add some Qt files, which allow to deploy the executable from there, this libraries should do the Job:   
