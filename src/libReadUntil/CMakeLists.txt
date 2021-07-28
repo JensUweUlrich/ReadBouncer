@@ -117,10 +117,10 @@ find_package(spdlog REQUIRED)
 file(GLOB WEIGHTS "${CMAKE_CURRENT_SOURCE_DIR}/../rpc-certs/*")
 install(FILES ${WEIGHTS} DESTINATION rpc-certs COMPONENT certificates)
 
-include_directories("${CMAKE_CURRENT_BINARY_DIR}/minknow/proto" "${CMAKE_CURRENT_SOURCE_DIR}/../util")
+include_directories("${CMAKE_CURRENT_BINARY_DIR}/minknow/proto" "${CMAKE_CURRENT_SOURCE_DIR}/../util" "${CMAKE_CURRENT_BINARY_DIR}/stduuid/include")
 
 add_library (ReadUntil STATIC ${READUNTILSRCS} ${READUNTILHDRS} ${minknow_srcs})
-target_include_directories (ReadUntil PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} "${CMAKE_CURRENT_BINARY_DIR}/minknow/proto")
+target_include_directories (ReadUntil PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} "${CMAKE_CURRENT_BINARY_DIR}/minknow/proto" "${CMAKE_CURRENT_BINARY_DIR}/stduuid/include")
 target_link_libraries (ReadUntil grpc++ ${_PROTOBUF_LIBPROTOBUF} spdlog::spdlog_header_only)
 
 install(TARGETS ReadUntil DESTINATION lib COMPONENT libraries)

@@ -346,7 +346,7 @@ void classify_deplete_reads(SafeQueue<interleave::Read>& classification_queue,
 					{
 						uint8_t iterstep = (*it).second.second;
 						// after 10 kb of sequencing the read => stop receiving further data
-						if (iterstep >= 40)
+						if (iterstep >= 5)
 						{
 							uint32_t readlen = read.getSeqLength() + (*it).second.first.getSeqLength();
 							once_seen.erase(it);
@@ -705,10 +705,10 @@ void live_read_depletion(live_parser& parser, bool target_sequencing)
 	// set chunk size by changing break_reads_after_seconds
 	// seems to be overturned by TOML file configuration
 	readuntil::AnalysisConfiguration* ana_conf = (readuntil::AnalysisConfiguration*)client.getMinKnowService(readuntil::MinKnowServiceType::ANALYSIS_CONFIGURATION);
-	ana_conf->set_break_reads_after_seconds(0.4);
+	ana_conf->set_break_reads_after_seconds(0.8);
 	if (parser.verbose)
 	{
-		nanolive_logger->info("Set break_reads_after_seconds = 0.4");
+		nanolive_logger->info("Set break_reads_after_seconds = 0.8");
 		nanolive_logger->flush();
 	}
 
@@ -796,6 +796,8 @@ void live_read_depletion(live_parser& parser, bool target_sequencing)
 
 	// create thread/task for sending action messages back to MinKNOW
 	tasks.emplace_back(std::async(std::launch::async, &readuntil::Data::sendActions, data, std::ref(action_queue), std::ref(duration_queue)));
+	tasks.emplace_back(std::async(std::launch::async, &readuntil::Data::controlResponses, data, std::ref(action_queue)));
+	
 
 	// create task for calculating average times needed to complete the different tasks
 	tasks.emplace_back(std::async(std::launch::async, &compute_average_durations, std::ref(duration_queue), 
