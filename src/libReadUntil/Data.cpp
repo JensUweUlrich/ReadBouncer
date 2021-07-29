@@ -22,6 +22,13 @@ namespace readuntil
         // TODO: better usage of logging
         data_logger = spdlog::get("RUClientLog");
         resolveFilterClasses();
+
+	std::random_device rd;
+	auto seed_data = std::array<int, std::mt19937::state_size> {};
+	std::generate(std::begin(seed_data), std::end(seed_data), std::ref(rd));
+	std::seed_seq seq(std::begin(seed_data), std::end(seed_data));
+	std::mt19937 generator(seq);
+	uuid_generator = uuids::uuid_random_generator(generator);
         
     }
 
@@ -82,7 +89,7 @@ namespace readuntil
 
         // create uuid for action
         
-        uuids::uuid const id = uuids::uuid_system_generator{}();
+        uuids::uuid const id = uuid_generator();
         SendActions sent{ response, StopClock::Clock::now() };
         non_response.assign(std::pair(uuids::to_string(id), sent));
         action->set_action_id(uuids::to_string(id));

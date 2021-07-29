@@ -84,6 +84,7 @@ namespace readuntil
             readuntil::AnalysisConfiguration* conf;
             std::set<int32> filterClasses;
             std::shared_ptr<spdlog::logger> data_logger;
+	    uuids::uuid_random_generator uuid_generator{};
             SafeMap<string,SendActions> non_response;
             SafeSet<string> action_responses;
             bool runs = false;
