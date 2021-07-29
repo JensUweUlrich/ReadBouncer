@@ -48,7 +48,7 @@ ReadBouncer has the following dependencies that should be installed before compi
 * [Go](https://golang.org/dl/)
 * [NASM Compiler](https://www.nasm.us/)
 * [NSIS](https://nsis.sourceforge.io/Main_Page) Needed for creation of installer executables
-* [UUID] On Linux machines, `uuid` and `uuid-dev` need to be installed (e.g. `sudo apt install uuid uuid-dev`)
+* [UUID](https://linux.die.net/man/3/uuid) On Linux machines, `uuid` and `uuid-dev` need to be installed (e.g. `sudo apt install uuid uuid-dev`)
 
 Then just need to clone the repository to your computer, create a <b>build</b> directory within cloned directory and let cmake do the work for you
 
