@@ -30,7 +30,7 @@ C++ based tool for live classification of Nanopore reads (aka adaptive sampling)
 
 ### <a name="install"></a>Installation
 
-The easiest way is to download the provided installer files for [Windows](https://github.com/JensUweUlrich/ReadBouncer/releases/download/v1.0.0/ReadBouncer-1.0.0-win64.exe) or [Linux](https://github.com/JensUweUlrich/ReadBouncer/releases/download/v1.0.0/ReadBouncer-1.0.0-Linux.sh) and simply click through the installation process. 
+The easiest way is to download the provided installer files for [Windows](https://owncloud.hpi.de/s/EBlR2DqKcuhQQbv) or [Linux](https://owncloud.hpi.de/s/sCj4TXlPu8sYcWm) and simply click through the installation process. 
 
 ### <a name="compile"></a>Compilation From Source
 
