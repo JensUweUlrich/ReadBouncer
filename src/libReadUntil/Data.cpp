@@ -90,8 +90,7 @@ namespace readuntil
         // create uuid for action
         
         uuids::uuid const id = uuid_generator();
-        SendActions sent{ response, StopClock::Clock::now() };
-        non_response.assign(std::pair(uuids::to_string(id), sent));
+        
         action->set_action_id(uuids::to_string(id));
         //std::cout << uuids::to_string(id) << std::endl;
         /*std::stringstream buf;
@@ -328,33 +327,6 @@ namespace readuntil
         data_logger->flush();
     }
 
-    void Data::controlResponses(SafeQueue<readuntil::ActionResponse>& action_queue)
-    {
-        while (isRunning())
-        {
-            std::unordered_map<std::string, SendActions>::iterator it = non_response.begin();
-            while (it != non_response.end())
-            {
-                if (action_responses.contains((*it).first))
-                {
-                    action_responses.erase((*it).first);
-                    it = non_response.erase(it);
-                    continue;
-                }
-                StopClock::TimePoint end = StopClock::Clock::now();
-                std::chrono::duration< StopClock::Seconds > elapsed = end - (*it).second.creation_time;
-                if (elapsed.count() > 5.0)
-                {
-                    std::cout << (*it).second.action.channelNr << "\t" << (*it).second.action.readNr << std::endl;
-                    action_queue.push((*it).second.action);
-                    it = non_response.erase(it);
-                }
-                else
-                    ++it;
-            }
-        }
-    }
-
 	/**
     *   pull live nanopore signals from the stream and add the reads to the basecalling queue
     *   @basecall_queue : safe queue for storing reads ready for basecalling
@@ -386,7 +358,6 @@ namespace readuntil
 
             for (GetLiveReadsResponse_ActionResponse actResp : response.action_responses())
             {
-                action_responses.insert(actResp.action_id());
                 if (actResp.response() == GetLiveReadsResponse_ActionResponse_Response_SUCCESS)
                     success++;
                 else  if (actResp.response() == GetLiveReadsResponse_ActionResponse_Response_FAILED_READ_FINISHED)

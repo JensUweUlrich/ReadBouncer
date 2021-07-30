@@ -705,10 +705,10 @@ void live_read_depletion(live_parser& parser, bool target_sequencing)
 	// set chunk size by changing break_reads_after_seconds
 	// seems to be overturned by TOML file configuration
 	readuntil::AnalysisConfiguration* ana_conf = (readuntil::AnalysisConfiguration*)client.getMinKnowService(readuntil::MinKnowServiceType::ANALYSIS_CONFIGURATION);
-	ana_conf->set_break_reads_after_seconds(0.8);
+	ana_conf->set_break_reads_after_seconds(0.4);
 	if (parser.verbose)
 	{
-		nanolive_logger->info("Set break_reads_after_seconds = 0.8");
+		nanolive_logger->info("Set break_reads_after_seconds = 0.4");
 		nanolive_logger->flush();
 	}
 

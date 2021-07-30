@@ -69,11 +69,6 @@ namespace readuntil
         bool response;
     };
 
-    struct SendActions
-    {
-        ActionResponse action;
-        StopClock::TimePoint creation_time;
-    };
 
     class Data: public MinKnowService
     {
@@ -84,9 +79,7 @@ namespace readuntil
             readuntil::AnalysisConfiguration* conf;
             std::set<int32> filterClasses;
             std::shared_ptr<spdlog::logger> data_logger;
-	    uuids::uuid_random_generator uuid_generator{};
-            SafeMap<string,SendActions> non_response;
-            SafeSet<string> action_responses;
+	        uuids::uuid_random_generator uuid_generator{};
             bool runs = false;
             bool unblock_all = false;
             uint8_t actionBatchSize = 50;
