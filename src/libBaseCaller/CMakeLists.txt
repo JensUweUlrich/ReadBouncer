@@ -1,17 +1,23 @@
 
 
 if (WIN32)
+
+    if (NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/Library/lib/mkl_core.lib")
+        file(DOWNLOAD "https://anaconda.org/intel/mkl-static/2020.3/download/win-64/mkl-static-2020.3-intel_279.tar.bz2" "${CMAKE_CURRENT_BINARY_DIR}/mkl-static.tar.bz2")
+        execute_process(COMMAND "${CMAKE_COMMAND}" "-E" "tar" "xvz" "${CMAKE_CURRENT_BINARY_DIR}/mkl-static.tar.bz2" WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+    endif()
+    
     add_library(mklcore STATIC IMPORTED GLOBAL)
     set_target_properties(mklcore PROPERTIES 
-        IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/mkl_core.lib"
+        IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/Library/lib/mkl_core.lib"
     )
     add_library(mklseq STATIC IMPORTED GLOBAL)
     set_target_properties(mklseq PROPERTIES 
-        IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/mkl_sequential.lib"
+        IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/Library/lib/mkl_sequential.lib"
     )
     add_library(mkllp64 STATIC IMPORTED GLOBAL)
     set_target_properties(mkllp64 PROPERTIES 
-        IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/mkl_intel_lp64.lib"
+        IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/Library/lib/mkl_intel_lp64.lib"
     )
     add_library(deepnano2 STATIC IMPORTED GLOBAL)
     set_target_properties(deepnano2 PROPERTIES 

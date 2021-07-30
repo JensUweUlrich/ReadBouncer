@@ -796,7 +796,6 @@ void live_read_depletion(live_parser& parser, bool target_sequencing)
 
 	// create thread/task for sending action messages back to MinKNOW
 	tasks.emplace_back(std::async(std::launch::async, &readuntil::Data::sendActions, data, std::ref(action_queue), std::ref(duration_queue)));
-	tasks.emplace_back(std::async(std::launch::async, &readuntil::Data::controlResponses, data, std::ref(action_queue)));
 	
 
 	// create task for calculating average times needed to complete the different tasks
