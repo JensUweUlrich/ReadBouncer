@@ -30,7 +30,7 @@ C++ based tool for live classification of Nanopore reads (aka adaptive sampling)
 
 ### <a name="install"></a>Installation
 
-The easiest way is to download the provided installer files for [Windows](https://owncloud.hpi.de/s/EBlR2DqKcuhQQbv) or [Linux](https://owncloud.hpi.de/s/sCj4TXlPu8sYcWm) and simply click through the installation process. 
+The easiest way is to download the provided installer files for [Windows](https://owncloud.hpi.de/s/v7D7OoFVnmVymzM) or [Linux](https://owncloud.hpi.de/s/RBpVMqZdGEG0j7r) and simply click through the installation process. 
 
 ### <a name="compile"></a>Compilation From Source
 
