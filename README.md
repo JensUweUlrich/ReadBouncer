@@ -16,18 +16,12 @@
     - [Classify already sequenced reads](#classifyreads)
     - [Test unblocking all reads](#unblockall)
     - [Deplete Host Background Reads](#host-depletion)
-  - [Advanced features](#advanced)
-  - [Algorithm overview](#algo)
-  - [Getting help](#help)
-  - [Citing minimap2](#cite)
-- [Developers' Guide](#dguide)
-- [Limitations](#limit)
 
 ## <a name="overview"></a>Overview
-C++ based tool for live classification of Nanopore reads (aka adaptive sequencing) on Windows and Linux without the need for GPUs. The Toolkit uses Oxford Nanopore's Read Until functionality to unblock reads that match to a given reference sequence database. The database is indexed as Interleaved Bloom Filter for fast classification.
-* In a first step the reference sequences were used to build an Interleaved Bloom Filter using the [SeqAn library](https://github.com/seqan/seqan3)
+C++ based tool for live classification of Nanopore reads (aka adaptive sampling) on Windows and Linux without the need for GPUs. The Toolkit uses Oxford Nanopore's Read Until functionality to unblock reads that match to a given reference sequence database. The database is indexed as Interleaved Bloom Filter for fast classification.
+* In a first step the reference sequences are used to build an Interleaved Bloom Filter using the [SeqAn library](https://github.com/seqan/seqan3)
 * Interleaved Bloom Filters can be used as depletion or enrichment target
-* After Starting a sequencing run ReadBouncer received raw current signals from the sequencer via ONT's [MinKNOW API](https://github.com/nanoporetech/minknow_api) by using Google's remote procedure calls ([gRPC](https://grpc.io/))
+* After Starting a sequencing run, ReadBouncer receives raw current signals from the sequencer via ONT's [MinKNOW API](https://github.com/nanoporetech/minknow_api) using Google's remote procedure calls ([gRPC](https://grpc.io/))
 * Signals are basecalled in real-time with [DeepNano-blitz](https://github.com/fmfi-compbio/deepnano-blitz)
 * Basecalled reads are matched to the reference sequences in the Interleaved Bloom Filters and unblock/discard messages are sent back to the sequencer according to the read classification 
 
@@ -36,7 +30,7 @@ C++ based tool for live classification of Nanopore reads (aka adaptive sequencin
 
 ### <a name="install"></a>Installation
 
-The easiest way is to download the provided installer EXE and simply click through the installation process. 
+The easiest way is to download the provided installer files for [Windows](https://owncloud.hpi.de/s/EBlR2DqKcuhQQbv) or [Linux](https://owncloud.hpi.de/s/sCj4TXlPu8sYcWm) and simply click through the installation process. 
 
 ### <a name="compile"></a>Compilation From Source
 
@@ -66,7 +60,7 @@ cmake.exe  ..\src
 cmake.exe --build . --config Release
 cmake.exe --build . --config Release --target package
 ```
-The last step creates the <b>ReadBouncer-0.3.0-win64.exe</b> within the build directory, which is a simple installer for Windows that leads you through the installation process.
+The last step creates the <b>ReadBouncer-1.0.0-win64.exe</b> within the build directory, which is a simple installer for Windows that leads you through the installation process.
 
 #### <a name="linuxcompile"></a>Compilation on Linux
 
@@ -81,7 +75,7 @@ cmake  ../src
 cmake --build . --config Release
 cmake --build . --config Release --target package
 ```
-The last step creates the <b>ReadBouncer-0.3.0-Linux.sh</b> within the build directory, which is a simple command line installer for Linux that leads you through the installation process. You can also skip the last `cmake` step and just call `sudo make install`, which installs ReadBouncer in your `/usr/local/` directory. 
+The last step creates the <b>ReadBouncer-1.0.0-Linux.sh</b> within the build directory, which is a simple command line installer for Linux that leads you through the installation process. You can also skip the last `cmake` step and just call `sudo make install`, which installs ReadBouncer in your `/usr/local/` directory. 
 
 
 ### <a name="general"></a>General usage
@@ -141,13 +135,15 @@ classify                classify nanopore reads based on a given IBF file
   -s, --significance <probability>
                           significance level for confidence interval of number of errorneous kmers (default: 0.95)
   -e, --error-rate <err>  expected per read sequencing error rate (default: 0.1)
-  -p, --prefix-length <length>
-                          Length of read prefix used for classification (default: 360)
+  -l, --chunk-length <length>
+                          Length of read chunks used for classification (default: 360)
+  -m, --max-chunks <number>
+                          Number of tries to classify a read using chunk-length bases (default: 1)
   -n, --num-threads <threads>
                           Number of classification threads
 ```
-<b>--prefix-length</b><br>
-This is the number of nucleotides from the beginning of each read that is used for classification. By default, ReadBouncer takes the first 360 nucleotides since this represents approximately 0.8 seconds of sequencing or 2 chunks of data sent from MinKNOW to our ReadUntil client.
+<b>--chunk-length and --max-chunks</b><br>
+These parameters decide about the number of nucleotides from the beginning of each read that is used for classification. ReadBouncer tries to classify reads in in chunk-wise manner, when using e.g. 2 chunks with 360 bp length, ReadBouncer takes the first 360 bp of the read for classification and will add the subsequent 360 bp of that read for another classification try if the firts try did not succeed. By default, ReadBouncer only takes the first 360 nucleotides since this represents approximately 0.8 seconds of sequencing.
 
 <b>--depletion-file and --target-file</b><br>
 The depletion-file contains the IBF for references we would want to deplete in a real experiment. If we also have a priori knowledge about potential organisms in our sample we definitely want to sequence, it is also possible to build an IBF of the reference sequences of those organisms and provide ReadBouncer the IBF as a target filter file. This can improve the specificity of the classification.
@@ -159,10 +155,10 @@ For more accurate classification of reads we are calculating the expected number
 
 #### <a name="deplete"></a>Live Depletion of Nanopore Reads
 
-When nanopore reads of a certain organism (or even more) are not of interest, these reads can be unblocked with <b>live-deplete</b>. Therefore raw current signals are requested from ONT's MinKNOW software, basecalled and matched against the previously build IBF of the reference sequence set. If a read is classified as match with the depletion IBF (and not with the target IBF), an unblock request is sent back to the MinKNOW software. This results in a rejection of the read and another DNA molecule can enter the corresponding pore for sequencing.
+When nanopore reads of a certain organism (or even more) are not of interest, these reads can be unblocked with <b>deplete</b>. Therefore raw current signals are requested from ONT's MinKNOW software, basecalled and matched against the previously build IBF of the reference sequence set. If a read is classified as match with the depletion IBF (and not with the target IBF), an unblock request is sent back to the MinKNOW software. This results in a rejection of the read and another DNA molecule can enter the corresponding pore for sequencing.
 
 ```
-  live-deplete            Live classification and rejection of nanopore reads
+  deplete            Live classification and rejection of nanopore reads
 
   -?, -h, --help
   -v, --verbose           Show additional output as to what we are doing.
@@ -197,6 +193,9 @@ For more accurate classification of reads we are calculating the expected number
 <b>--weights</b><br>
 For CPU based real-time basecalling of Nanopore reads, ReadBouncer integrates [DeepNano-blitz](https://github.com/fmfi-compbio/deepnano-blitz). This basecaller uses recurrent neural networks (RNNs) for signal-to-nucleotide translation. There are different sizes of RNNs available, e.g. 48, 56, 64, 80, 96 and 256. In general, the smaller the RNN the faster basecalling is performed. But on the other hand higher RNN weight values provide higher base call accuracy. <b>Note that necessary basecalling speed could only be supported for maximum weights value of 80 on a an Intel Core i7 2,8 GHz processor. Therefore we recommend values smaller than 80 to keep up with sequencing speed.</b>
 
+<b>--basecall-threads and --classification-threads</b><br>
+The number of CPU threads used for base calling and classification, respectively. Our internal tests showed best results when using 3 or 4 threads for each auf the two tasks.
+  
 #### <a name="test"></a>Testing Connection to MinKNOW
 
 Before starting a sequencing run with live depletion, it's recommended to test the connection between ReadBouncer and MinKNOW by using subcommand `connection-test`.
@@ -212,7 +211,7 @@ connection-test         Test connection to a working MinKNOW instance
   -u, --unblock-all       Unblock all reads
 ```
 <b>--host and --port</b><br>
-This is the IP adress and the TCP/IP port on which the MinKNOW software is hosted. ReadBouncer will exchange data with the MinKNOW software via this communication channel. It is recommended to test the communication before starting the sequencing run.
+This is the IP adress and the TCP/IP port on which the MinKNOW software is hosted. ReadBouncer will exchange data with the MinKNOW software via this communication channel. It is recommended to test the communication before starting the sequencing run. <b>When using remote connection to another host, make sure that you set the `local_connection_only` parameter in MinKNOW's `user_conf` file to `all_open` as proposed [here](https://github.com/nanoporetech/minknow_api/issues/17#issuecomment-824017645)</b>
 
 <b>--device</b><br>
 This is the name of the FlowCell for which we want to do the live depletion. 
@@ -260,16 +259,16 @@ sudo ./config_editor --conf application --filename ../conf/app_conf --set device
 full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe connection-test --host 127.0.0.1 --port 9501 --device MS00000
 ```
 The output should state that the connection could be successfully established and that you can continue with live-depletion.
-5. For testing the unblock functionality you should start a simulation with `--unblock-all` option 
+6. For testing the unblock functionality you should start a simulation with `--unblock-all` option 
 ```
 full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe connection-test --host 127.0.0.1 --port 9501 --device MS00000 --unblock-all
 ```
 When ReadBouncer says that it successfully established a connection, you can start a sequencing run on the the device, which will playback the run from the bulkfile.
-6. Open the read length histogram after 5 minutes and have a look at the read counts plot.
+7. Open the read length histogram after 5 minutes and have a look at the read counts plot.
 <p align="center">
   <img src="images/unblock_all.PNG" width="750" title="Unblock All Image">
 </p>
-7. Now zoom in to the histogram so that only read counts for read lengths up to 5kb are shown. You should see a peak for read counts between 500b and 1 kb like the one in the figure below.
+8. Now zoom in to the histogram so that only read counts for read lengths up to 5kb are shown. You should see a peak for read counts between 500b and 1 kb like the one in the figure below.
 <p align="center">
   <img src="images/unblock_all_5kb.PNG" width="750" title="Unblock All Image (5kb)">
 </p>
@@ -277,17 +276,19 @@ If that's the case you can go on with testing basecalling and classification
 
 ### <a name="host-depletion"></a>Live-Basecalling and read classification
 
-In order to test if read depletion works on your machine, you can start a `live-depletion` playback run with the bulk FAST5 file from the test above. If you already set up the playback functionality, you only need to download the reference sequence of one or more human chromosomes from e.g. the [Telomere-to-telomere consortium](https://github.com/marbl/CHM13) as FASTA file. In the example below, we aim to deplete all human reads expcept reads from chromosome 20.
+In order to test if read depletion works on your machine, you can start a `depletion` playback run with the bulk FAST5 file from the test above. If you already set up the playback functionality, you only need to download the reference sequence of one or more human chromosomes from e.g. the [Telomere-to-telomere consortium](https://github.com/marbl/CHM13) as FASTA file. In the example below, we aim to deplete all human reads.
 
-1. Before live-depletion, we need to build an Interleaved Bloom Filter (IBF) for the reference sequence(s) we aim to deplete. 
+1. Before depletion, we need to build an Interleaved Bloom Filter (IBF) for the reference sequence(s) we aim to deplete. 
 ```
-full\path\to\NanoLIVE\root\directory\bin\NanoLive.exe ibfbuild -o path\to\output\directory\hg38p13_chr3.ibf -i path\to\reference\file\hg38p13_chr3.fasta -k 13 -f 100000
+full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe ibfbuild -o path\to\output\directory\chm13.ibf -i path\to\reference\file\chm13.fasta -k 13 -f 100000
 ```
-2. Now you can start live-depletion of chromosome 3 with the following subcommand from you working directory
+2. Now you can start depletion of human reads with the following subcommand from you working directory
  ```
-full\path\to\NanoLIVE\root\directory\bin\NanoLive.exe live-deplete -i path\to\output\directory\hg38p13_chr3.ibf -d MS00000
+full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe deplete -d path\to\output\directory\chm13.ibf -f MS00000 -c 3 -b 3 -v
 ```
 3. Start a sequencing run on the simulated device as you did above. Open the read length histogram after 15 minutes and have a look at the read counts plot. When you zoom into the region for reads up to 5kb length, you should see a plot like this:
-![Alt text](../../images/unblock_all.png "Unblock All Image")
+<p align="center">
+  <img src="images/live_unblock.png" width="750" title="Live Unblock Image">
+</p>
 
-4. After stopping the run, NanoLIVE will provide you with some statistics about the number of classified (unblocked) and unclassified reads, which will be sequenced until the end. You will also see average overall processing times as well as for basecalling and classification. You should aim for overall processing times for classified reads below one second. The average processing time for basecalling and classification should be below 0.02 seconds. Otherwise you will experience 
+4. After stopping the run, ReadBouncer will provide you with some statistics about the number of classified (unblocked) and unclassified reads, which will be sequenced until the end. You will also see average overall processing times as well as for basecalling and classification. You should aim for overall processing times for classified reads below one second. The average processing time for basecalling and classification should be below 0.01 seconds. Otherwise you will experience bigger lengths of unblocked reads.
