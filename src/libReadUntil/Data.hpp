@@ -31,7 +31,11 @@
 
 #include "spdlog/spdlog.h"
 
+#include <uuid.h>
+
 #include "SafeQueue.hpp"
+#include "SafeMap.hpp"
+#include "SafeSet.hpp"
 #include "StopClock.hpp"
 #include <CSVfile.hpp>
 
@@ -75,6 +79,7 @@ namespace readuntil
             readuntil::AnalysisConfiguration* conf;
             std::set<int32> filterClasses;
             std::shared_ptr<spdlog::logger> data_logger;
+	        uuids::uuid_random_generator uuid_generator{};
             bool runs = false;
             bool unblock_all = false;
             uint8_t actionBatchSize = 50;
@@ -132,6 +137,7 @@ namespace readuntil
 
             void getLiveSignals(SafeQueue<SignalRead>& basecall_queue);
             void sendActions(SafeQueue<readuntil::ActionResponse>& action_queue, SafeQueue<Durations>& duration_queue);
+            void controlResponses(SafeQueue<readuntil::ActionResponse>& action_queue);
             void startLiveStream();
             void stopLiveStream();
 

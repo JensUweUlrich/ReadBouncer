@@ -78,11 +78,12 @@ class SafeMap
             cv_push.notify_one();
         }
 
-        void erase(typename std::unordered_map<Key, Value>::iterator t)
+        typename std::unordered_map<Key, Value>::iterator erase(typename std::unordered_map<Key, Value>::iterator t)
         {
             std::unique_lock< std::mutex > lock(m);
-            q.erase(t);
+            typename std::unordered_map<Key, Value>::iterator result = q.erase(t);
             cv_push.notify_one();
+            return result;
         }
 
         void notify_push_over()
@@ -123,6 +124,12 @@ class SafeMap
         {
             std::lock_guard< std::mutex > lock(m);
             return q.end();
+        }
+
+        typename std::unordered_map<Key, Value>::iterator begin()
+        {
+            std::lock_guard< std::mutex > lock(m);
+            return q.begin();
         }
 };
 

@@ -15,7 +15,6 @@
 #include <StopClock.hpp>
 #include <NanoLiveExceptions.hpp>
 
-
 // spdlog library
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/rotating_file_sink.h"
@@ -282,6 +281,7 @@ double cputime()
 
 int main(int argc, char const **argv)
 {
+
 	StopClock NanoLiveTime;
 	NanoLiveTime.start();
 	
