@@ -145,7 +145,7 @@ Line 35: `target_link_libraries (${PROJECT_NAME} IBF   ReadUntil  deepnano2  mkl
 `./ReadBouncer` or `./ReadBouncer.sh`     
 * Common error: “Failed to load platform plugin ”xcb“        
 * To solve this error run ReadBouncer with the command: `LD_LIBRARY_PATH=. QT_DEBUG_PLUGINS=1 ./ReadBouncer`     
-* Or run ReadBouncer only with `./ReadBouncer.sh´ 
+* Or run ReadBouncer only with `./ReadBouncer.sh`
 * Bash script connects all libs with the executable together   
 * commandLineApp is the installed ReadBouncer command line application, will be automatically installed.   
 -------------------------------------------------------------------------
