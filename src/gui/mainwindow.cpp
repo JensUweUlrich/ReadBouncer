@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 
 
+// the dna wallpaper is a free wallpaper downloaded from https://www.wallpapertip.com/de/hbmxhh/
 // not anymore here --> in header
 /*
 #include "ibf_mainwindow.h"
