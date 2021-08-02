@@ -34,7 +34,8 @@ namespace readuntil
 		::grpc::Status status = stub->get_analysis_configuration(&context, request, &conf);
 
 		if (!status.ok())
-			throw ReadUntilClientException(status.error_message());
+            throw ReadUntilClientException(status.error_message());
+        //ReadUntilClientException(status.error_message());
 		
 		ReadDetectionParams current_rd = conf.read_detection();
 		std::stringstream sstr;
@@ -49,12 +50,14 @@ namespace readuntil
 		::grpc::ClientContext context2;
 		status = stub->set_analysis_configuration(&context2, conf, &response);
 		if (!status.ok())
-			throw ReadUntilClientException(status.error_message());
+            throw ReadUntilClientException(status.error_message());
+        //ReadUntilClientException(status.error_message());
 
 		::grpc::ClientContext context3;
 		status = stub->get_analysis_configuration(&context3, request, &conf);
 		if (!status.ok())
-			throw ReadUntilClientException(status.error_message());
+            //ReadUntilClientException(status.error_message());
+            throw ReadUntilClientException(status.error_message());
 
 		sstr.str("");
 		sstr << "Set new value for break_reads_after_seconds to : " << conf.read_detection().break_reads_after_seconds().value();
@@ -77,7 +80,8 @@ namespace readuntil
 		}
 		else
 		{
-			throw ReadUntilClientException(status.error_message());
+            //ReadUntilClientException(status.error_message());
+            throw ReadUntilClientException(status.error_message());
 		}
     }
 

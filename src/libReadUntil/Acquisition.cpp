@@ -33,6 +33,7 @@ namespace readuntil
                 if (!stream->Write(request))
                 {
                     throw ReadUntilClientException("Unable to stop status acquisition!");
+                   // ReadUntilClientException("Unable to stop status acquisition!");
                 }
                 stream->WritesDone();
             }

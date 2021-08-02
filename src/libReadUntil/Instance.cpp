@@ -26,7 +26,8 @@ namespace readuntil
 		}
 		else
 		{
-			throw ReadUntilClientException(status.error_message());
+            throw ReadUntilClientException(status.error_message());
+            //ReadUntilClientException(status.error_message());
 		}
 	}
 }

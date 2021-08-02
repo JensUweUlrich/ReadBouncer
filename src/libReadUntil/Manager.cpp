@@ -35,7 +35,8 @@ namespace readuntil
 		grpc::Status status = reader->Finish();
 		if(!status.ok())
 		{
-			throw ReadUntilClientException(status.error_message());
+            throw ReadUntilClientException(status.error_message());
+            //ReadUntilClientException(status.error_message());
 		}
 		return cells;
 	}
@@ -77,7 +78,8 @@ namespace readuntil
 		}
 		else
 		{
-			throw ReadUntilClientException(status.error_message());
+            throw ReadUntilClientException(status.error_message());
+            //ReadUntilClientException(status.error_message());
 		}
 	}
 

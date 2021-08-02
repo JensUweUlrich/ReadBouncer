@@ -58,7 +58,8 @@ namespace readuntil
 			{
 				connection_logger->error("Could not find SSL/TLS certificate file : " + cert_file.string());
 				connection_logger->flush();
-				throw MissingCertificateException("Could not find SSL/TLS certificate file : " + cert_file.string());
+                throw MissingCertificateException("Could not find SSL/TLS certificate file : " + cert_file.string());
+                //MissingCertificateException("Could not find SSL/TLS certificate file : " + cert_file.string());
 			}
 			std::ifstream ca(cert_file);
 			std::string root_cert((std::istreambuf_iterator<char>(ca)),
@@ -109,7 +110,7 @@ namespace readuntil
 				em << "Failed to connect to minknow instance (retry " << i << "/" << retry_count << ") : " << e.what();
 				connection_logger->error(em.str());
 				connected = false;
-				throw;
+                throw;
 			}
 			std::this_thread::sleep_for(std::chrono::seconds(1));
 		}
@@ -128,7 +129,7 @@ namespace readuntil
 			em << "Could not get device type/id : " << e.what();
 			connection_logger->error(em.str());
 			connected = false;
-			throw;
+            throw;
 		}
 
 		return connected;
