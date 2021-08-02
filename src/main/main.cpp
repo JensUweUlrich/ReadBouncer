@@ -298,7 +298,7 @@ double cputime()
      buildIBF_qt() in ibfbuild.hpp
  */
 
-//###################################################################################################################
+
 void IBF_mainwindow::on_pushButton_3_clicked()
 {
     StopClock NanoLiveTime;
@@ -331,7 +331,10 @@ void IBF_mainwindow::on_pushButton_3_clicked()
     }
   }
 
-//###################################################################################################################
+/**
+*	 classification pushButton 
+*	
+*/
 void Classify_mainwindow::on_pushButton_4_clicked()
 {
     StopClock NanoLiveTime;
@@ -373,7 +376,7 @@ void Classify_mainwindow::on_pushButton_4_clicked()
     } else {}
 }
 
-//###################################################################################################################
+
 /**
 *	core function for testing connection to MinKNOW software and testing unblock all reads
 *	@parser : input from the command line
@@ -509,6 +512,10 @@ void test_connection_qt(connection_test_parser_qt& parser, bool unblock_all_read
 
     }
 
+/**
+*	connection-test pushButton
+*	
+*/
 void connection_test_mainwindow::on_pushButton_4_clicked()
     {
         StopClock NanoLiveTime;
@@ -540,8 +547,12 @@ void connection_test_mainwindow::on_pushButton_4_clicked()
          } else {}
     }
 
-//###################################################################################################################
-//deplete
+
+/**
+*	live classification pushButton (deplete)
+*	
+*/
+
 void live_deplete_mainwindow::on_pushButton_4_clicked()
     {
         if (ibf_deplete_file.length() < 1 && ibf_target_file.length() < 1)
@@ -569,7 +580,10 @@ void live_deplete_mainwindow::on_pushButton_4_clicked()
          } else {}
     }
 
-// target
+/**
+*	live classification pushButton (target)
+*	
+*/
 void live_deplete_mainwindow::on_pushButton_9_clicked()
 {
 
@@ -599,10 +613,8 @@ void live_deplete_mainwindow::on_pushButton_9_clicked()
      } else {}
 }
 
-//###################################################################################################################
-int main(int argc, char *argv[])//They are entirely equivalent. char *argv[] must be read as array of pointers to char
-//and an array argument is demoted to a pointer, so pointer to pointer to char, or char **
-//int main(int argc, char const **argv)
+
+int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     MainWindow w;
