@@ -1,4 +1,4 @@
-# GUI with Qt 5.15.0 for ReadBouncer (build from source code):
+# GUI with Qt 5.15.0 for ReadBouncer (build from source):
   
 **Requirements for Qt 5.15.0 (All this kits are automatically installed with Qt)**: 
 
