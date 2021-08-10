@@ -131,14 +131,14 @@ Line 35: `target_link_libraries (${PROJECT_NAME} IBF   ReadUntil  deepnano2  mkl
 * **`ReadBouncer/src/main/main.cpp`  *Lines*: 607, 608, 675 and 676**      
 
 
--------------------------------------------------------------------------
+<!----------------------------------------------------------------------------
 # Qt on Linux (if you are running the ReadBouncer from Qt Creator skip this points):   
 
 * Same Code without any changes, we run ReadBouncer GUI on Ubuntu 20 with QT 6.0.3, also tested with Qt 5.     
 * Deploy Qt Application on Ubuntu 20 is hard issue [e.g](https://github.com/probonopd/linuxdeployqt/issues/340) and some errors will occur! We did the deployment manuell.    
 * By using Ubuntu < 16 or Linux Mint, Linux Debian you can use [linuxdeployqt](https://github.com/probonopd/linuxdeployqt).     
 * For manuell deployment you need this libraries:       
-
+ --->
 -------------------------------------------------------------------------
 # Qt on Linux (running after installation):
 
