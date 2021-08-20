@@ -48,9 +48,17 @@ void basecall_live_reads(SafeQueue<readuntil::SignalRead>& basecall_queue,
 	std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("NanoLiveLog");
 	// create DeepNano2 caller object
 	std::string f = weights_file.string();
+
+	std::string tables = weights + ".tabs.txt";
+
 	callerMutex.lock();
-	Caller* caller = create_caller(weights.c_str(), f.c_str(), 5, 0.01);
+	osprey::Decoder decoder{ tables };
+	//std::cout << "Decoder initialized" << std::endl;
+	osprey::CallerDP caller{ weights };
+	//std::cout << "Caller initialized" << std::endl;
+	//Caller* caller = create_caller(weights.c_str(), f.c_str(), 5, 0.01);
 	callerMutex.unlock();
+
 	while (true)
 	{
 		if (!basecall_queue.empty())
@@ -62,7 +70,8 @@ void basecall_live_reads(SafeQueue<readuntil::SignalRead>& basecall_queue,
 			if (!pending.contains(read.id))
 			{
 				read.processingTimes.timeBasecallRead.start();
-				char* sequence = call_raw_signal(caller, read.raw_signals.data(), read.raw_signals.size());
+				char* sequence = osprey::call_raw_signal(caller, decoder, read.raw_signals);
+				//call_raw_signal(caller, read.raw_signals.data(), read.raw_signals.size());
 				read.processingTimes.timeBasecallRead.stop();
 				interleave::Read r = interleave::Read(read.id, sequence, read.channelNr, read.readNr, read.processingTimes);
 
@@ -93,7 +102,7 @@ void basecall_live_reads(SafeQueue<readuntil::SignalRead>& basecall_queue,
 
 				TimeMeasures m = pending[read.id].second.getProcessingTimes();
 				read.processingTimes.timeBasecallRead.start();
-				char* sequence = call_raw_signal(caller, read.raw_signals.data(), read.raw_signals.size());
+				char* sequence = osprey::call_raw_signal(caller, decoder, read.raw_signals);
 				read.processingTimes.timeBasecallRead.stop();
 
 				// add elapsed basecall time of first chunks to second chunk
@@ -582,10 +591,10 @@ void live_read_depletion(live_parser& parser, bool target_sequencing)
 	// first check if basecalling file exists
 	std::filesystem::path weights_file = NanoLiveRoot;
 	weights_file.append("data");
-	weights_file /= "rnn" + parser.weights + ".txt";
+	weights_file /= "net24dp.txt";
 	if (!std::filesystem::exists(weights_file))
 	{
-		nanolive_logger->error("Could not find DeepNano weights file : " + weights_file.string());
+		nanolive_logger->error("Could not find Basecaller weights file : " + weights_file.string());
 		nanolive_logger->flush();
 		throw;
 	}

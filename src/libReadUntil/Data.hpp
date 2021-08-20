@@ -55,7 +55,7 @@ namespace readuntil
             uint32 channelNr{};
             uint32 readNr{};
             string id{};
-            std::vector<float> raw_signals{};
+            string raw_signals{};
             TimeMeasures processingTimes{};
     };
 

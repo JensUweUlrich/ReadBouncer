@@ -392,7 +392,7 @@ namespace readuntil
                 basecall_queue.push(SignalRead{ entry.first,
                                                     entry.second.number(),
                                                     entry.second.id(),
-                                                    string_to_float(entry.second.raw_data()),
+                                                    entry.second.raw_data(),
                                                     times});
        		}
 

@@ -1,6 +1,5 @@
 file(GLOB IBF_SRC "*.cpp")
 file(GLOB IBF_HDRS "*.hpp")
-file(GLOB WEIGHTS "${CMAKE_CURRENT_SOURCE_DIR}/../weights/*")
 
 add_library (IBF STATIC ${IBF_SRC} ${IBF_HDRS})
 
@@ -22,4 +21,3 @@ target_link_libraries (IBF sdsl seqan spdlog::spdlog_header_only)
 install(TARGETS IBF DESTINATION lib COMPONENT libraries)
 
 install(FILES ${IBF_HDRS} DESTINATION include COMPONENT headers)
-install(FILES ${WEIGHTS} DESTINATION data COMPONENT addfiles)

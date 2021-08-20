@@ -26,7 +26,7 @@
 #include "IBF.hpp"
 
 // Basecalling library
-#include "DeepNano2.h"
+#include "caller.hpp"
 
 // command line parser
 #include "parser.hpp"
