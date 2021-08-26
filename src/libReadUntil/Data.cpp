@@ -192,6 +192,9 @@ namespace readuntil
                             -1,
                             readResponse.processingTimes.timeBasecallRead.elapsed(),
                             readResponse.processingTimes.timeClassifyRead.elapsed(),
+                            readResponse.processingTimes.timeBeamSearch.elapsed(),
+                            readResponse.processingTimes.timeCall.elapsed(),
+                            readResponse.processingTimes.timeRescale.elapsed(),
                             });
                         if (readResponse.processingTimes.timeCompleteRead.elapsed() > 100.0)
                         {
@@ -205,6 +208,9 @@ namespace readuntil
                             readResponse.processingTimes.timeCompleteRead.elapsed(),
                             readResponse.processingTimes.timeBasecallRead.elapsed(),
                             readResponse.processingTimes.timeClassifyRead.elapsed(),
+                            readResponse.processingTimes.timeBeamSearch.elapsed(),
+                            readResponse.processingTimes.timeCall.elapsed(),
+                            readResponse.processingTimes.timeRescale.elapsed(),
                             });
 
                         if (readResponse.processingTimes.timeCompleteRead.elapsed() > 100.0)
@@ -392,7 +398,7 @@ namespace readuntil
                 basecall_queue.push(SignalRead{ entry.first,
                                                     entry.second.number(),
                                                     entry.second.id(),
-                                                    entry.second.raw_data(),
+                                                    string_to_float(entry.second.raw_data()),
                                                     times});
        		}
 

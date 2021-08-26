@@ -55,7 +55,7 @@ namespace readuntil
             uint32 channelNr{};
             uint32 readNr{};
             string id{};
-            string raw_signals{};
+            std::vector<float> raw_signals{};
             TimeMeasures processingTimes{};
     };
 
@@ -96,7 +96,7 @@ namespace readuntil
             */
             inline std::vector<float> string_to_float(std::string const& signalString)
             {
-                assert(signalString.size() % sizeof(float) == 0);
+                //assert(signalString.size() % sizeof(float) == 0);
 
                 std::vector<float> result(signalString.size() / sizeof(float));
 

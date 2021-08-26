@@ -27,15 +27,16 @@ if (WIN32)
         execute_process(COMMAND "${CMAKE_COMMAND}" "-E" "tar" "xvz" "${CMAKE_CURRENT_BINARY_DIR}/mkl-include.tar.bz2" WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
     endif()
 
-    if (NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/boost_1_76_0/boost/version.hpp")
-        file(DOWNLOAD "https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.bz2" "${CMAKE_CURRENT_BINARY_DIR}/boost_1_76_0.tar.bz2")
-        execute_process(COMMAND "${CMAKE_COMMAND}" "-E" "tar" "xvz" "${CMAKE_CURRENT_BINARY_DIR}/boost_1_76_0.tar.bz2" WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-    endif()
+    #if (NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/boost_1_76_0/boost/version.hpp")
+    #    file(DOWNLOAD "https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.bz2" "${CMAKE_CURRENT_BINARY_DIR}/boost_1_76_0.tar.bz2")
+    #    execute_process(COMMAND "${CMAKE_COMMAND}" "-E" "tar" "xvz" "${CMAKE_CURRENT_BINARY_DIR}/boost_1_76_0.tar.bz2" WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+    #endif()
   
     file(GLOB OSPREYSRCS "${CMAKE_CURRENT_BINARY_DIR}/osprey/src/src/*.cpp")
     file(GLOB OSPREYHDRS "${CMAKE_CURRENT_BINARY_DIR}/osprey/src/src/*.hpp")
 
-    include_directories("${CMAKE_CURRENT_BINARY_DIR}/NumCpp/include" "${CMAKE_CURRENT_BINARY_DIR}/Library/include" "${CMAKE_CURRENT_BINARY_DIR}/boost_1_76_0")
+    #include_directories("${CMAKE_CURRENT_BINARY_DIR}/NumCpp/include" "${CMAKE_CURRENT_BINARY_DIR}/Library/include" "${CMAKE_CURRENT_BINARY_DIR}/boost_1_76_0")
+    include_directories("${CMAKE_CURRENT_BINARY_DIR}/Library/include")
 
     add_library(decoder STATIC IMPORTED GLOBAL)
         set_target_properties(decoder PROPERTIES 
@@ -59,8 +60,10 @@ if (WIN32)
     add_library (osprey STATIC ${OSPREYSRCS} ${OSPREYHDRS})
 
     include_directories("${CMAKE_CURRENT_BINARY_DIR}/osprey/src/src" "${CMAKE_CURRENT_BINARY_DIR}/bc-build/basecaller-prefix/src/basecaller-build/Library/include" 
-                        "${CMAKE_CURRENT_BINARY_DIR}/bc-build/basecaller-prefix/src/basecaller-build/NumCpp/include" "${CMAKE_CURRENT_BINARY_DIR}/bc-build/basecaller-prefix/src/basecaller-build/boost_1_76_0")
-    target_include_directories (osprey PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/osprey/src/src" "${CMAKE_CURRENT_BINARY_DIR}/NumCpp/include" "${CMAKE_CURRENT_BINARY_DIR}/Library/include" "${CMAKE_CURRENT_BINARY_DIR}/boost_1_76_0")
+    #                    "${CMAKE_CURRENT_BINARY_DIR}/bc-build/basecaller-prefix/src/basecaller-build/NumCpp/include" "${CMAKE_CURRENT_BINARY_DIR}/bc-build/basecaller-prefix/src/basecaller-build/boost_1_76_0" 
+                        "${CMAKE_CURRENT_SOURCE_DIR}/../util")
+    #target_include_directories (osprey PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/osprey/src/src" "${CMAKE_CURRENT_BINARY_DIR}/NumCpp/include" "${CMAKE_CURRENT_BINARY_DIR}/Library/include" "${CMAKE_CURRENT_BINARY_DIR}/boost_1_76_0")
+    target_include_directories (osprey PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/osprey/src/src" "${CMAKE_CURRENT_BINARY_DIR}/Library/include")
     target_link_libraries (osprey mklcore mklseq mkllp64 decoder)
 
     file(GLOB WEIGHTS "${CMAKE_CURRENT_BINARY_DIR}/osprey/src/osprey/weights/*")

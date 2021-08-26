@@ -51,7 +51,7 @@ namespace readuntil
 			info_str << "Connect to MinKNOW instance via secure SSL/TLS connection to " << mk_host << " on port " << mk_port;
 			connection_logger->info(info_str.str());
 			connection_logger->flush();
-			std::filesystem::path cert_file = NanoLiveRoot;
+			std::filesystem::path cert_file{"C:\\ReadBouncer"};//NanoLiveRoot;
 			cert_file.append("rpc-certs");
 			cert_file /= "ca.crt";
 			if (!std::filesystem::exists(cert_file))

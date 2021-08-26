@@ -5,6 +5,12 @@
  *      Author: jens-uwe.ulrich
  */
 
+struct Basecaller
+{
+	osprey::Decoder decoder;
+	osprey::CallerDP caller;
+};
+
  // global variables
 std::filesystem::path NanoLiveRoot;
 
@@ -41,23 +47,12 @@ uint64_t rCounter = 0;
 void basecall_live_reads(SafeQueue<readuntil::SignalRead>& basecall_queue,
 	SafeQueue<interleave::Read>& classification_queue,
 	SafeMap<uint16_t, uint32_t>& channel_stats,
-	std::string& weights,
-	std::filesystem::path& weights_file,
+	Basecaller& bc,
 	readuntil::Acquisition* acq)
 {
 	std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("NanoLiveLog");
 	// create DeepNano2 caller object
-	std::string f = weights_file.string();
-
-	std::string tables = weights + ".tabs.txt";
-
-	callerMutex.lock();
-	osprey::Decoder decoder{ tables };
-	//std::cout << "Decoder initialized" << std::endl;
-	osprey::CallerDP caller{ weights };
-	//std::cout << "Caller initialized" << std::endl;
-	//Caller* caller = create_caller(weights.c_str(), f.c_str(), 5, 0.01);
-	callerMutex.unlock();
+	
 
 	while (true)
 	{
@@ -70,7 +65,7 @@ void basecall_live_reads(SafeQueue<readuntil::SignalRead>& basecall_queue,
 			if (!pending.contains(read.id))
 			{
 				read.processingTimes.timeBasecallRead.start();
-				char* sequence = osprey::call_raw_signal(caller, decoder, read.raw_signals);
+				char* sequence = osprey::call_raw_signal(bc.caller, bc.decoder, read.raw_signals, read.processingTimes);
 				//call_raw_signal(caller, read.raw_signals.data(), read.raw_signals.size());
 				read.processingTimes.timeBasecallRead.stop();
 				interleave::Read r = interleave::Read(read.id, sequence, read.channelNr, read.readNr, read.processingTimes);
@@ -102,7 +97,7 @@ void basecall_live_reads(SafeQueue<readuntil::SignalRead>& basecall_queue,
 
 				TimeMeasures m = pending[read.id].second.getProcessingTimes();
 				read.processingTimes.timeBasecallRead.start();
-				char* sequence = osprey::call_raw_signal(caller, decoder, read.raw_signals);
+				char* sequence = osprey::call_raw_signal(bc.caller, bc.decoder, read.raw_signals, read.processingTimes);
 				read.processingTimes.timeBasecallRead.stop();
 
 				// add elapsed basecall time of first chunks to second chunk
@@ -426,6 +421,12 @@ void compute_average_durations(SafeQueue<Durations>& duration_queue,
 	double currentAvgDurCompleteUnClassifiedRead = 0;
 	double avgDurationBasecallRead = 0;
 	double currentAvgDurationBasecallRead = 0;
+	double avgDurationRescaleRead = 0;
+	double currentAvgDurationRescaleRead = 0;
+	double avgDurationCallRead = 0;
+	double currentAvgDurationCallRead = 0;
+	double avgDurationBeamSearchRead = 0;
+	double currentAvgDurationBeamSearchRead = 0;
 	double avgDurationClassifyRead = 0;
 	double currentAvgDurationClassifyRead = 0;
 	StopClock::TimePoint begin = StopClock::Clock::now();
@@ -455,6 +456,22 @@ void compute_average_durations(SafeQueue<Durations>& duration_queue,
 				(totalClassifiedReadCounter + totalUnclassifiedReadCounter + currentClassifiedReadCounter + currentUnclassifiedReadCounter);
 			currentAvgDurationBasecallRead += (dur.basecalling - currentAvgDurationBasecallRead) /
 												(currentClassifiedReadCounter + currentUnclassifiedReadCounter);
+
+			avgDurationRescaleRead += (dur.rescale - avgDurationRescaleRead) /
+				(totalClassifiedReadCounter + totalUnclassifiedReadCounter + currentClassifiedReadCounter + currentUnclassifiedReadCounter);
+			currentAvgDurationRescaleRead += (dur.rescale - currentAvgDurationRescaleRead) /
+				(currentClassifiedReadCounter + currentUnclassifiedReadCounter);
+
+			avgDurationCallRead += (dur.call - avgDurationCallRead) /
+				(totalClassifiedReadCounter + totalUnclassifiedReadCounter + currentClassifiedReadCounter + currentUnclassifiedReadCounter);
+			currentAvgDurationCallRead += (dur.call - currentAvgDurationCallRead) /
+				(currentClassifiedReadCounter + currentUnclassifiedReadCounter);
+
+			avgDurationBeamSearchRead += (dur.beam_search - avgDurationBeamSearchRead) /
+				(totalClassifiedReadCounter + totalUnclassifiedReadCounter + currentClassifiedReadCounter + currentUnclassifiedReadCounter);
+			currentAvgDurationBeamSearchRead += (dur.beam_search - currentAvgDurationBeamSearchRead) /
+				(currentClassifiedReadCounter + currentUnclassifiedReadCounter);
+
 			avgDurationClassifyRead += (dur.classification - avgDurationClassifyRead) / 
 				(totalClassifiedReadCounter + totalUnclassifiedReadCounter + currentClassifiedReadCounter + currentUnclassifiedReadCounter);
 			currentAvgDurationClassifyRead += (dur.classification - currentAvgDurationClassifyRead) / 
@@ -506,6 +523,15 @@ void compute_average_durations(SafeQueue<Durations>& duration_queue,
 				nanolive_logger->info(sstr.str());
 				sstr.str("");
 				sstr << "Average Processing Time Read Basecalling (interval)         :	" << currentAvgDurationBasecallRead;
+				nanolive_logger->info(sstr.str());
+				sstr.str("");
+				sstr << "Average Processing Time Beam Search (interval)              :	" << currentAvgDurationBeamSearchRead;
+				nanolive_logger->info(sstr.str());
+				sstr.str("");
+				sstr << "Average Processing Time Call (interval)                     :	" << currentAvgDurationCallRead;
+				nanolive_logger->info(sstr.str());
+				sstr.str("");
+				sstr << "Average Processing Rescale (interval)                       :	" << currentAvgDurationRescaleRead;
 				nanolive_logger->info(sstr.str());
 				sstr.str("");
 				sstr << "Average Processing Time Read Classification (interval)      :	" << currentAvgDurationClassifyRead;
@@ -589,7 +615,7 @@ void live_read_depletion(live_parser& parser, bool target_sequencing)
 	std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("NanoLiveLog");
 	bool withTarget = false;
 	// first check if basecalling file exists
-	std::filesystem::path weights_file = NanoLiveRoot;
+	std::filesystem::path weights_file{ "C:\\ReadBouncer" };//NanoLiveRoot;
 	weights_file.append("data");
 	weights_file /= "net24dp.txt";
 	if (!std::filesystem::exists(weights_file))
@@ -597,6 +623,23 @@ void live_read_depletion(live_parser& parser, bool target_sequencing)
 		nanolive_logger->error("Could not find Basecaller weights file : " + weights_file.string());
 		nanolive_logger->flush();
 		throw;
+	}
+
+	if (parser.verbose)
+		std::cout << "Initializing Basecaller!" << ::std::endl;
+
+	std::vector<Basecaller> basecaller_vector{};
+
+	std::string f = weights_file.string();
+	std::string tables = f + ".tabs.txt";
+
+	for (uint8_t t = 0; t < parser.basecall_threads; ++t)
+	{
+		osprey::Decoder decoder{ tables };
+		//std::cout << "Decoder initialized" << std::endl;
+		osprey::CallerDP caller{ weights_file.string() };
+		//std::cout << "Caller initialized" << std::endl;
+		basecaller_vector.push_back(Basecaller{decoder, caller});
 	}
 
 	std::vector<interleave::TIbf> DepletionFilters{};
@@ -769,19 +812,14 @@ void live_read_depletion(live_parser& parser, bool target_sequencing)
 
 	// create thread for receiving signals from MinKNOW
 	tasks.emplace_back(std::async(std::launch::async, &readuntil::Data::getLiveSignals, data, std::ref(basecall_queue)));
-
-	// create DeepNano2 caller object
-	//std::string f = weights_file.string();
-	// TODO: check if thread safe
-	//caller = create_caller(parser.weights.c_str(), f.c_str(), 5, 0.01);
 	
 
 	// create threads for live basecalling
 	for (uint8_t t = 0; t < parser.basecall_threads; ++t)
 	{
 		tasks.emplace_back(std::async(std::launch::async, &basecall_live_reads, std::ref(basecall_queue),
-			std::ref(classification_queue), std::ref(channelStats), std::ref(parser.weights),
-			std::ref(weights_file), acq));
+			std::ref(classification_queue), std::ref(channelStats),
+			basecaller_vector[t], acq));
 	}
 
 	// create classification config

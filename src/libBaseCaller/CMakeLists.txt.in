@@ -4,18 +4,6 @@ project(bc-build NONE)
 
 include(ExternalProject)
 
-ExternalProject_Add(NumCpp
-  GIT_REPOSITORY    https://github.com/dpilger26/NumCpp.git
-  GIT_TAG           Version_2.4.2
-  SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/NumCpp"
-  CMAKE_CACHE_ARGS
-        -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/NumCpp
-  CONFIGURE_COMMAND ""
-  BUILD_COMMAND     ""
-  INSTALL_COMMAND   ""
-  TEST_COMMAND      ""
-)
-
 # Builds Osprey project from the git submodule.
 ExternalProject_Add(basecaller
   GIT_REPOSITORY    https://github.com/JensUweUlrich/osprey.git

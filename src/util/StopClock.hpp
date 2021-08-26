@@ -84,6 +84,9 @@ struct TimeMeasures
     StopClock timeCompleteRead{};
     StopClock timeBasecallRead{};
     StopClock timeClassifyRead{};
+    StopClock timeBeamSearch{};
+    StopClock timeCall{};
+    StopClock timeRescale{};
 };
 
 
@@ -92,6 +95,9 @@ struct Durations {
     double completeUnclassified = 0;
     double basecalling = 0;
     double classification = 0;
+    double beam_search = 0;
+    double call = 0;
+    double rescale = 0;
 };
 
 
