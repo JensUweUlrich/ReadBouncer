@@ -615,8 +615,9 @@ void live_read_depletion(live_parser& parser, bool target_sequencing)
 	std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("NanoLiveLog");
 	bool withTarget = false;
 	// first check if basecalling file exists
-	std::filesystem::path weights_file{ "C:\\ReadBouncer" };//NanoLiveRoot;
-	weights_file.append("data");
+	//std::filesystem::path weights_file{ "C:\\ReadBouncer" };//NanoLiveRoot;
+        std::filesystem::path weights_file{ "/home/jens/software/ReadBouncer/src/weights" };
+//	weights_file.append("data");
 	weights_file /= "net24dp.txt";
 	if (!std::filesystem::exists(weights_file))
 	{
@@ -819,7 +820,7 @@ void live_read_depletion(live_parser& parser, bool target_sequencing)
 	{
 		tasks.emplace_back(std::async(std::launch::async, &basecall_live_reads, std::ref(basecall_queue),
 			std::ref(classification_queue), std::ref(channelStats),
-			basecaller_vector[t], acq));
+			std::ref(basecaller_vector[t]), acq));
 	}
 
 	// create classification config
