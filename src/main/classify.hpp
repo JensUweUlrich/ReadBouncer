@@ -41,6 +41,17 @@ void parse_reads(std::string const& reads_file,
 	seqan::close(seqFileIn);
 }
 
+std::vector<std::string> split(const string& s, char delim) {
+	std::vector<std::string> result;
+	std::stringstream ss(s);
+	string item;
+
+	while (getline(ss, item, delim)) {
+		result.push_back(item);
+	}
+
+	return result;
+}
 
 /**
 *	classify reads from an input file based on given depletion and/or target filters
@@ -51,11 +62,9 @@ void classify_reads(read_classify_parser& parser)
 	std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("NanoLiveLog");
 	// initialize depletion and target filters
 	interleave::IBFConfig DepleteIBFconfig{};
-	interleave::IBFConfig TargetIBFconfig{};
 	interleave::IBF DepleteFilter{};
-	interleave::IBF TargetFilter{};
 	std::vector<interleave::TIbf> DepletionFilters{};
-	std::vector<interleave::TIbf> TargetFilters{};
+	std::vector<interleave::IBFMeta> TargetFilters{};
 
 	bool deplete = false;
 	bool target = false;
@@ -82,25 +91,36 @@ void classify_reads(read_classify_parser& parser)
 		}
 	}
 
+	
 	// parse target IBF if given as parameter
 	if (parser.ibf_target_file.length() > 0)
 	{
-		try
+		std::vector<std::string> vector_files = split(parser.ibf_target_file, ',');
+		for (std::string n : vector_files)
 		{
-			TargetIBFconfig.input_filter_file = parser.ibf_target_file;
-			interleave::FilterStats stats = TargetFilter.load_filter(TargetIBFconfig);
-			TargetFilters.emplace_back(TargetFilter.getFilter());
-			if (parser.verbose)
-				interleave::print_load_stats(stats);
-			target = true;
-		}
-		catch (interleave::ParseIBFFileException& e)
-		{
-			nanolive_logger->error("Error parsing target IBF using the following parameters");
-			nanolive_logger->error("Target IBF file                : " + parser.ibf_target_file);
-			nanolive_logger->error("Error message : " + std::string(e.what()));
-			nanolive_logger->flush();
-			throw;
+			interleave::IBFMeta filter{};
+			filter.name = std::filesystem::path(n).stem().string();
+			interleave::IBF tf{};
+			interleave::IBFConfig TargetIBFconfig{};
+			try
+			{
+				TargetIBFconfig.input_filter_file = n;
+				interleave::FilterStats stats = tf.load_filter(TargetIBFconfig);
+				filter.filter = tf.getFilter();
+				if (parser.verbose)
+					interleave::print_load_stats(stats);
+				target = true;
+			}
+			catch (interleave::ParseIBFFileException& e)
+			{
+				nanolive_logger->error("Error parsing target IBF using the following parameters");
+				nanolive_logger->error("Target IBF file                : " + n);
+				nanolive_logger->error("Error message : " + std::string(e.what()));
+				nanolive_logger->flush();
+				throw;
+			}
+
+			TargetFilters.emplace_back(filter);
 		}
 	}
 
@@ -124,24 +144,27 @@ void classify_reads(read_classify_parser& parser)
 
 
 	// initialize classification output files
-	seqan::SeqFileOut ClassifiedOut;
+	
 	seqan::SeqFileOut UnclassifiedOut;
 
 	// only print classified reads to file if option given via command line
-	if (parser.classified_file.length() > 0)
+	if (parser.out_dir.length() > 0)
 	{
-		if (!seqan::open(ClassifiedOut, seqan::toCString(parser.classified_file)))
+		for (interleave::IBFMeta f : TargetFilters)
 		{
-			std::cerr << "ERROR: Unable to open the file: " << parser.classified_file << std::endl;
-			return;
+			std::filesystem::path outfile(parser.out_dir);
+			outfile /= f.name + ".fasta";
+			if (!seqan::open(f.outfile, seqan::toCString(outfile.string())))
+			{
+				std::cerr << "ERROR: Unable to open the file: " << outfile.string() << std::endl;
+				return;
+			}
 		}
-	}
-	// only print unclassified reads to file if option given via command line
-	if (parser.unclassified_file.length() > 0)
-	{
-		if (!seqan::open(UnclassifiedOut, seqan::toCString(parser.unclassified_file)))
+		std::filesystem::path outfile(parser.out_dir);
+		outfile /= "unclassified.fasta";
+		if (!seqan::open(UnclassifiedOut, seqan::toCString(outfile.string())))
 		{
-			std::cerr << "ERROR: Unable to open the file: " << parser.unclassified_file << std::endl;
+			std::cerr << "ERROR: Unable to open the file: " << outfile.string() << std::endl;
 			return;
 		}
 	}
@@ -176,9 +199,9 @@ void classify_reads(read_classify_parser& parser)
 			continue;
 		}
 	
-		
 		StopClock classifyRead;
 		bool classified = false;
+		int best_filter_index = -1;
 		classifyRead.start();
 		try
 		{
@@ -190,39 +213,37 @@ void classify_reads(read_classify_parser& parser)
 				uint64_t fragend = (i+1) * parser.preLen;
 				uint64_t fragstart = i * parser.preLen;
 				// make sure that last fragment ends at last position of the reference sequence
-				if (fragend > length(seq)) fragend = length(seq);
+				bool last_frag;
+				if (fragend > length(seq))
+				{
+					fragend = length(seq);
+					last_frag = true;
+				}
 				seqan::Infix< seqan::CharString >::Type fragment = seqan::infix(seq, fragstart, fragend);
 				r = interleave::Read(id, fragment);
 				if (deplete && target)
-					classified = r.classify(DepletionFilters, Conf) && !r.classify(TargetFilters, Conf);
+					classified = r.classify(DepletionFilters, Conf) && r.classify(TargetFilters, Conf) != -1;
 				else if (deplete)
 					classified = r.classify(DepletionFilters, Conf);
 				else
-					classified = r.classify(TargetFilters, Conf);
-				if (classified)
+				{
+					classified = true;
+					best_filter_index = r.classify(TargetFilters, Conf);
+					if (best_filter_index != -1)
+					{
+						TargetFilters[best_filter_index].classified += 1;
+						if (parser.out_dir.length() > 0)
+							seqan::writeRecord(TargetFilters[best_filter_index].outfile, id, seq);
+					}
+				}
+				if (classified || last_frag)
+				{
+					found++;
 					break;
+				}
 				i++;
 			}
 			classifyRead.stop();
-
-			
-
-			// only classify if read is in depletion filter but NOT in target filter
-			
-			if (classified)
-			{
-				found++;
-				if (parser.classified_file.length() > 0)
-				{
-					seqan::writeRecord(ClassifiedOut, id, seq);
-				}
-			}
-			else if (parser.unclassified_file.length() > 0)
-			{
-				seqan::writeRecord(UnclassifiedOut, id, seq);
-			}
-			
-			// only classify if read is in depletion filter
 			
 		}
 		catch (std::exception& e)
@@ -261,15 +282,18 @@ void classify_reads(read_classify_parser& parser)
 
 	}
 	seqan::close(seqFileIn);
-	if (parser.classified_file.length() > 0)
-		seqan::close(ClassifiedOut);
-	if (parser.unclassified_file.length() > 0)
-		seqan::close(UnclassifiedOut);
+	
 	std::stringstream sstr;
 	std::cout << "------------------------------- Final Results -------------------------------" << std::endl;
 	std::cout << "Number of classified reads                         :   " << found << std::endl;
 	std::cout << "Number of of too short reads (len < " << parser.preLen << ")           :   " << too_short << std::endl;
 	std::cout << "Number of all reads                                :   " << readCounter << std::endl;
+	for (interleave::IBFMeta f : TargetFilters)
+	{
+		std::cout << f.name << "\t : " << f.classified << "\t\t" << ((float) f.classified) / ((float) readCounter) << std::endl;
+		if (parser.out_dir.length() > 0)
+			seqan::close(f.outfile);
+	}
 	std::cout << "Average Processing Time Read Classification        :   " << avgClassifyduration << std::endl;
 	std::cout << "-----------------------------------------------------------------------------------" << std::endl;
 }

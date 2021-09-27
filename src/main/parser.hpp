@@ -119,8 +119,7 @@ struct read_classify_parser
 	std::string ibf_deplete_file{ };
 	std::string ibf_target_file{ };
 	std::string read_file{};
-	std::string classified_file{};
-	std::string unclassified_file{};
+	std::string out_dir{};
 	bool command = false;
 	bool show_help = false;
 	double kmer_significance = 0.95;
@@ -168,17 +167,11 @@ struct read_classify_parser
 				.optional()
 				.help("Interleaved Bloom Filter file with target references"))
 			.add_argument(
-				lyra::opt(classified_file, "file")
-				.name("-c")
-				.name("--classified-file")
+				lyra::opt(out_dir, "dir")
+				.name("-o")
+				.name("--output-directory")
 				.optional()
-				.help("File with classified reads in FASTA format"))
-			.add_argument(
-				lyra::opt(unclassified_file, "file")
-				.name("-u")
-				.name("--unclassified-file")
-				.optional()
-				.help("File with unclassified reads in FASTA format"))
+				.help("Output directory for fasta files of classified reads"))
 			.add_argument(
 				lyra::opt(kmer_significance, "probability")
 				.name("-s")
@@ -240,10 +233,8 @@ struct read_classify_parser
 					std::cout << "Depletion IBF file                            : " << ibf_deplete_file << std::endl;
 				if (ibf_target_file.length() > 0)
 					std::cout << "Target IBF file                               : " << ibf_target_file << std::endl;
-				if (classified_file.length() > 0)
-					std::cout << "Classified reads file                         : " << classified_file << std::endl;
-				if (unclassified_file.length() > 0)
-					std::cout << "Unclassified reads file                       : " << unclassified_file << std::endl;
+				if (out_dir.length() > 0)
+					std::cout << "Output directory                              : " << out_dir << std::endl;
 				std::cout << "Significance level for confidence interval    : " << kmer_significance << std::endl;
 				std::cout << "Expected sequencing error rate                : " << error_rate << std::endl;
 				std::cout << "Length of read prefix used for classification : " << preLen << std::endl;

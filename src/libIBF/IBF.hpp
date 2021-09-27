@@ -137,6 +137,14 @@ namespace interleave
 
     };
 
+    struct IBFMeta
+    {
+        TIbf filter;
+        std::string name;
+        seqan::SeqFileOut outfile;
+        uint64_t classified;
+    };
+
     class Read
     {
         private:
@@ -148,15 +156,15 @@ namespace interleave
             uint16_t readNr = 0;
             TimeMeasures processingTimes{};
 
-            uint32_t filter_matches(TMatches& matches,
-                                    uint16_t  len,
-                                    uint16_t  kmer_size,
-                                    int16_t   strata_filter );
+            
             bool find_matches(std::vector< TIbf >& filters, ClassifyConfig&  config );
+            uint64_t count_matches(IBFMeta& filter, ClassifyConfig& config);
             bool select_matches(std::vector< uint16_t >& selectedBins,
                                 std::vector< uint16_t >& selectedBinsRev,
                                 TIbf&                    filter,
                                 uint16_t                 threshold);
+            uint64_t max_matches(std::vector< uint16_t >& selectedBins, std::vector< uint16_t >& selectedBinsRev,
+                TIbf& filter, uint16_t threshold);
 
         public:
             Read(){}
@@ -212,7 +220,7 @@ namespace interleave
                 this->processingTimes = t;
             }
             bool classify(std::vector< TIbf >& filters, ClassifyConfig& config);
-        
+            int classify(std::vector< IBFMeta >& filters, ClassifyConfig& config);
         
     };
     
