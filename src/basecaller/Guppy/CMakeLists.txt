@@ -1,0 +1,47 @@
+
+#configure_file(CMakeLists.txt.in Guppy-build/CMakeLists.txt)
+
+#execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+#  RESULT_VARIABLE result
+#  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Guppy-build)
+#if(result)
+#  message(FATAL_ERROR "Generator step for Guppy failed: ${result}")
+#endif()
+
+#execute_process(COMMAND ${CMAKE_COMMAND} --build . --config Release
+#  RESULT_VARIABLE result
+#  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Guppy-build)
+#if(result)
+#  message(FATAL_ERROR "Build step for Guppy failed: ${result}")
+#endif()
+
+file(GLOB GUPPYSRCS "*.cpp")
+file(GLOB GUPPYHDRS "*.hpp" "*.h")
+
+if (WIN32)
+  execute_process(COMMAND "${CMAKE_COMMAND}" "-E" "tar" "xvzf" "${CMAKE_CURRENT_SOURCE_DIR}/GuppyCPPClient.tar.gz" WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+  add_library(GuppyClient STATIC IMPORTED GLOBAL)
+  set_target_properties(GuppyClient PROPERTIES 
+      IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/GuppyCPPClient.lib"
+   )
+endif()
+
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../../util" "${CMAKE_CURRENT_SOURCE_DIR}/../../interfaces" ${CMAKE_CURRENT_SOURCE_DIR} "${CMAKE_CURRENT_SOURCE_DIR}/..")
+
+add_library (Guppy STATIC ${GUPPYSRCS} ${GUPPYHDRS})
+target_include_directories (Guppy PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+#target_link_libraries (Guppy GuppyClient)
+
+target_link_libraries(Guppy
+        PUBLIC
+        GuppyClient
+        ws2_32
+        Iphlpapi
+        )
+
+install(TARGETS Guppy DESTINATION lib COMPONENT libraries)
+
+install(FILES ${GUPPYHDRS} DESTINATION include COMPONENT headers)
+
+
+

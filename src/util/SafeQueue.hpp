@@ -54,6 +54,20 @@ public:
         cv_pop.notify_one();
     }
 
+    void push_elements(std::queue<T>& t)
+    {
+        // accquire mutex to modify queue
+        std::unique_lock< std::mutex > lock(m);
+        // wait for the mutex
+        while (!t.empty())
+        {
+            q.push(std::move(t.front()));
+            t.pop();
+        }
+        // notify other thread that something can be popped from the queue
+        cv_pop.notify_one();
+    }
+
     T pop()
     {
         std::unique_lock< std::mutex > lock( m );
@@ -67,6 +81,21 @@ public:
         q.pop();
         cv_push.notify_one();
         return val;
+    }
+
+    std::queue< T > pop_elements(const uint64_t nr)
+    {
+        std::queue<T> result{};
+        std::unique_lock< std::mutex > lock(m);
+        uint64_t count = 0;
+        while (count < nr && !q.empty())
+        {
+            result.push(std::move(q.front()));
+            q.pop();
+            count++;
+        }
+        cv_push.notify_one();
+        return result;
     }
 
     void notify_push_over()
