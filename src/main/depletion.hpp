@@ -73,7 +73,7 @@ void basecall_live_reads(SafeQueue<readuntil::SignalRead>& basecall_queue,
 
 				// only classify reads with length >= 300
 				// reads with length < 300 will wait for the next read chunks and combine them
-				if (r.getSeqLength() < 250)
+				if (r.getSeqLength() < 180)
 				{
 					//stop clock for overall processing time of the read
 					// add readid and read entry to pending map
@@ -110,7 +110,7 @@ void basecall_live_reads(SafeQueue<readuntil::SignalRead>& basecall_queue,
 				// push prolonged sequence to classification queue
 				// longer read may be classified better
 				interleave::Read r = interleave::Read(read.id, sstr.str(), read.channelNr, read.readNr, read.processingTimes);
-				if (r.getSeqLength() < 250)
+				if (r.getSeqLength() < 180)
 				{
 					// add readid and read entry to pending map
 					//read.processingTimes.timeCompleteRead.stop();
