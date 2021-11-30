@@ -14,7 +14,7 @@ namespace basecall
 	
 
 	GuppyBasecaller::GuppyBasecaller(std::string& address, std::string& config) :
-		client(new guppy_cpp_client::GuppyCPPClient(std::move(address), std::move(config)))
+		client(new guppy_cpp_client::GuppyCPPClient(std::ref(address), std::ref(config)))
 	{
 		guppy_cpp_client::Priority p = guppy_cpp_client::Priority::high;
 		client->set_priority(p);

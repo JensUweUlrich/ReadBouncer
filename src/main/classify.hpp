@@ -29,7 +29,8 @@ void parse_reads(std::string const& reads_file,
 			// make sure that last fragment ends at last position of the reference sequence
 			if (fragend > length(seq)) fragend = length(seq);
 			seqan::Infix< seqan::CharString >::Type fragment = seqan::infix(seq, 0, fragend);
-			reads.emplace_back(interleave::Read(id, (seqan::Dna5String) fragment));
+			seqan::Dna5String fr = (seqan::Dna5String) fragment;
+			reads.emplace_back(interleave::Read(id, fr));
 
 		}
 		catch (seqan::Exception const& e)
@@ -192,7 +193,8 @@ void classify_reads(read_classify_parser& parser)
 				// make sure that last fragment ends at last position of the reference sequence
 				if (fragend > length(seq)) fragend = length(seq);
 				seqan::Infix< seqan::CharString >::Type fragment = seqan::infix(seq, fragstart, fragend);
-				r = interleave::Read(id, (seqan::Dna5String) fragment);
+				seqan::Dna5String fr = (seqan::Dna5String) fragment;
+				r = interleave::Read(id, fr);
 				if (deplete && target)
 					classified = r.classify(DepletionFilters, Conf) && !r.classify(TargetFilters, Conf);
 				else if (deplete)

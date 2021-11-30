@@ -167,7 +167,8 @@ void classify_target_reads(SafeQueue<RTPair>& classification_queue,
 		if (!classification_queue.empty())
 		{
 			RTPair rp = std::move(classification_queue.pop());
-			interleave::Read read = interleave::Read(rp.first.id, (seqan::Dna5String)rp.first.sequence);
+			seqan::Dna5String seq = (seqan::Dna5String) rp.first.sequence;
+			interleave::Read read = interleave::Read(rp.first.id, seq);
 			try
 			{
 				rp.second.timeClassifyRead.start();
@@ -300,7 +301,8 @@ void classify_deplete_reads(SafeQueue<RTPair>& classification_queue,
 		if (!classification_queue.empty())
 		{
 			RTPair rp = std::move(classification_queue.pop());
-			interleave::Read read = interleave::Read(rp.first.id, (seqan::Dna5String)rp.first.sequence);
+			seqan::Dna5String seq = (seqan::Dna5String) rp.first.sequence;
+			interleave::Read read = interleave::Read(rp.first.id, seq);
 			try
 			{
 				rp.second.timeClassifyRead.start();

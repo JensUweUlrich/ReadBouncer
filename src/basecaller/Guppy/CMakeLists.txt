@@ -18,11 +18,18 @@
 file(GLOB GUPPYSRCS "*.cpp")
 file(GLOB GUPPYHDRS "*.hpp" "*.h")
 
+
 if (WIN32)
-  execute_process(COMMAND "${CMAKE_COMMAND}" "-E" "tar" "xvzf" "${CMAKE_CURRENT_SOURCE_DIR}/GuppyCPPClient.tar.gz" WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+  execute_process(COMMAND "${CMAKE_COMMAND}" "-E" "tar" "xvzf" "${CMAKE_CURRENT_SOURCE_DIR}/GuppyCPPClient.tar.gz" WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})  
   add_library(GuppyClient STATIC IMPORTED GLOBAL)
   set_target_properties(GuppyClient PROPERTIES 
       IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/GuppyCPPClient.lib"
+   )
+else()
+  execute_process(COMMAND "${CMAKE_COMMAND}" "-E" "tar" "xvzf" "${CMAKE_CURRENT_SOURCE_DIR}/libGuppyCppClient_linux_x86_64.tar.gz" WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})  
+  add_library(GuppyClient STATIC IMPORTED GLOBAL)
+  set_target_properties(GuppyClient PROPERTIES 
+      IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/libGuppyCppClient.a"
    )
 endif()
 
@@ -32,12 +39,15 @@ add_library (Guppy STATIC ${GUPPYSRCS} ${GUPPYHDRS})
 target_include_directories (Guppy PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 #target_link_libraries (Guppy GuppyClient)
 
-target_link_libraries(Guppy
+target_link_libraries(Guppy GuppyClient)
+
+if (WIN32)
+   target_link_libraries(Guppy
         PUBLIC
-        GuppyClient
         ws2_32
         Iphlpapi
         )
+endif() 
 
 install(TARGETS Guppy DESTINATION lib COMPONENT libraries)
 
