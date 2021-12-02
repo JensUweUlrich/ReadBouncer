@@ -3,10 +3,17 @@ cmake_minimum_required (VERSION 3.16)
 
 project (ReadBouncer CXX C)
 
-
-
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_CXX_STANDARD 17)
+
+set(ARM_BUILD "OFF")
+SET(ARM_TARGETS "arm;aarch64")
+list (FIND ARM_TARGETS ${CMAKE_SYSTEM_PROCESSOR} _index)
+if (${_index} GREATER -1)
+    set(ARM_BUILD "ON")
+    add_compile_options(-DARM_BUILD)
+endif()
+
 
 if (WIN32)
     add_compile_options(-D_WIN32_WINNT=0x600)
@@ -21,6 +28,7 @@ else()
 #    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
     set(CMAKE_INSTALL_PREFIX "/usr/local/${PROJECT_NAME}")
     add_compile_options("-Ofast")
+#    add_link_options("stdc++fs")
 #    add_compile_options("-std=c++17")
 endif()
 

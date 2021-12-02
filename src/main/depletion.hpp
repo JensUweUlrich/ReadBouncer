@@ -30,7 +30,7 @@ uint64_t rCounter = 0;
 //-------------------------------------------------------------------
 
 
-
+#if !defined(ARM_BUILD)
 //--------------------------------------------------------------------
 // functions referenced as asynchronous tasks
 //----------------------------------------------------------------------------------------------------------
@@ -135,6 +135,7 @@ void basecall_live_reads(SafeQueue<RTPair>& basecall_queue,
 	}
 }
 
+#endif
 /**
 *	take basecalled reads from classification queue, try to find read in target IBF
 *	push read on action queue if classified as target read with stop_further_data label
@@ -593,6 +594,7 @@ void live_read_depletion(live_parser& parser, bool target_sequencing)
 {
 	std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("NanoLiveLog");
 	bool withTarget = false;
+#if !defined(ARM_BUILD)
 	// first check if basecalling file exists
 	std::filesystem::path weights_file = NanoLiveRoot;
 	weights_file.append("data");
@@ -603,7 +605,7 @@ void live_read_depletion(live_parser& parser, bool target_sequencing)
 		nanolive_logger->flush();
 		throw;
 	}
-
+#endif
 	std::vector<interleave::TIbf> DepletionFilters{};
 	std::vector<interleave::TIbf> TargetFilters{};
 	// first load IBFs of host reference sequence
@@ -779,7 +781,7 @@ void live_read_depletion(live_parser& parser, bool target_sequencing)
 
 	// create threads for live basecalling
 	
-	std::string basecall_host = "xavier:5556";
+	std::string basecall_host = "localhost:5556";//"xavier:5556";
 	std::string config_name = "dna_r9.4.1_450bps_fast";
 	//basecall::DeepNanoBasecaller* caller = new basecall::DeepNanoBasecaller(weights_file, parser.basecall_threads);
 	basecall::GuppyBasecaller* caller = new basecall::GuppyBasecaller(basecall_host, config_name);

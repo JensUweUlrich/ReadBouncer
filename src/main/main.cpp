@@ -26,7 +26,10 @@
 #include "IBF.hpp"
 
 // Basecalling library
-#include <DeepNanoBasecaller.hpp>
+#if !defined(ARM_BUILD)
+	#include <DeepNanoBasecaller.hpp>
+#endif
+
 #include <GuppyBasecaller.hpp>
 
 // command line parser

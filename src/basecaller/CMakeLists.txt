@@ -1,5 +1,7 @@
 
 
 # add all subdirectories
-add_subdirectory(DeepNano)
+if(NOT ARM_BUILD)
+	add_subdirectory(DeepNano)
+endif()
 add_subdirectory(Guppy)
