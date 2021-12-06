@@ -38,13 +38,14 @@ namespace readuntil
 		
 		std::stringstream info_str;
 		bool secure_connect = false;
-		if (mk_host.compare("127.0.0.1") == 0 || mk_host.compare("localhost") == 0)
-		{
+		// actually only unsecure connection works
+		//if (mk_host.compare("127.0.0.1") == 0 || mk_host.compare("localhost") == 0) || mk_host.compare("xavier") == 0)
+		//{
 			info_str << "Connect to MinKNOW instance via unsecure connection to " << mk_host << " on port " << mk_port;
 			connection_logger->info(info_str.str());
 			connection_logger->flush();
 			channel_creds = grpc::InsecureChannelCredentials();
-		}
+		/* }
 		else
 		{
 			mk_port = 9502;
@@ -67,7 +68,7 @@ namespace readuntil
 			opt.pem_root_certs = root_cert;
 			channel_creds = grpc::SslCredentials(opt);
 			secure_connect = true;
-		}
+		}*/
 
 		std::stringstream s;
 		s << mk_host << ":" << mk_port;
@@ -90,13 +91,13 @@ namespace readuntil
 		connection_logger->flush();
 		int retry_count = 5;
 		
-
+		
 		for (int i = 1; i <= 5; ++i)
 		{
-			channel = grpc::CreateCustomChannel(connect_str.str(), channel_creds, channel_args);
-			Instance *inst = (Instance*) getMinKnowService(MinKnowServiceType::INSTANCE);
 			try
 			{
+				channel = grpc::CreateCustomChannel(connect_str.str(), channel_creds, channel_args);
+				Instance* inst = (Instance*)getMinKnowService(MinKnowServiceType::INSTANCE);
 				std::stringstream dm;
 				dm << "Sucessfully connected to minknow instance (version " << (*inst).get_version_info() << ")";
 				connection_logger->info(dm.str());
@@ -113,7 +114,7 @@ namespace readuntil
 			}
 			std::this_thread::sleep_for(std::chrono::seconds(1));
 		}
-
+		
 		Device *dev = (readuntil::Device*) getMinKnowService(readuntil::MinKnowServiceType::DEVICE);
 		try
 		{

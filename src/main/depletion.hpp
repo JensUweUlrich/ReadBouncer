@@ -781,7 +781,7 @@ void live_read_depletion(live_parser& parser, bool target_sequencing)
 
 	// create threads for live basecalling
 	
-	std::string basecall_host = "localhost:5556";//"xavier:5556";
+	std::string basecall_host = "xavier:5555";
 	std::string config_name = "dna_r9.4.1_450bps_fast";
 	//basecall::DeepNanoBasecaller* caller = new basecall::DeepNanoBasecaller(weights_file, parser.basecall_threads);
 	basecall::GuppyBasecaller* caller = new basecall::GuppyBasecaller(basecall_host, config_name);

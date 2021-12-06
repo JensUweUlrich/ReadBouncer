@@ -40,16 +40,17 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../../util" "${CMAKE_CURRENT_SO
 
 add_library (Guppy STATIC ${GUPPYSRCS} ${GUPPYHDRS})
 target_include_directories (Guppy PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-#target_link_libraries (Guppy GuppyClient)
 
-target_link_libraries(Guppy GuppyClient)
 
 if (WIN32)
    target_link_libraries(Guppy
         PUBLIC
+        GuppyClient
         ws2_32
         Iphlpapi
         )
+else()
+   target_link_libraries(Guppy GuppyClient)
 endif() 
 
 install(TARGETS Guppy DESTINATION lib COMPONENT libraries)

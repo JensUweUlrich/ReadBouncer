@@ -57,7 +57,7 @@ namespace basecall
 	
 		std::unordered_map<uint64_t, RTPair>::iterator pass_it{};
 		std::unordered_map < std::string, std::pair<uint8_t, RTPair>>::iterator pend_it{};
-		
+		int d = 0;
 		while (true)
 		{
 			if (!basecall_queue.empty())
@@ -69,7 +69,7 @@ namespace basecall
 				while (!batch.empty())
 				{
 					
-					RTPair rp = std::move(batch.front());
+					RTPair rp = batch.front();
 					batch.pop();
 					// if we see data from this read for the first time
 					// basecall signals and push to classification queue
@@ -99,11 +99,11 @@ namespace basecall
 					passed_reads.insert(std::make_pair(rp.first.readTag, std::move(rp)));
 				}
 				bc_clock.stop();
-				std::cout << "Passed " << success << " reads to the basecall server in " << bc_clock.elapsed() << " seconds." << std::endl;
+				//std::cout << "Passed " << success << " reads to the basecall server in " << bc_clock.elapsed() << " seconds." << std::endl;
 				uint16_t done = 0;
 				StopClock get_clock;
 				get_clock.start();
-				//std::queue<RTPair> called{};
+			//	std::queue<RTPair> called{};
 				StopClock::Seconds getCompletedAll{ 0.0 };
 				StopClock::Seconds findEraseAll{ 0.0 };
 				StopClock::Seconds newReadAll{ 0.0 };
@@ -124,7 +124,7 @@ namespace basecall
 					if (completed_reads.empty())
 					{
 						numWaiting++;
-						std::this_thread::sleep_for(std::chrono::milliseconds(5));
+					//	std::this_thread::sleep_for(std::chrono::milliseconds(5));
 						continue;
 					}
 
@@ -169,7 +169,7 @@ namespace basecall
 
 							// only classify reads with length >= 300
 							// reads with length < 300 will wait for the next read chunks and combine them
-							if (called_read.seqlen < 250)
+							if (called_read.seqlen < 200)
 							{
 								//stop clock for overall processing time of the read
 								// add readid and read entry to pending map
@@ -202,7 +202,7 @@ namespace basecall
 							rp.first.sequence = sstr.str();
 							// push prolonged sequence to classification queue
 							// longer read may be classified better
-							if (rp.first.sequence.size() < 250)
+							if (rp.first.sequence.size() < 200)
 							{
 								// add readid and read entry to pending map
 								pending.insert({ called_read.read_id , std::make_pair(0, std::move(rp)) });
@@ -217,19 +217,22 @@ namespace basecall
 						}
 					}
 					forLoop.stop();
-					std::cout << "For Loop " << done << " reads in " << forLoop.elapsed() << " seconds." << std::endl;
+	//				std::cout << "For Loop " << done << " reads in " << forLoop.elapsed() << " seconds." << std::endl;
 				}
-				//classification_queue.push_elements(called);
+		//		classification_queue.push_elements(called);
 				get_clock.stop();
 				std::cout << "Get completed " << done << " reads in " << getCompletedAll << " seconds." << std::endl;
-				std::cout << "Num Waiting " << numWaiting << " call." << std::endl;
-				std::cout << "Find & Erase Passed " << done << " reads in " << findEraseAll << " seconds." << std::endl;
-				std::cout << "Find Pending " << done << " reads in " << findPendAll << " seconds." << std::endl;
-				std::cout << "New Read " << newreads << " reads in " << newReadAll << " seconds." << std::endl;
-				std::cout << "Old Reads " << oldreads << " reads in " << oldReadAll << " seconds." << std::endl;
+		//		std::cout << "Num Waiting " << numWaiting << " call." << std::endl;
+		//		std::cout << "Find & Erase Passed " << done << " reads in " << findEraseAll << " seconds." << std::endl;
+		//		std::cout << "Find Pending " << done << " reads in " << findPendAll << " seconds." << std::endl;
+		//		std::cout << "New Read " << newreads << " reads in " << newReadAll << " seconds." << std::endl;
+		//		std::cout << "Old Reads " << oldreads << " reads in " << oldReadAll << " seconds." << std::endl;
 				std::cout << "Called " << done << " reads in " << get_clock.elapsed() << " seconds." << std::endl;
 				//adaptBatchSize(basecall_queue.size());
+
 			}
+
+			
 
 			if (!runner.isRunning)
 				break;

@@ -26,8 +26,10 @@ namespace readuntil
 //        acquisition_logger->debug("reading Minknow status");
         while (stream->Read(&response))
         {
+            
             if(response.status() == MinknowStatus::PROCESSING)
             {
+                
                 WatchForStatusChangeRequest request{};
                 request.set_stop(true);
                 if (!stream->Write(request))
@@ -40,6 +42,10 @@ namespace readuntil
 //        acquisition_logger->debug("Minknow status changed to PROCESSING");
 	    context.TryCancel();
         status = stream->Finish();
+
+//        std::cout << "Device is performing MUX scan. Wainting to finish..." << std::endl;
+
+//        std::this_thread::sleep_for(std::chrono::seconds(150));
 
         return true;
     }
