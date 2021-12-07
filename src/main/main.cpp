@@ -26,7 +26,11 @@
 #include "IBF.hpp"
 
 // Basecalling library
-#include "DeepNano2.h"
+#if !defined(ARM_BUILD)
+	#include <DeepNanoBasecaller.hpp>
+#endif
+
+#include <GuppyBasecaller.hpp>
 
 // command line parser
 #include "parser.hpp"
@@ -51,7 +55,6 @@ std::shared_ptr<spdlog::logger> nanolive_logger;
 //std::filesystem::path NanoLiveRoot;
 //readuntil::Data* data;
 
-
 /**
 *	shift incoming signals directly as unblock response to action queue
 *	needed only for unblock all
@@ -59,17 +62,17 @@ std::shared_ptr<spdlog::logger> nanolive_logger;
 *	@action_queue	:	thread safe queue with unblock actions
 *	@acq			:	Acquisition service checking if sequencing run is already finished
 */
-void fill_action_queue(SafeQueue<readuntil::SignalRead>& signal_queue,
-	SafeQueue<readuntil::ActionResponse>& action_queue,
+void fill_action_queue(SafeQueue<RTPair>& signal_queue,
+	SafeQueue<RTPair>& action_queue,
 	readuntil::Acquisition* acq)
 {
 	while (true)
 	{
 		if (!signal_queue.empty())
 		{
-			readuntil::SignalRead read = signal_queue.pop();
-			action_queue.push(readuntil::ActionResponse{ read.channelNr, read.readNr,
-										read.id, 0 ,read.processingTimes, true });
+			RTPair rp = std::move(signal_queue.pop());
+			rp.first.unblock = true;
+			action_queue.push(std::move(rp));
 		}
 
 		if (acq->isFinished())
@@ -169,9 +172,9 @@ void test_connection(connection_test_parser& parser)
 		
 
 		// thread safe queue storing reads ready for basecalling
-		SafeQueue<readuntil::SignalRead> read_queue{};
+		SafeQueue<RTPair> read_queue{};
 		// thread safe queue storing classified reads ready for action creation
-		SafeQueue<readuntil::ActionResponse> action_queue{};
+		SafeQueue<RTPair> action_queue{};
 		// thread safe queue storing for every read the duration for the different tasks to complete
 		SafeQueue<Durations> duration_queue{};
 
@@ -212,6 +215,7 @@ void signalHandler(int signum)
 	{
 		data->getContext()->TryCancel();
 	}
+	runner.isRunning = false;
 	exit(signum);
 }
 

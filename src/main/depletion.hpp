@@ -5,13 +5,18 @@
  *      Author: jens-uwe.ulrich
  */
 
+#include <ont_read.hpp>
+
+using namespace interfaces;
+
  // global variables
 std::filesystem::path NanoLiveRoot;
 
 readuntil::Data* data;
+Runner runner{};
 //Caller* caller;
 std::mutex callerMutex;
-SafeMap<std::string, std::pair<uint8_t, interleave::Read> > pending{};
+SafeMap<std::string, std::pair<uint8_t, RTPair> > pending{};
 // too short reads that need more data
 SafeQueue<interleave::Read> classifiedReads{};
 SafeQueue<interleave::Read> unclassifiedReads{};
@@ -25,7 +30,7 @@ uint64_t rCounter = 0;
 //-------------------------------------------------------------------
 
 
-
+#if !defined(ARM_BUILD)
 //--------------------------------------------------------------------
 // functions referenced as asynchronous tasks
 //----------------------------------------------------------------------------------------------------------
@@ -38,8 +43,8 @@ uint64_t rCounter = 0;
 *	@weights				: weights file path needed by DeepNano to perform basecalling
 *	@acq					: Acquisition service checking if sequencing run is already finished
 */
-void basecall_live_reads(SafeQueue<readuntil::SignalRead>& basecall_queue,
-	SafeQueue<interleave::Read>& classification_queue,
+void basecall_live_reads(SafeQueue<RTPair>& basecall_queue,
+	SafeQueue<RTPair>& classification_queue,
 	SafeMap<uint16_t, uint32_t>& channel_stats,
 	std::string& weights,
 	std::filesystem::path& weights_file,
@@ -55,34 +60,35 @@ void basecall_live_reads(SafeQueue<readuntil::SignalRead>& basecall_queue,
 	{
 		if (!basecall_queue.empty())
 		{
-			readuntil::SignalRead read = basecall_queue.pop();
+			RTPair rp = std::move(basecall_queue.pop());
 
 			// if we see data from this read for the first time
 			// basecall signals and push to classification queue
-			if (!pending.contains(read.id))
+			if (!pending.contains(rp.first.id))
 			{
-				read.processingTimes.timeBasecallRead.start();
-				char* sequence = call_raw_signal(caller, read.raw_signals.data(), read.raw_signals.size());
-				read.processingTimes.timeBasecallRead.stop();
-				interleave::Read r = interleave::Read(read.id, sequence, read.channelNr, read.readNr, read.processingTimes);
+				rp.second.timeBasecallRead.start();
+				rp.first.sequence = call_raw_signal(caller, rp.first.raw_signals.data(), rp.first.raw_signals.size());
+				rp.second.timeBasecallRead.stop();
+				//interleave::Read r = interleave::Read(read.id, sequence, read.channelNr, read.readNr, read.processingTimes);
 
+				// create some active channel stats
+				uint32_t chNr = rp.first.channelNr;
+				channel_stats.assign(std::pair(chNr, channel_stats[chNr] + 1));
 
 				// only classify reads with length >= 300
 				// reads with length < 300 will wait for the next read chunks and combine them
-				if (r.getSeqLength() < 250)
+				if (rp.first.sequence.size() < 250)
 				{
 					//stop clock for overall processing time of the read
 					// add readid and read entry to pending map
 					//read.processingTimes.timeCompleteRead.stop();
 					//r.setProcessingTimes(read.processingTimes);
-					pending.insert({ read.id , std::make_pair(0, r) });
+					pending.insert({ rp.first.id , std::make_pair(0, std::make_pair(std::move(rp.first), rp.second)) });
 				}
 				else
 				{
-					classification_queue.push(r);
+					classification_queue.push(std::move(rp));
 				}
-				uint32_t chNr = (uint32_t)read.channelNr;
-				channel_stats.assign(std::pair(chNr, channel_stats[chNr] + 1));
 				
 			}
 			else
@@ -91,32 +97,33 @@ void basecall_live_reads(SafeQueue<readuntil::SignalRead>& basecall_queue,
 				// concatenate sequence data from actual signals with former basecalled sequence data
 				// use stop clock from former tries again
 
-				TimeMeasures m = pending[read.id].second.getProcessingTimes();
-				read.processingTimes.timeBasecallRead.start();
-				char* sequence = call_raw_signal(caller, read.raw_signals.data(), read.raw_signals.size());
-				read.processingTimes.timeBasecallRead.stop();
+				TimeMeasures m = pending[rp.first.id].second.second;
+				rp.second.timeBasecallRead.start();
+				char* sequence = call_raw_signal(caller, rp.first.raw_signals.data(), rp.first.raw_signals.size());
+				rp.second.timeBasecallRead.stop();
 
 				// add elapsed basecall time of first chunks to second chunk
-				read.processingTimes.timeBasecallRead.decrementStart(m.timeBasecallRead.runtime());
+				rp.second.timeBasecallRead.decrementStart(m.timeBasecallRead.runtime());
 				// add elapsed overall time of first chunks to second chunk
-				read.processingTimes.timeCompleteRead.setBegin(m.timeCompleteRead.begin());
+				rp.second.timeCompleteRead.setBegin(m.timeCompleteRead.begin());
 
 				std::stringstream sstr;
-				sstr << pending[read.id].second.getSeq() << sequence;
+				sstr << pending[rp.first.id].second.first.sequence << sequence;
+				rp.first.sequence = sstr.str();
 				// push prolonged sequence to classification queue
 				// longer read may be classified better
-				interleave::Read r = interleave::Read(read.id, sstr.str(), read.channelNr, read.readNr, read.processingTimes);
-				if (r.getSeqLength() < 250)
+				//interleave::Read r = interleave::Read(read.id, sstr.str(), read.channelNr, read.readNr, read.processingTimes);
+				if (rp.first.sequence.size() < 250)
 				{
 					// add readid and read entry to pending map
 					//read.processingTimes.timeCompleteRead.stop();
 					//r.setProcessingTimes(read.processingTimes);
-					pending.insert({ read.id , std::make_pair(0, r) });
+					pending.insert({ rp.first.id , std::make_pair(0, std::make_pair(std::move(rp.first), rp.second)) });
 				}
 				else
 				{
-					classification_queue.push(r);
-					pending.erase(read.id);
+					classification_queue.push(std::move(rp));
+					pending.erase(rp.first.id);
 				}
 			}
 			
@@ -128,6 +135,7 @@ void basecall_live_reads(SafeQueue<readuntil::SignalRead>& basecall_queue,
 	}
 }
 
+#endif
 /**
 *	take basecalled reads from classification queue, try to find read in target IBF
 *	push read on action queue if classified as target read with stop_further_data label
@@ -139,8 +147,8 @@ void basecall_live_reads(SafeQueue<readuntil::SignalRead>& basecall_queue,
 *	@acq					: Acquisition service checking if sequencing run is already finished
 *
 */
-void classify_target_reads(SafeQueue<interleave::Read>& classification_queue,
-	SafeQueue<readuntil::ActionResponse>& action_queue,
+void classify_target_reads(SafeQueue<RTPair>& classification_queue,
+	SafeQueue<RTPair>& action_queue,
 	SafeMap<std::string, std::pair< interleave::Read, uint8_t>>& once_seen,
 	std::vector<interleave::TIbf>& DepletionFilters,
 	std::vector<interleave::TIbf>& TargetFilters,
@@ -159,15 +167,15 @@ void classify_target_reads(SafeQueue<interleave::Read>& classification_queue,
 	{
 		if (!classification_queue.empty())
 		{
-			interleave::Read read = classification_queue.pop();
-
-			TimeMeasures m = read.getProcessingTimes();
-			string readID = seqan::toCString(read.getID());
-			// Average Read length for classifcation
-
+			RTPair rp = std::move(classification_queue.pop());
+			seqan::Dna5String seq = (seqan::Dna5String) rp.first.sequence;
+			interleave::Read read = interleave::Read(rp.first.id, seq);
 			try
 			{
-				m.timeClassifyRead.start();
+				rp.second.timeClassifyRead.start();
+
+
+
 				bool stop_further = read.classify(TargetFilters, conf);
 				bool unblock = false;
 				
@@ -175,62 +183,62 @@ void classify_target_reads(SafeQueue<interleave::Read>& classification_queue,
 				{
 					unblock = read.classify(DepletionFilters, conf);
 				}
-				m.timeClassifyRead.stop();
+				rp.second.timeClassifyRead.stop();
 
 				// unblock all reads that not match the target filter
 				// stop receiving further data for reads that belong to the target
 				if (stop_further)
 				{
 					// store all read data and time measures for classified read
-					std::unordered_map<std::string, std::pair<interleave::Read, uint8_t>>::iterator it = once_seen.find(readID);
-					uint32_t readlen = read.getSeqLength();
+					std::unordered_map<std::string, std::pair<interleave::Read, uint8_t>>::iterator it = once_seen.find(rp.first.id);
+					uint32_t readlen = read.getReadLength();
 					if (it != once_seen.end())
 					{
-						readlen += (*it).second.first.getSeqLength();
+						readlen += (*it).second.first.getReadLength();
 						once_seen.erase(it);
 					}
-					action_queue.push(readuntil::ActionResponse{ read.getChannelNr(), read.getReadNr(),
-									seqan::toCString(read.getID()), readlen, m, false });
+					rp.first.unblock = false;
+					action_queue.push(std::move(rp));
 					classifiedReads.push(read);
 					avgReadLenMutex.lock();
-					avgReadLen += ((double)read.getSeqLength() - avgReadLen) / (double) ++rCounter;
+					avgReadLen += ((double)read.getReadLength() - avgReadLen) / (double) ++rCounter;
 					avgReadLenMutex.unlock();
 				}
 				// if read is not in target filter but in depletion filter => unblock read
 				else if (unblock)
 				{
 					// store all read data and time measures for classified read
-					std::unordered_map<std::string, std::pair<interleave::Read, uint8_t>>::iterator it = once_seen.find(readID);
-					uint32_t readlen = read.getSeqLength();
+					std::unordered_map<std::string, std::pair<interleave::Read, uint8_t>>::iterator it = once_seen.find(rp.first.id);
+					uint32_t readlen = read.getReadLength();
 					if (it != once_seen.end())
 					{
-						readlen += (*it).second.first.getSeqLength();
+						readlen += (*it).second.first.getReadLength();
 						once_seen.erase(it);
 					}
-					action_queue.push(readuntil::ActionResponse{ read.getChannelNr(), read.getReadNr(),
-									seqan::toCString(read.getID()), readlen, m, true });
+					rp.first.unblock = true;
+					action_queue.push(std::move(rp));
 					unclassifiedReads.push(read);
 					avgReadLenMutex.lock();
-					avgReadLen += ((double)read.getSeqLength() - avgReadLen) / (double) ++rCounter;
+					avgReadLen += ((double)read.getReadLength() - avgReadLen) / (double) ++rCounter;
 					avgReadLenMutex.unlock();
 				}
 				else
 				{
 					// check if we already marked read as unclassified
 					// if read is neither in target nor in depletion filter for second time => unblock this read 
-					std::unordered_map<std::string, std::pair<interleave::Read, uint8_t>>::iterator it = once_seen.find(readID);
+					std::unordered_map<std::string, std::pair<interleave::Read, uint8_t>>::iterator it = once_seen.find(rp.first.id);
 					if (it != once_seen.end())
 					{
 						//if ((*it).second.second == 1)
 						//{
-							uint32_t readlen = read.getSeqLength() + (*it).second.first.getSeqLength();
+							uint32_t readlen = read.getReadLength() + (*it).second.first.getReadLength();
 							once_seen.erase(it);
-							action_queue.push(readuntil::ActionResponse{ read.getChannelNr(), read.getReadNr(),
-											seqan::toCString(read.getID()), readlen, m , true });
+							rp.first.unblock = true;
+							action_queue.push(std::move(rp));
 							unclassifiedReads.push(read);
 							
 							avgReadLenMutex.lock();
-							avgReadLen += ((double)read.getSeqLength() - avgReadLen) / (double) ++rCounter;
+							avgReadLen += ((double)read.getReadLength() - avgReadLen) / (double) ++rCounter;
 							avgReadLenMutex.unlock();
 						/*}
 						else
@@ -243,7 +251,7 @@ void classify_target_reads(SafeQueue<interleave::Read>& classification_queue,
 					{
 						// read unclassified for the first time => insert in Ste of already seen reads
 						// but erase from pendin if first chunks were too short for classification
-						once_seen.assign(std::pair(readID, std::pair(read, 1)));
+						once_seen.assign(std::pair(rp.first.id, std::pair(read, 1)));
 					}
 					
 				}
@@ -251,7 +259,7 @@ void classify_target_reads(SafeQueue<interleave::Read>& classification_queue,
 			catch (std::exception& e)
 			{
 				std::stringstream estr;
-				estr << "Error classifying Read : " << read.getID() << "(Len=" << read.getSeqLength() << ")";
+				estr << "Error classifying Read : " << rp.first.id << "(Len=" << read.getReadLength() << ")";
 				nanolive_logger->error(estr.str());
 				estr.str("");
 				estr << "Error message          : " << e.what();
@@ -278,8 +286,8 @@ void classify_target_reads(SafeQueue<interleave::Read>& classification_queue,
 *	@acq					: Acquisition service checking if sequencing run is already finished
 *
 */
-void classify_deplete_reads(SafeQueue<interleave::Read>& classification_queue,
-	SafeQueue<readuntil::ActionResponse>& action_queue,
+void classify_deplete_reads(SafeQueue<RTPair>& classification_queue,
+	SafeQueue<RTPair>& action_queue,
 	SafeMap<std::string, std::pair< interleave::Read, uint8_t>>& once_seen,
 	std::vector<interleave::TIbf>& DepletionFilters,
 	std::vector<interleave::TIbf>& TargetFilters,
@@ -296,15 +304,12 @@ void classify_deplete_reads(SafeQueue<interleave::Read>& classification_queue,
 	{
 		if (!classification_queue.empty())
 		{
-			interleave::Read read = classification_queue.pop();
-
-			TimeMeasures m = read.getProcessingTimes();
-			string readID = seqan::toCString(read.getID());
-			// Average Read length for classifcation
-
+			RTPair rp = std::move(classification_queue.pop());
+			seqan::Dna5String seq = (seqan::Dna5String) rp.first.sequence;
+			interleave::Read read = interleave::Read(rp.first.id, seq);
 			try
 			{
-				m.timeClassifyRead.start();
+				rp.second.timeClassifyRead.start();
 				bool classified = false;
 
 				
@@ -313,26 +318,34 @@ void classify_deplete_reads(SafeQueue<interleave::Read>& classification_queue,
 				// if additional target filter is given
 				// read is classified for depletion iff it was found in depletion filters but not in target filters
 				if (withTarget)
-					classified = read.classify(DepletionFilters, conf) && !read.classify(TargetFilters, conf);
+				{
+					if (!read.classify(TargetFilters, conf))
+					{
+						classified = read.classify(DepletionFilters, conf);
+					}
+				}
 				else
+				{
 					classified = read.classify(DepletionFilters, conf);
-				m.timeClassifyRead.stop();
+				}
+				rp.second.timeClassifyRead.stop();
 
 				if (classified)
 				{
-					std::unordered_map<std::string, std::pair<interleave::Read, uint8_t>>::iterator it = once_seen.find(readID);
-					uint32_t readlen = read.getSeqLength();
+					std::unordered_map<std::string, std::pair<interleave::Read, uint8_t>>::iterator it = once_seen.find(rp.first.id);
+					uint32_t readlen = read.getReadLength();
 					if (it != once_seen.end())
 					{
-						readlen += (*it).second.first.getSeqLength();
+						readlen += (*it).second.first.getReadLength();
 						once_seen.erase(it);
 					}
 					// store all read data and time measures for classified read
-					action_queue.push(readuntil::ActionResponse{ read.getChannelNr(), read.getReadNr(),
-									seqan::toCString(read.getID()), readlen, m, true });
+					//ReadHolder rp_new{ true, rp.first };
+					rp.first.unblock = true;
+					action_queue.push(std::move(rp));
 					classifiedReads.push(read);
 					avgReadLenMutex.lock();
-					avgReadLen += ((double)read.getSeqLength() - avgReadLen) / (double) ++rCounter;
+					avgReadLen += ((double)read.getReadLength() - avgReadLen) / (double) ++rCounter;
 					avgReadLenMutex.unlock();
 					
 					
@@ -341,41 +354,41 @@ void classify_deplete_reads(SafeQueue<interleave::Read>& classification_queue,
 				{
 					// check if we already marked read as unclassified
 					// if read unclassified for the third time => stop receiving further data from this read 
-					std::unordered_map<std::string, std::pair<interleave::Read, uint8_t>>::iterator it = once_seen.find(readID);
+					std::unordered_map<std::string, std::pair<interleave::Read, uint8_t>>::iterator it = once_seen.find(rp.first.id);
 					if (it != once_seen.end())
 					{
 						uint8_t iterstep = (*it).second.second;
 						// after 10 kb of sequencing the read => stop receiving further data
 						if (iterstep >= 5)
 						{
-							uint32_t readlen = read.getSeqLength() + (*it).second.first.getSeqLength();
+							uint32_t readlen = read.getReadLength() + (*it).second.first.getReadLength();
 							once_seen.erase(it);
-							action_queue.push(readuntil::ActionResponse{ read.getChannelNr(), read.getReadNr(),
-											seqan::toCString(read.getID()), readlen, m , false });
+							rp.first.unblock = false;
+							action_queue.push(rp);
 							unclassifiedReads.push(read);
 							
 							avgReadLenMutex.lock();
-							avgReadLen += ((double)read.getSeqLength() - avgReadLen) / (double) ++rCounter;
+							avgReadLen += ((double)read.getReadLength() - avgReadLen) / (double) ++rCounter;
 							avgReadLenMutex.unlock();
 						}
 						else
 						{
 							// if read unclassified for the second time => try another chunk
-							once_seen.assign(std::pair(readID, std::pair(read, ++iterstep)));
+							once_seen.assign(std::pair(rp.first.id, std::pair(read, ++iterstep)));
 						}
 					}
 					else
 					{
 						// read unclassified for the first time => insert in Ste of already seen reads
 						// but erase from pendin if first chunks were too short for classification
-						once_seen.assign(std::pair(readID, std::pair(read, 1)));
+						once_seen.assign(std::pair(rp.first.id, std::pair(read, 1)));
 					}
 				}
 			}
 			catch (std::exception& e)
 			{
 				std::stringstream estr;
-				estr << "Error classifying Read : " << read.getID() << "(Len=" << read.getSeqLength() << ")";
+				estr << "Error classifying Read : " << rp.first.id << "(Len=" << read.getReadLength() << ")";
 				nanolive_logger->error(estr.str());
 				estr.str("");
 				estr << "Error message          : " << e.what();
@@ -401,8 +414,8 @@ void classify_deplete_reads(SafeQueue<interleave::Read>& classification_queue,
 *	@acq			        :	Acquisition service checking if sequencing run is already finished
 */
 void compute_average_durations(SafeQueue<Durations>& duration_queue, 
-							   SafeQueue<readuntil::SignalRead>& basecall_queue,
-							   SafeQueue<interleave::Read>& classification_queue,
+							   SafeQueue<RTPair>& basecall_queue,
+							   SafeQueue<RTPair>& classification_queue,
 	                           SafeMap<uint16_t, uint32_t>& channel_stats,
 	                           readuntil::Acquisition* acq)
 {
@@ -551,14 +564,12 @@ void writeReads(SafeQueue<interleave::Read>& read_queue,
 			interleave::Read read = read_queue.pop();
 			try
 			{
-				std::stringstream sstr;
-				sstr << read.getID() << " channelNr=" << read.getChannelNr() << " readNr=" << read.getReadNr();
-				seqan::writeRecord(SeqOut, sstr.str(), read.getSeq());
+				seqan::writeRecord(SeqOut, read.id, read.sequence);
 
 			}
 			catch (seqan::Exception const& e)
 			{
-				std::cerr << "ERROR: " << e.what() << " [@" << read.getID() << "]" << std::endl;
+				std::cerr << "ERROR: " << e.what() << " [@" << read.id << "]" << std::endl;
 				break;
 			}
 		}
@@ -570,6 +581,20 @@ void writeReads(SafeQueue<interleave::Read>& read_queue,
 	seqan::close(SeqOut);
 }
 
+void checkRunning(Runner& runner, readuntil::Acquisition* acq)
+{
+	while (true)
+	{
+		if (acq->isFinished())
+			runner.isRunning = false;
+
+		std::this_thread::sleep_for(std::chrono::seconds(5));
+
+		if (!runner.isRunning)
+			break;
+	}
+}
+
 /**
  *	core method for live read depletion
  *	@parser: input from the command line
@@ -579,6 +604,7 @@ void live_read_depletion(live_parser& parser, bool target_sequencing)
 {
 	std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("NanoLiveLog");
 	bool withTarget = false;
+#if !defined(ARM_BUILD)
 	// first check if basecalling file exists
 	std::filesystem::path weights_file = NanoLiveRoot;
 	weights_file.append("data");
@@ -589,7 +615,7 @@ void live_read_depletion(live_parser& parser, bool target_sequencing)
 		nanolive_logger->flush();
 		throw;
 	}
-
+#endif
 	std::vector<interleave::TIbf> DepletionFilters{};
 	std::vector<interleave::TIbf> TargetFilters{};
 	// first load IBFs of host reference sequence
@@ -692,7 +718,8 @@ void live_read_depletion(live_parser& parser, bool target_sequencing)
 	std::cout << "Please start the sequencing run now!" << ::std::endl;
 
 	readuntil::Acquisition* acq = (readuntil::Acquisition*)client.getMinKnowService(readuntil::MinKnowServiceType::ACQUISITION);
-	if (acq->hasStarted())
+	
+	if (runner.isRunning = acq->hasStarted())
 	{
 		if (parser.verbose)
 			std::cout << "Sequencing has begun. Starting live signal processing!" << ::std::endl;
@@ -730,11 +757,11 @@ void live_read_depletion(live_parser& parser, bool target_sequencing)
 	}
 
 	// thread safe queue storing reads ready for basecalling
-	SafeQueue<readuntil::SignalRead> basecall_queue{};
+	SafeQueue<RTPair> basecall_queue{};
 	// thread safe queue storing basecalled reads ready for classification
-	SafeQueue<interleave::Read> classification_queue{};
+	SafeQueue<RTPair> classification_queue{};
 	// thread safe queue storing classified reads ready for action creation
-	SafeQueue<readuntil::ActionResponse> action_queue{};
+	SafeQueue<RTPair> action_queue{};
 	// thread safe queue storing for every read the duration for the different tasks to complete
 	SafeQueue<Durations> duration_queue{};
 	// thread safe set of reads which were too short after first basecalling
@@ -757,23 +784,21 @@ void live_read_depletion(live_parser& parser, bool target_sequencing)
 		std::cout << "Start sending unblock messages thread" << std::endl;
 	}
 
+	tasks.emplace_back(std::async(std::launch::async, &checkRunning, std::ref(runner), acq));
 
 	// create thread for receiving signals from MinKNOW
 	tasks.emplace_back(std::async(std::launch::async, &readuntil::Data::getLiveSignals, data, std::ref(basecall_queue)));
 
-	// create DeepNano2 caller object
-	//std::string f = weights_file.string();
-	// TODO: check if thread safe
-	//caller = create_caller(parser.weights.c_str(), f.c_str(), 5, 0.01);
-	
-
 	// create threads for live basecalling
-	for (uint8_t t = 0; t < parser.basecall_threads; ++t)
-	{
-		tasks.emplace_back(std::async(std::launch::async, &basecall_live_reads, std::ref(basecall_queue),
-			std::ref(classification_queue), std::ref(channelStats), std::ref(parser.weights),
-			std::ref(weights_file), acq));
-	}
+	
+	std::string basecall_host = "xavier:5555";
+	std::string config_name = "dna_r9.4.1_450bps_fast";
+	//basecall::DeepNanoBasecaller* caller = new basecall::DeepNanoBasecaller(weights_file, parser.basecall_threads);
+	basecall::GuppyBasecaller* caller = new basecall::GuppyBasecaller(basecall_host, config_name);
+	
+	tasks.emplace_back(std::async(std::launch::async, &basecall::Basecaller::basecall_live_reads, std::move(caller), std::ref(basecall_queue),
+			std::ref(classification_queue), std::ref(channelStats), std::ref(runner)));
+	
 
 	// create classification config
 	interleave::ClassifyConfig conf{};

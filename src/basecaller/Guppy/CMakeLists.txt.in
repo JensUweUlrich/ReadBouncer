@@ -1,0 +1,21 @@
+cmake_minimum_required(VERSION 3.4)
+
+project(Guppy-build NONE)
+
+include(ExternalProject)
+
+
+# Builds zlib project from the git submodule.
+ExternalProject_Add(cppzmq
+  PREFIX cppzmq
+  GIT_REPOSITORY    https://github.com/zeromq/cppzmq.git
+  GIT_TAG      v4.8.1     
+  SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/cppzmq"
+  CMAKE_ARGS		    "-DCMAKE_PREFIX_PATH=<SOURCE_DIR>/cppzmq/cmake"
+  CMAKE_CACHE_ARGS
+        -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/cppzmq
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND     ""
+  INSTALL_COMMAND   ""
+  TEST_COMMAND      ""
+)
