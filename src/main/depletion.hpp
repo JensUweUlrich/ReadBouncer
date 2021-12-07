@@ -173,6 +173,9 @@ void classify_target_reads(SafeQueue<RTPair>& classification_queue,
 			try
 			{
 				rp.second.timeClassifyRead.start();
+
+
+
 				bool stop_further = read.classify(TargetFilters, conf);
 				bool unblock = false;
 				
@@ -315,9 +318,16 @@ void classify_deplete_reads(SafeQueue<RTPair>& classification_queue,
 				// if additional target filter is given
 				// read is classified for depletion iff it was found in depletion filters but not in target filters
 				if (withTarget)
-					classified = read.classify(DepletionFilters, conf) && !read.classify(TargetFilters, conf);
+				{
+					if (!read.classify(TargetFilters, conf))
+					{
+						classified = read.classify(DepletionFilters, conf);
+					}
+				}
 				else
+				{
 					classified = read.classify(DepletionFilters, conf);
+				}
 				rp.second.timeClassifyRead.stop();
 
 				if (classified)
