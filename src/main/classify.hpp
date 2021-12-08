@@ -61,9 +61,9 @@ void classify_reads(read_classify_parser& parser)
 {
 	std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("NanoLiveLog");
 	// initialize depletion and target filters
-	interleave::IBFConfig DepleteIBFconfig{};
+	
 	interleave::IBF DepleteFilter{};
-	std::vector<interleave::TIbf> DepletionFilters{};
+	std::vector<interleave::IBFMeta> DepletionFilters{};
 	std::vector<interleave::IBFMeta> TargetFilters{};
 
 	bool deplete = false;
@@ -71,6 +71,38 @@ void classify_reads(read_classify_parser& parser)
 
 	// parse depletion IBF if given as parameter
 	if (parser.ibf_deplete_file.length() > 0)
+	{
+		std::vector<std::string> vector_files = split(parser.ibf_deplete_file, ',');
+		for (std::string n : vector_files)
+		{
+			interleave::IBFMeta filter{};
+			filter.name = std::filesystem::path(n).stem().string();
+			interleave::IBF tf{};
+			interleave::IBFConfig DepleteIBFconfig{};
+			try
+			{
+				DepleteIBFconfig.input_filter_file = n;
+				interleave::FilterStats stats = std::move(tf.load_filter(DepleteIBFconfig));
+				filter.filter = std::move(tf.getFilter());
+				if (parser.verbose)
+					interleave::print_load_stats(stats);
+				deplete = true;
+			}
+			catch (interleave::ParseIBFFileException& e)
+			{
+				nanolive_logger->error("Error parsing depletion IBF using the following parameters");
+				nanolive_logger->error("Depletion IBF file                : " + n);
+				nanolive_logger->error("Error message : " + std::string(e.what()));
+				nanolive_logger->flush();
+				throw;
+			}
+
+			DepletionFilters.emplace_back(std::move(filter));
+		}
+	}
+
+
+/*	if (parser.ibf_deplete_file.length() > 0)
 	{
 		try
 		{
@@ -90,7 +122,7 @@ void classify_reads(read_classify_parser& parser)
 			throw;
 		}
 	}
-
+*/
 	
 	// parse target IBF if given as parameter
 	if (parser.ibf_target_file.length() > 0)
@@ -105,8 +137,8 @@ void classify_reads(read_classify_parser& parser)
 			try
 			{
 				TargetIBFconfig.input_filter_file = n;
-				interleave::FilterStats stats = tf.load_filter(TargetIBFconfig);
-				filter.filter = tf.getFilter();
+				interleave::FilterStats stats = std::move(tf.load_filter(TargetIBFconfig));
+				filter.filter = std::move(tf.getFilter());
 				if (parser.verbose)
 					interleave::print_load_stats(stats);
 				target = true;
@@ -120,7 +152,7 @@ void classify_reads(read_classify_parser& parser)
 				throw;
 			}
 
-			TargetFilters.emplace_back(filter);
+			TargetFilters.emplace_back(std::move(filter));
 		}
 	}
 
@@ -176,8 +208,10 @@ void classify_reads(read_classify_parser& parser)
 		return;
 	}
 
+	int both = 0;
 	while (!seqan::atEnd(seqFileIn))
 	{
+
 		seqan::CharString id;
 		seqan::CharString seq;
 		interleave::Read r;
@@ -222,9 +256,41 @@ void classify_reads(read_classify_parser& parser)
 				seqan::Infix< seqan::CharString >::Type fragment = seqan::infix(seq, fragstart, fragend);
 				r = interleave::Read(id, fragment);
 				if (deplete && target)
-					classified = r.classify(DepletionFilters, Conf) && r.classify(TargetFilters, Conf) != -1;
+				{
+					//if (r.classify(DepletionFilters, Conf) > -1 )
+					//classified = r.classify(DepletionFilters, Conf) > -1 && r.classify(TargetFilters, Conf) == -1;
+					std::pair<uint64_t, uint64_t> p = r.classify(DepletionFilters, TargetFilters, Conf);
+					if (p.first > 0)
+					{
+						if (p.second > 0)
+						{
+							Conf.error_rate -= 0.02;
+							p = r.classify(DepletionFilters, TargetFilters, Conf);
+							Conf.error_rate += 0.02;
+							//std::vector<interleave::TIbf> t;
+							//t.emplace_back(DepletionFilters[0].filter);
+							//r.classify(t, Conf);
+
+							if (p.first > 0 && p.second == 0)
+							{
+								classified = true;
+							}
+							else
+							{
+								classified = false;
+								//std::cerr << id << "\t Depletion Filter k-mers: " << p.first << "\t" << "Target Filter k-mers: " << p.second << "\t"
+								//	<< r.classify(DepletionFilters, Conf) << "\t" << r.classify(TargetFilters, Conf) << std::endl;
+								//both++;
+							}
+						}
+						else
+							classified = true;
+					}
+					else
+						classified = false;
+				}
 				else if (deplete)
-					classified = r.classify(DepletionFilters, Conf);
+					classified = r.classify(DepletionFilters, Conf) > -1;
 				else
 				{
 					classified = true;
@@ -236,7 +302,7 @@ void classify_reads(read_classify_parser& parser)
 							seqan::writeRecord(TargetFilters[best_filter_index].outfile, id, seq);
 					}
 				}
-				if (classified || last_frag)
+				if (classified)// || last_frag)
 				{
 					found++;
 					break;
@@ -244,7 +310,8 @@ void classify_reads(read_classify_parser& parser)
 				i++;
 			}
 			classifyRead.stop();
-			
+//			if (both == 15)
+//				break;
 		}
 		catch (std::exception& e)
 		{

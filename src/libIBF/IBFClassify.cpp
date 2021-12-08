@@ -99,6 +99,7 @@ namespace interleave
                 // minimum number of kmers = max number of kmer in read - upper bound of the CI
                 //std::cout << seqan::length(this->seq) << " " << filter.kmerSize << std::endl;
                 int16_t threshold = readlen - filter.kmerSize + 1 - ci.second;
+                std::cerr << "Threshold: " << threshold << "\t" << "CI upper: " << ci.second << std::endl;
                 //uint16_t threshold = seqan::length(this->seq) - filter.kmerSize + 1 - (floor((ci.second - ci.first) / 2) + ci.first);
                 // select matches above chosen threshold
                 found = select_matches( selectedBins, selectedBinsRev, filter, threshold);
@@ -283,4 +284,72 @@ namespace interleave
         return -1;
     }
 
+    std::pair<int, int> Read::classify(std::vector< IBFMeta >& filt1, std::vector< IBFMeta >& filt2, ClassifyConfig& config)
+    {
+        std::shared_ptr<spdlog::logger> logger = config.classification_logger;
+        if (filt1.empty() || filt2.empty())
+        {
+            logger->error("No IBF provided to classify the read!");
+            throw NullFilterException("No IBF provided to classify the read!");
+        }
+        // k-mer sizes should be the same among filters
+
+        TMatches matches;
+        std::pair<uint64_t, uint64_t> result = std::make_pair(0,0);
+
+        // try to find kmer matches between read and ibfs
+        try
+        {
+            std::vector< std::future< uint64_t > > tasks;
+            for (uint8_t ind = 0; ind < filt1.size(); ++ind)
+            {
+                if (seqan::length(this->seq) >= filt1[ind].filter.kmerSize)
+                    tasks.emplace_back(std::async(std::launch::async, &interleave::Read::count_matches, this, std::ref(filt1[ind]), std::ref(config)));
+            }
+
+            uint64_t max_kmer_count = 0;
+            int best_index = -1;
+            for (int ind = 0; ind < tasks.size(); ++ind)
+            {
+                uint64_t count = tasks[ind].get();
+                if (count > max_kmer_count)
+                {
+                    best_index = ind;
+                    max_kmer_count = count;
+                }
+            }
+
+            tasks.clear();
+
+            result.first = max_kmer_count;
+            //std::cerr << result.first << std::endl;
+            for (uint8_t ind = 0; ind < filt2.size(); ++ind)
+            {
+                if (seqan::length(this->seq) >= filt2[ind].filter.kmerSize)
+                    tasks.emplace_back(std::async(std::launch::async, &interleave::Read::count_matches, this, std::ref(filt2[ind]), std::ref(config)));
+            }
+
+            max_kmer_count = 0;
+            best_index = -1;
+            for (int ind = 0; ind < tasks.size(); ++ind)
+            {
+                uint64_t count = tasks[ind].get();
+                if (count > max_kmer_count)
+                {
+                    best_index = ind;
+                    max_kmer_count = count;
+                }
+            }
+            result.second = max_kmer_count;
+            //std::cerr << result.second << std::endl;
+
+        }
+        catch (const CountKmerException& e)
+        {
+            throw;
+        }
+
+        return result;
+    }
+        
 } // end namespace interleave

@@ -221,6 +221,7 @@ namespace interleave
             }
             bool classify(std::vector< TIbf >& filters, ClassifyConfig& config);
             int classify(std::vector< IBFMeta >& filters, ClassifyConfig& config);
+            std::pair<int, int> Read::classify(std::vector< IBFMeta >& filt1, std::vector< IBFMeta >& filt2, ClassifyConfig& config);
         
     };
     
