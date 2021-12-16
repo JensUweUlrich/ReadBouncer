@@ -38,7 +38,7 @@
 // subcommand related functions
 #include "ibfbuild.hpp"
 #include "classify.hpp"
-#include "depletion.hpp"
+#include "adaptive_sampling.hpp"
 
 #if defined(_WIN32)
 	#include <windows.h>
@@ -301,8 +301,7 @@ int main(int argc, char const **argv)
 	cli.add_argument(lyra::help(show_help));
 	ibf_build_parser ibfbuild_parser{cli};
 	read_classify_parser classify_parser{cli};
-	live_depletion_parser deplete_parser{cli};
-	live_target_parser target_parser{ cli };
+	target_parser target_parser{ cli };
 	connection_test_parser connect_parser{ cli };
 	auto result = cli.parse({ argc, argv });
 	if (!result)
@@ -329,10 +328,8 @@ int main(int argc, char const **argv)
 			test_connection(connect_parser);
 		else if (classify_parser.command)
 			classify_reads(classify_parser);
-		else if (deplete_parser.command)
-			live_read_depletion(deplete_parser, false);
 		else if (target_parser.command)
-			live_read_depletion(target_parser, true);
+			adaptive_sampling(target_parser);
 		else
 			std::cout << cli << std::endl;
 			

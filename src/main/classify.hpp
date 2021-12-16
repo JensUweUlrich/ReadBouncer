@@ -62,7 +62,6 @@ void classify_reads(read_classify_parser& parser)
 {
 	std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("NanoLiveLog");
 	// initialize depletion and target filters
-	interleave::IBF DepleteFilter{};
 	std::vector<interleave::IBFMeta> DepletionFilters{};
 	std::vector<interleave::IBFMeta> TargetFilters{};
 

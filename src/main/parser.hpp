@@ -252,7 +252,10 @@ struct live_parser
 	std::string device{};
 	std::string ibf_deplete_file{ };
 	std::string ibf_target_file{ };
-	std::string weights = "48";
+	std::string output_dir{ };
+	std::string guppy_host = "127.0.0.1";
+	std::string guppy_port = "5555";
+	std::string caller = "DeepNano";
 	int port = 9501;
 	int basecall_threads = 1;
 	int classify_threads = 1;
@@ -266,7 +269,7 @@ struct live_parser
 /**
 	class for generating the IBF build parser group
 */
-struct live_depletion_parser : live_parser
+struct target_parser : live_parser
 {
 	
 	/**
@@ -274,10 +277,10 @@ struct live_depletion_parser : live_parser
 		creates the live-deplete group and adds it to the lyra cli
 		@cli: lyra command line interface object
 	*/
-	live_depletion_parser(lyra::cli& cli)
+	target_parser(lyra::cli& cli)
 	{
 		cli.add_argument(
-			lyra::command("deplete",
+			lyra::command("target",
 				[this](const lyra::group& g) { this->do_command(g); })
 			.help("Live classification and rejection of nanopore reads that match the depletion filter, and not the taget filter (if provided)")
 			.add_argument(lyra::help(show_help))
@@ -318,6 +321,12 @@ struct live_depletion_parser : live_parser
 				.optional()
 				.help("Interleaved Bloom Filter file with target references"))
 			.add_argument(
+				lyra::opt(output_dir, "dir")
+				.name("-o")
+				.name("--output-directory")
+				.optional()
+				.help("Output directory for fasta files of classified reads"))
+			.add_argument(
 				lyra::opt(kmer_significance, "probability")
 				.name("-s")
 				.name("--significance")
@@ -330,12 +339,21 @@ struct live_depletion_parser : live_parser
 				.optional()
 				.help("expected per read sequencing error rate (default: 0.1)"))
 			.add_argument(
-				lyra::opt(weights, "weights")
-				.name("-w")
-				.name("--weights")
+				lyra::opt(caller, "caller")
+				.name("--caller")
 				.optional()
-				.choices("48", "56", "64", "80", "96", "256")
-				.help("Deep Nano Weights (default: 48; other choices: 56, 64, 80, 96, 256)"))
+				.choices("DeepNano", "Guppy")
+				.help("Basecaller used during adaptive sampling (default: DeepNano)"))
+			.add_argument(
+				lyra::opt(guppy_host, "host")
+				.name("--guppy-host")
+				.optional()
+				.help("IP address of guppy basecall server (default: 127.0.0.1)"))
+			.add_argument(
+				lyra::opt(guppy_port, "port")
+				.name("--guppy-port")
+				.optional()
+				.help("TCP/IP port of guppy basecall server (default: 5555)"))
 			.add_argument(
 				lyra::opt(basecall_threads, "t")
 				.name("-b")
@@ -381,135 +399,13 @@ struct live_depletion_parser : live_parser
 					std::cout << "Depletion IBF file                           : " << ibf_deplete_file << std::endl;
 				if (ibf_target_file.length() > 0)
 					std::cout << "Target IBF file                              : " << ibf_target_file << std::endl;
+				if (output_dir.length() > 0)
+					std::cout << "Output directory                             : " << output_dir << std::endl;
 				std::cout << "Significance level for confidence interval   : " << kmer_significance << std::endl;
 				std::cout << "Expected sequencing error rate               : " << error_rate << std::endl;
-				std::cout << "Deep Nano Weights for Live Basecalling       : " << weights << std::endl;
-				std::cout << "Base calling threads                         : " << basecall_threads << std::endl;
-				std::cout << "Classification threads                       : " << classify_threads << std::endl;
-				std::cout << "---------------------------------------------------------------------------------------------------" << std::endl;
-			}
-		}
-	}
-};
-
-struct live_target_parser : live_parser
-{
-
-	/**
-		parser constructor
-		creates the live-deplete group and adds it to the lyra cli
-		@cli: lyra command line interface object
-	*/
-	live_target_parser(lyra::cli& cli)
-	{
-		cli.add_argument(
-			lyra::command("target",
-				[this](const lyra::group& g) { this->do_command(g); })
-			.help("Live classification and rejection of nanopore reads that not match the target reference filter (Targeted Sequencing)")
-			.add_argument(lyra::help(show_help))
-			.add_argument(
-				lyra::opt(verbose)
-				.name("-v")
-				.name("--verbose")
-				.optional()
-				.help("This subcommand will reject all reads that do not match the target filter, but match to a depletion filter if one was provided by the user"))
-			.add_argument(
-				lyra::opt(device, "device")
-				.name("-f")
-				.name("--flowcell")
-				.required()
-				.help("Device or FlowCell name for live analysis (required)"))
-			.add_argument(
-				lyra::opt(host, "ip")
-				.name("-i")
-				.name("--host-ip")
-				.optional()
-				.help("IP address on which MinKNOW software runs (default: localhost)"))
-			.add_argument(
-				lyra::opt(port, "port")
-				.name("-p")
-				.name("--port")
-				.optional()
-				.help("MinKNOW communication port (default: 9501)"))
-			.add_argument(
-				lyra::opt(ibf_deplete_file, "ibf-file")
-				.name("-d")
-				.name("--depletion-file")
-				.optional()
-				.help("Interleaved Bloom Filter file with depletion references"))
-			.add_argument(
-				lyra::opt(ibf_target_file, "ibf-file")
-				.name("-t")
-				.name("--target-file")
-				.optional()
-				.help("Interleaved Bloom Filter file with target references"))
-			.add_argument(
-				lyra::opt(kmer_significance, "probability")
-				.name("-s")
-				.name("--significance")
-				.optional()
-				.help("significance level for confidence interval of number of errorneous kmers (default: 0.95)"))
-			.add_argument(
-				lyra::opt(error_rate, "err")
-				.name("-e")
-				.name("--error-rate")
-				.optional()
-				.help("expected per read sequencing error rate (default: 0.1)"))
-			.add_argument(
-				lyra::opt(weights, "weights")
-				.name("-w")
-				.name("--weights")
-				.optional()
-				.choices("48", "56", "64", "80", "96", "256")
-				.help("Deep Nano Weights (default: 48; other choices: 56, 64, 80, 96, 256)"))
-			.add_argument(
-				lyra::opt(basecall_threads, "t")
-				.name("-b")
-				.name("--basecall-threads")
-				.optional()
-				.help("Number of threads used for base calling (default: 1)"))
-			.add_argument(
-				lyra::opt(classify_threads, "t")
-				.name("-c")
-				.name("--classification-threads")
-				.optional()
-				.help("Number of threads used for read classification (default: 1)"))
-		);
-
-	}
-
-	/**
-		function is called after parsing the group parameters from the command line
-		prints the help page or the parameter values if option verbose is set
-	*/
-	void do_command(const lyra::group& g)
-	{
-		if (show_help)
-			std::cout << g;
-		else
-		{
-			if (ibf_target_file.length() < 1)
-			{
-				std::cerr << "Please provide an IBF file for targeted sequencing." << std::endl;
-				command = false;
-				return;
-			}
-			// trigger for calling the correct function after parsing the group parameters
-			command = true;
-			if (verbose)
-			{
-				std::cout << "---------------------------------------------------------------------------------------------------" << std::endl;
-				std::cout << "Live Nanopore Targeted Sequencing            : " << "verbose=" << (verbose ? "true" : "false") << std::endl;
-				std::cout << "Host IP address                              : " << host << std::endl;
-				std::cout << "MinKNOW communication port                   : " << port << std::endl;
-				std::cout << "Device or Flowcell name                      : " << device << std::endl;
-				if (ibf_deplete_file.length() > 0)
-					std::cout << "Depletion IBF file                           : " << ibf_deplete_file << std::endl;
-				if (ibf_target_file.length() > 0)
-					std::cout << "Target IBF file                              : " << ibf_target_file << std::endl;
-				std::cout << "Significance level for confidence interval   : " << kmer_significance << std::endl;
-				std::cout << "Expected sequencing error rate               : " << error_rate << std::endl;
-				std::cout << "Deep Nano Weights for Live Basecalling       : " << weights << std::endl;
+				std::cout << "Basecaller used for adaptive sampling        : " << caller << std::endl;
+				if (caller.compare("Guppy") == 0)
+					std::cout << "Connecting to Guppy Basecall Server on       : " << guppy_host << ":" << guppy_port << std::endl;
 				std::cout << "Base calling threads                         : " << basecall_threads << std::endl;
 				std::cout << "Classification threads                       : " << classify_threads << std::endl;
 				std::cout << "---------------------------------------------------------------------------------------------------" << std::endl;

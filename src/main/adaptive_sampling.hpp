@@ -6,6 +6,7 @@
  */
 
 #include <ont_read.hpp>
+#include <algorithm>
 
 using namespace interfaces;
 
@@ -18,8 +19,8 @@ Runner runner{};
 std::mutex callerMutex;
 SafeMap<std::string, std::pair<uint8_t, RTPair> > pending{};
 // too short reads that need more data
-SafeQueue<interleave::Read> classifiedReads{};
-SafeQueue<interleave::Read> unclassifiedReads{};
+SafeQueue<interleave::Read> DepletedReads{};
+SafeQueue<interleave::Read> TargetReads{};
 
 // write access only via mutex because several classification threads
 // modify these variables
@@ -28,252 +29,158 @@ double avgReadLen = 0.0;
 uint64_t rCounter = 0;
 
 //-------------------------------------------------------------------
-
-
-#if !defined(ARM_BUILD)
-//--------------------------------------------------------------------
-// functions referenced as asynchronous tasks
-//----------------------------------------------------------------------------------------------------------
-
-/**
-*	take read from the basecalling queue, perform basecalling and push that read on the classification queue
-*	@basecall_queue			: safe queue with reads ready for basecalling
-*	@classification_queue	: safe queue with basecalled reads
-*	@channel_stats			: safe map with number of received reads for every flow cell channel
-*	@weights				: weights file path needed by DeepNano to perform basecalling
-*	@acq					: Acquisition service checking if sequencing run is already finished
+/*
 */
-void basecall_live_reads(SafeQueue<RTPair>& basecall_queue,
-	SafeQueue<RTPair>& classification_queue,
-	SafeMap<uint16_t, uint32_t>& channel_stats,
-	std::string& weights,
-	std::filesystem::path& weights_file,
-	readuntil::Acquisition* acq)
+bool check_unblock( interleave::Read& read,
+					interleave::ClassifyConfig& conf,
+					std::vector<interleave::IBFMeta>& DepletionFilters,
+					std::vector<interleave::IBFMeta>& TargetFilters)
 {
-	std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("NanoLiveLog");
-	// create DeepNano2 caller object
-	std::string f = weights_file.string();
-	callerMutex.lock();
-	Caller* caller = create_caller(weights.c_str(), f.c_str(), 5, 0.01);
-	callerMutex.unlock();
-	while (true)
+	bool withTarget = !(TargetFilters.empty());
+	bool withDepletion = !(DepletionFilters.empty());
+	bool unblock = false;
+
+	// depletion and target filters given
+	if (withDepletion && withTarget)
 	{
-		if (!basecall_queue.empty())
+		std::pair<uint64_t, uint64_t> p = read.classify(DepletionFilters, TargetFilters, conf);
+		// read matches with one of the depletion filters
+		if (p.first > 0)
 		{
-			RTPair rp = std::move(basecall_queue.pop());
-
-			// if we see data from this read for the first time
-			// basecall signals and push to classification queue
-			if (!pending.contains(rp.first.id))
+			// read matches with one of the target filters as well
+			if (p.second > 0)
 			{
-				rp.second.timeBasecallRead.start();
-				rp.first.sequence = call_raw_signal(caller, rp.first.raw_signals.data(), rp.first.raw_signals.size());
-				rp.second.timeBasecallRead.stop();
-				//interleave::Read r = interleave::Read(read.id, sequence, read.channelNr, read.readNr, read.processingTimes);
+				// assume less sequencing errors to increase specificity
+				conf.error_rate -= 0.02;
+				p = read.classify(DepletionFilters, TargetFilters, conf);
+				conf.error_rate += 0.02;
 
-				// create some active channel stats
-				uint32_t chNr = rp.first.channelNr;
-				channel_stats.assign(std::pair(chNr, channel_stats[chNr] + 1));
 
-				// only classify reads with length >= 300
-				// reads with length < 300 will wait for the next read chunks and combine them
-				if (rp.first.sequence.size() < 250)
+				if (p.first > 0 && p.second == 0)
 				{
-					//stop clock for overall processing time of the read
-					// add readid and read entry to pending map
-					//read.processingTimes.timeCompleteRead.stop();
-					//r.setProcessingTimes(read.processingTimes);
-					pending.insert({ rp.first.id , std::make_pair(0, std::make_pair(std::move(rp.first), rp.second)) });
+					// now read only matches to depletion filters
+					unblock = true;
 				}
 				else
 				{
-					classification_queue.push(std::move(rp));
+					// read still matches to both => continue sequencing
+					unblock = false;
 				}
-				
+			}
+			// read only matches to depletion filters
+			else
+				unblock = true;
+		}
+		// read does not match depletion filters
+		else
+			unblock = false;
+	}
+	// in depletion mode only => only unblock reads matching depletion filters
+	else if (withDepletion)
+		unblock = read.classify(DepletionFilters, conf) > -1;
+	// if only target filters given => unblock reads not mapping the target
+	else
+	{
+		int best_filter_index = read.classify(TargetFilters, conf);
+		unblock = best_filter_index < 0;
+		/*if (best_filter_index != -1)
+		{
+			TargetFilters[best_filter_index].classified += 1;
+			if (parser.output_dir.length() > 0)
+				seqan::writeRecord(TargetFilters[best_filter_index].outfile, id, seq);
+		}
+		*/
+	}
+	return unblock;
+}
+
+/*void add_target_reads_to_action_queue(bool unblock,
+										interleave::Read& read,
+										SafeQueue<RTPair>& classification_queue,
+										SafeQueue<RTPair>& action_queue,
+										SafeMap<std::string, std::pair< interleave::Read, uint8_t>>& once_seen,
+										std::vector<interleave::IBFMeta>& DepletionFilters,
+										std::vector<interleave::IBFMeta>& TargetFilters,
+										interleave::ClassifyConfig& conf,
+										RTPair& rp)
+{
+	if (!unblock)
+	{
+		std::unordered_map<std::string, std::pair<interleave::Read, uint8_t>>::iterator it = once_seen.find(rp.first.id);
+		// concat with sequence from earlier seen read chunks that have not been classified
+		//uint32_t readlen = read.getReadLength();
+		if (it != once_seen.end())
+		{
+			//readlen += (*it).second.first.getReadLength();
+			std::stringstream sstr;
+			sstr << (*it).second.first.sequence << read.sequence;
+			read.sequence = std::move((seqan::Dna5String)sstr.str());
+			once_seen.erase(it);
+		}
+		// store all read data and time measures for classified read
+		rp.first.unblock = false;
+		action_queue.push(std::move(rp));
+		TargetReads.push(read);
+		avgReadLenMutex.lock();
+		avgReadLen += ((double)read.getReadLength() - avgReadLen) / (double) ++rCounter;
+		avgReadLenMutex.unlock();
+
+
+	}
+	else
+	{
+		// check if we already marked read as unclassified
+		// if read unclassified for the third time => stop receiving further data from this read 
+		std::unordered_map<std::string, std::pair<interleave::Read, uint8_t>>::iterator it = once_seen.find(rp.first.id);
+		if (it != once_seen.end())
+		{
+			// prolong sequence with sequence data from earlier seen chunks
+			uint8_t iterstep = (*it).second.second;
+			std::stringstream sstr;
+			sstr << (*it).second.first.sequence << read.sequence;
+			read.sequence = std::move((seqan::Dna5String)sstr.str());
+			unblock = check_unblock(read, conf, DepletionFilters, TargetFilters);
+
+			if (unblock)
+			{
+				rp.first.unblock = true;
+				action_queue.push(std::move(rp));
+				DepletedReads.push(read);
+				avgReadLenMutex.lock();
+				avgReadLen += ((double)read.getReadLength() - avgReadLen) / (double) ++rCounter;
+				avgReadLenMutex.unlock();
+				once_seen.erase(it);
 			}
 			else
 			{
-				// if read was not classified after first and second try
-				// concatenate sequence data from actual signals with former basecalled sequence data
-				// use stop clock from former tries again
-
-				TimeMeasures m = pending[rp.first.id].second.second;
-				rp.second.timeBasecallRead.start();
-				char* sequence = call_raw_signal(caller, rp.first.raw_signals.data(), rp.first.raw_signals.size());
-				rp.second.timeBasecallRead.stop();
-
-				// add elapsed basecall time of first chunks to second chunk
-				rp.second.timeBasecallRead.decrementStart(m.timeBasecallRead.runtime());
-				// add elapsed overall time of first chunks to second chunk
-				rp.second.timeCompleteRead.setBegin(m.timeCompleteRead.begin());
-
-				std::stringstream sstr;
-				sstr << pending[rp.first.id].second.first.sequence << sequence;
-				rp.first.sequence = sstr.str();
-				// push prolonged sequence to classification queue
-				// longer read may be classified better
-				//interleave::Read r = interleave::Read(read.id, sstr.str(), read.channelNr, read.readNr, read.processingTimes);
-				if (rp.first.sequence.size() < 250)
+				// we don't try to classify further if read is longer than 1.5 kb
+				// we assume read to be on target
+				if (read.getReadLength() > 1500) //iterstep >= 5)
 				{
-					// add readid and read entry to pending map
-					//read.processingTimes.timeCompleteRead.stop();
-					//r.setProcessingTimes(read.processingTimes);
-					pending.insert({ rp.first.id , std::make_pair(0, std::make_pair(std::move(rp.first), rp.second)) });
-				}
-				else
-				{
-					classification_queue.push(std::move(rp));
-					pending.erase(rp.first.id);
-				}
-			}
-			
-		}
-
-		if (acq->isFinished())
-			break;
-
-	}
-}
-
-#endif
-/**
-*	take basecalled reads from classification queue, try to find read in target IBF
-*	push read on action queue if classified as target read with stop_further_data label
-*   if read is not in target but in depletion filter, push read on action queue with unblock label
-*	if 3 chunks were not classified target or depletion, push read on action queue with unblock label
-*	@classifcation_queue	: safe queue with basecalled reads ready for classification
-*	@action_queue			: safe queue with reads for which action messages shall be sent to MinKNOW
-*	@filters				: vector of host IBFs
-*	@acq					: Acquisition service checking if sequencing run is already finished
-*
-*/
-void classify_target_reads(SafeQueue<RTPair>& classification_queue,
-	SafeQueue<RTPair>& action_queue,
-	SafeMap<std::string, std::pair< interleave::Read, uint8_t>>& once_seen,
-	std::vector<interleave::TIbf>& DepletionFilters,
-	std::vector<interleave::TIbf>& TargetFilters,
-	interleave::ClassifyConfig& conf,
-	readuntil::Acquisition* acq)
-{
-	std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("NanoLiveLog");
-	csvfile csv("read_until_decision_stats.csv");
-	// header
-	csv << " " << "read_id" << "channel_nr" << "read_nr" << "sequence_length" << "decision" << endrow;
-
-	uint64_t read_counter = 0;
-	bool withDepletion = !(DepletionFilters.empty());
-
-	while (true)
-	{
-		if (!classification_queue.empty())
-		{
-			RTPair rp = std::move(classification_queue.pop());
-			seqan::Dna5String seq = (seqan::Dna5String) rp.first.sequence;
-			interleave::Read read = interleave::Read(rp.first.id, seq);
-			try
-			{
-				rp.second.timeClassifyRead.start();
-
-
-
-				bool stop_further = read.classify(TargetFilters, conf);
-				bool unblock = false;
-				
-				if (withDepletion && !stop_further)
-				{
-					unblock = read.classify(DepletionFilters, conf);
-				}
-				rp.second.timeClassifyRead.stop();
-
-				// unblock all reads that not match the target filter
-				// stop receiving further data for reads that belong to the target
-				if (stop_further)
-				{
-					// store all read data and time measures for classified read
-					std::unordered_map<std::string, std::pair<interleave::Read, uint8_t>>::iterator it = once_seen.find(rp.first.id);
-					uint32_t readlen = read.getReadLength();
-					if (it != once_seen.end())
-					{
-						readlen += (*it).second.first.getReadLength();
-						once_seen.erase(it);
-					}
+					once_seen.erase(it);
 					rp.first.unblock = false;
-					action_queue.push(std::move(rp));
-					classifiedReads.push(read);
-					avgReadLenMutex.lock();
-					avgReadLen += ((double)read.getReadLength() - avgReadLen) / (double) ++rCounter;
-					avgReadLenMutex.unlock();
-				}
-				// if read is not in target filter but in depletion filter => unblock read
-				else if (unblock)
-				{
-					// store all read data and time measures for classified read
-					std::unordered_map<std::string, std::pair<interleave::Read, uint8_t>>::iterator it = once_seen.find(rp.first.id);
-					uint32_t readlen = read.getReadLength();
-					if (it != once_seen.end())
-					{
-						readlen += (*it).second.first.getReadLength();
-						once_seen.erase(it);
-					}
-					rp.first.unblock = true;
-					action_queue.push(std::move(rp));
-					unclassifiedReads.push(read);
+					action_queue.push(rp);
+					TargetReads.push(read);
+
 					avgReadLenMutex.lock();
 					avgReadLen += ((double)read.getReadLength() - avgReadLen) / (double) ++rCounter;
 					avgReadLenMutex.unlock();
 				}
 				else
 				{
-					// check if we already marked read as unclassified
-					// if read is neither in target nor in depletion filter for second time => unblock this read 
-					std::unordered_map<std::string, std::pair<interleave::Read, uint8_t>>::iterator it = once_seen.find(rp.first.id);
-					if (it != once_seen.end())
-					{
-						//if ((*it).second.second == 1)
-						//{
-							uint32_t readlen = read.getReadLength() + (*it).second.first.getReadLength();
-							once_seen.erase(it);
-							rp.first.unblock = true;
-							action_queue.push(std::move(rp));
-							unclassifiedReads.push(read);
-							
-							avgReadLenMutex.lock();
-							avgReadLen += ((double)read.getReadLength() - avgReadLen) / (double) ++rCounter;
-							avgReadLenMutex.unlock();
-						/*}
-						else
-						{
-							// if read unclassified for the second time => try another chunk
-							once_seen.assign(std::pair(readID, std::pair(read, 2)));
-						}*/
-					}
-					else
-					{
-						// read unclassified for the first time => insert in Ste of already seen reads
-						// but erase from pendin if first chunks were too short for classification
-						once_seen.assign(std::pair(rp.first.id, std::pair(read, 1)));
-					}
-					
+					// if read unclassified for the second time => try another chunk
+					once_seen.assign(std::pair(rp.first.id, std::pair(read, ++iterstep)));
 				}
 			}
-			catch (std::exception& e)
-			{
-				std::stringstream estr;
-				estr << "Error classifying Read : " << rp.first.id << "(Len=" << read.getReadLength() << ")";
-				nanolive_logger->error(estr.str());
-				estr.str("");
-				estr << "Error message          : " << e.what();
-				nanolive_logger->error(estr.str());
-				nanolive_logger->flush();
-			}
 		}
-
-		if (acq->isFinished())
-			break;
-
+		else
+		{
+			// read unclassified for the first time => insert in SafeMap of already seen reads
+			once_seen.assign(std::pair(rp.first.id, std::pair(read, 1)));
+		}
 	}
 }
-
+*/
 
 /**
 *	take basecalled reads from classification queue, try to find read in host IBF
@@ -286,20 +193,19 @@ void classify_target_reads(SafeQueue<RTPair>& classification_queue,
 *	@acq					: Acquisition service checking if sequencing run is already finished
 *
 */
-void classify_deplete_reads(SafeQueue<RTPair>& classification_queue,
+void classify_live_reads(SafeQueue<RTPair>& classification_queue,
 	SafeQueue<RTPair>& action_queue,
 	SafeMap<std::string, std::pair< interleave::Read, uint8_t>>& once_seen,
-	std::vector<interleave::TIbf>& DepletionFilters,
-	std::vector<interleave::TIbf>& TargetFilters,
+	std::vector<interleave::IBFMeta>& DepletionFilters,
+	std::vector<interleave::IBFMeta>& TargetFilters,
 	interleave::ClassifyConfig& conf,
 	readuntil::Acquisition* acq)
 {
 	std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("NanoLiveLog");
 	
-	
+	bool target_only = !(TargetFilters.empty()) && DepletionFilters.empty();
 	uint64_t read_counter = 0;
-	bool withTarget = !(TargetFilters.empty());
-
+	
 	while (true)
 	{
 		if (!classification_queue.empty())
@@ -310,40 +216,28 @@ void classify_deplete_reads(SafeQueue<RTPair>& classification_queue,
 			try
 			{
 				rp.second.timeClassifyRead.start();
-				bool classified = false;
-
-				
-				// deplete reads if they match the depletion filter
-				
-				// if additional target filter is given
-				// read is classified for depletion iff it was found in depletion filters but not in target filters
-				if (withTarget)
-				{
-					if (!read.classify(TargetFilters, conf))
-					{
-						classified = read.classify(DepletionFilters, conf);
-					}
-				}
-				else
-				{
-					classified = read.classify(DepletionFilters, conf);
-				}
+				bool unblock = check_unblock(read, conf, DepletionFilters, TargetFilters);
 				rp.second.timeClassifyRead.stop();
 
-				if (classified)
+				// push classified reads to action queue
+				if (unblock)
 				{
 					std::unordered_map<std::string, std::pair<interleave::Read, uint8_t>>::iterator it = once_seen.find(rp.first.id);
-					uint32_t readlen = read.getReadLength();
+					// concat with sequence from earlier seen read chunks that have not been classified
+					//uint32_t readlen = read.getReadLength();
 					if (it != once_seen.end())
 					{
-						readlen += (*it).second.first.getReadLength();
+						//readlen += (*it).second.first.getReadLength();
+						std::stringstream sstr;
+						sstr << (*it).second.first.sequence << read.sequence;
+						read.sequence = std::move((seqan::Dna5String)sstr.str());
 						once_seen.erase(it);
 					}
 					// store all read data and time measures for classified read
 					//ReadHolder rp_new{ true, rp.first };
 					rp.first.unblock = true;
 					action_queue.push(std::move(rp));
-					classifiedReads.push(read);
+					DepletedReads.push(read);
 					avgReadLenMutex.lock();
 					avgReadLen += ((double)read.getReadLength() - avgReadLen) / (double) ++rCounter;
 					avgReadLenMutex.unlock();
@@ -357,30 +251,48 @@ void classify_deplete_reads(SafeQueue<RTPair>& classification_queue,
 					std::unordered_map<std::string, std::pair<interleave::Read, uint8_t>>::iterator it = once_seen.find(rp.first.id);
 					if (it != once_seen.end())
 					{
+						// prolong sequence with sequence data from earlier seen chunks
 						uint8_t iterstep = (*it).second.second;
-						// after 10 kb of sequencing the read => stop receiving further data
-						if (iterstep >= 5)
+						std::stringstream sstr;
+						sstr << (*it).second.first.sequence << read.sequence;
+						read.sequence = std::move((seqan::Dna5String)sstr.str());
+						unblock = check_unblock(read, conf, DepletionFilters, TargetFilters);
+
+						if (unblock)
 						{
-							uint32_t readlen = read.getReadLength() + (*it).second.first.getReadLength();
-							once_seen.erase(it);
-							rp.first.unblock = false;
-							action_queue.push(rp);
-							unclassifiedReads.push(read);
-							
+							rp.first.unblock = true;
+							action_queue.push(std::move(rp));
+							DepletedReads.push(read);
 							avgReadLenMutex.lock();
 							avgReadLen += ((double)read.getReadLength() - avgReadLen) / (double) ++rCounter;
 							avgReadLenMutex.unlock();
+							once_seen.erase(it);
 						}
 						else
 						{
-							// if read unclassified for the second time => try another chunk
-							once_seen.assign(std::pair(rp.first.id, std::pair(read, ++iterstep)));
+							// we don't try to classify further if read is longer than 1.5 kb
+							// we assume read to be on target
+							if (read.getReadLength() > 1500) //iterstep >= 5)
+							{
+								once_seen.erase(it);
+								rp.first.unblock = false;
+								action_queue.push(rp);
+								TargetReads.push(read);
+
+								avgReadLenMutex.lock();
+								avgReadLen += ((double)read.getReadLength() - avgReadLen) / (double) ++rCounter;
+								avgReadLenMutex.unlock();
+							}
+							else
+							{
+								// if read unclassified for the second time => try another chunk
+								once_seen.assign(std::pair(rp.first.id, std::pair(read, ++iterstep)));
+							}
 						}
 					}
 					else
 					{
-						// read unclassified for the first time => insert in Ste of already seen reads
-						// but erase from pendin if first chunks were too short for classification
+						// read unclassified for the first time => insert in SafeMap of already seen reads
 						once_seen.assign(std::pair(rp.first.id, std::pair(read, 1)));
 					}
 				}
@@ -600,7 +512,7 @@ void checkRunning(Runner& runner, readuntil::Acquisition* acq)
  *	@parser: input from the command line
  *  @throws: IBFBuildException
  */
-void live_read_depletion(live_parser& parser, bool target_sequencing)
+void adaptive_sampling(live_parser& parser)
 {
 	std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("NanoLiveLog");
 	bool withTarget = false;
@@ -608,7 +520,7 @@ void live_read_depletion(live_parser& parser, bool target_sequencing)
 	// first check if basecalling file exists
 	std::filesystem::path weights_file = NanoLiveRoot;
 	weights_file.append("data");
-	weights_file /= "rnn" + parser.weights + ".txt";
+	weights_file /= "rnn48.txt";
 	if (!std::filesystem::exists(weights_file))
 	{
 		nanolive_logger->error("Could not find DeepNano weights file : " + weights_file.string());
@@ -616,29 +528,39 @@ void live_read_depletion(live_parser& parser, bool target_sequencing)
 		throw;
 	}
 #endif
-	std::vector<interleave::TIbf> DepletionFilters{};
-	std::vector<interleave::TIbf> TargetFilters{};
+	std::vector<interleave::IBFMeta> DepletionFilters{};
+	std::vector<interleave::IBFMeta> TargetFilters{};
 	// first load IBFs of host reference sequence
 	if (parser.verbose)
 		std::cout << "Loading Depletion Interleaved Bloom Filter(s)!" << ::std::endl;
 
 	if (parser.ibf_deplete_file.length() > 0)
 	{
-		try
+		std::vector<std::string> vector_files = split(parser.ibf_deplete_file, ',');
+		for (std::string n : vector_files)
 		{
-			interleave::IBFConfig config{};
-			interleave::IBF filter{};
-			config.input_filter_file = parser.ibf_deplete_file;
-			interleave::FilterStats stats = filter.load_filter(config);
-			if (parser.verbose)
-				interleave::print_load_stats(stats);
-			DepletionFilters.emplace_back(filter.getFilter());
-		}
-		catch (interleave::IBFBuildException& e)
-		{
-			nanolive_logger->error("Could not load IBF File : " + std::string(e.what()));
-			nanolive_logger->flush();
-			throw;
+			interleave::IBFMeta filter{};
+			filter.name = std::filesystem::path(n).stem().string();
+			interleave::IBF tf{};
+			interleave::IBFConfig DepleteIBFconfig{};
+			try
+			{
+				DepleteIBFconfig.input_filter_file = n;
+				interleave::FilterStats stats = std::move(tf.load_filter(DepleteIBFconfig));
+				filter.filter = std::move(tf.getFilter());
+				if (parser.verbose)
+					interleave::print_load_stats(stats);
+			}
+			catch (interleave::ParseIBFFileException& e)
+			{
+				nanolive_logger->error("Error parsing depletion IBF using the following parameters");
+				nanolive_logger->error("Depletion IBF file                : " + n);
+				nanolive_logger->error("Error message : " + std::string(e.what()));
+				nanolive_logger->flush();
+				throw;
+			}
+
+			DepletionFilters.emplace_back(std::move(filter));
 		}
 	}
 
@@ -647,24 +569,31 @@ void live_read_depletion(live_parser& parser, bool target_sequencing)
 	// parse target IBF if given as parameter
 	if (parser.ibf_target_file.length() > 0)
 	{
-		try
+		std::vector<std::string> vector_files = split(parser.ibf_target_file, ',');
+		for (std::string n : vector_files)
 		{
-			interleave::IBFConfig config{};
-			interleave::IBF filter{};
-			config.input_filter_file = parser.ibf_target_file;
-			interleave::FilterStats stats = filter.load_filter(config);
-			TargetFilters.emplace_back(filter.getFilter());
-			if (parser.verbose)
-				interleave::print_load_stats(stats);
-			withTarget = true;
-		}
-		catch (interleave::ParseIBFFileException& e)
-		{
-			nanolive_logger->error("Error parsing target IBF using the following parameters");
-			nanolive_logger->error("Target IBF file                : " + parser.ibf_target_file);
-			nanolive_logger->error("Error message : " + std::string(e.what()));
-			nanolive_logger->flush();
-			throw;
+			interleave::IBFMeta filter{};
+			filter.name = std::filesystem::path(n).stem().string();
+			interleave::IBF tf{};
+			interleave::IBFConfig TargetIBFconfig{};
+			try
+			{
+				TargetIBFconfig.input_filter_file = n;
+				interleave::FilterStats stats = std::move(tf.load_filter(TargetIBFconfig));
+				filter.filter = std::move(tf.getFilter());
+				if (parser.verbose)
+					interleave::print_load_stats(stats);
+			}
+			catch (interleave::ParseIBFFileException& e)
+			{
+				nanolive_logger->error("Error parsing target IBF using the following parameters");
+				nanolive_logger->error("Target IBF file                : " + n);
+				nanolive_logger->error("Error message : " + std::string(e.what()));
+				nanolive_logger->flush();
+				throw;
+			}
+
+			TargetFilters.emplace_back(std::move(filter));
 		}
 	}
 
@@ -791,10 +720,16 @@ void live_read_depletion(live_parser& parser, bool target_sequencing)
 
 	// create threads for live basecalling
 	
-	std::string basecall_host = "xavier:5555";
-	std::string config_name = "dna_r9.4.1_450bps_fast";
-	//basecall::DeepNanoBasecaller* caller = new basecall::DeepNanoBasecaller(weights_file, parser.basecall_threads);
-	basecall::GuppyBasecaller* caller = new basecall::GuppyBasecaller(basecall_host, config_name);
+	
+	basecall::Basecaller* caller;
+	if (strcmpi(parser.caller.c_str(), "guppy") == 0)
+	{
+		std::string basecall_host = parser.guppy_host + ":" + parser.guppy_port;
+		std::string config_name = "dna_r9.4.1_450bps_fast";
+		caller = new basecall::GuppyBasecaller(basecall_host, config_name);
+	}
+	else
+		caller = new basecall::DeepNanoBasecaller(weights_file, parser.basecall_threads);
 	
 	tasks.emplace_back(std::async(std::launch::async, &basecall::Basecaller::basecall_live_reads, std::move(caller), std::ref(basecall_queue),
 			std::ref(classification_queue), std::ref(channelStats), std::ref(runner)));
@@ -809,14 +744,10 @@ void live_read_depletion(live_parser& parser, bool target_sequencing)
 	// create thread/task for classification
 	for (uint8_t t = 0; t < parser.classify_threads; ++t)
 	{
-		if (target_sequencing)
-			tasks.emplace_back(std::async(std::launch::async, &classify_target_reads, std::ref(classification_queue),
-				std::ref(action_queue), std::ref(once_seen), std::ref(DepletionFilters), std::ref(TargetFilters),
-				std::ref(conf), acq));
-		else
-			tasks.emplace_back(std::async(std::launch::async, &classify_deplete_reads, std::ref(classification_queue),
-				std::ref(action_queue), std::ref(once_seen), std::ref(DepletionFilters), std::ref(TargetFilters),
-				std::ref(conf), acq));
+		
+		tasks.emplace_back(std::async(std::launch::async, &classify_live_reads, std::ref(classification_queue),
+			std::ref(action_queue), std::ref(once_seen), std::ref(DepletionFilters), std::ref(TargetFilters),
+			std::ref(conf), acq));
 	}
 
 	// create thread/task for sending action messages back to MinKNOW
@@ -828,8 +759,8 @@ void live_read_depletion(live_parser& parser, bool target_sequencing)
 		               std::ref(basecall_queue), std::ref(classification_queue), std::ref(channelStats), acq));
 
 	// create task for writing classified and unclassified reads to output fasta files
-	tasks.emplace_back(std::async(std::launch::async, &writeReads, std::ref(classifiedReads), acq, "classifiedReads.fasta"));
-	tasks.emplace_back(std::async(std::launch::async, &writeReads, std::ref(unclassifiedReads), acq, "unclassifiedReads.fasta"));
+	tasks.emplace_back(std::async(std::launch::async, &writeReads, std::ref(DepletedReads), acq, "DepletedReads.fasta"));
+	tasks.emplace_back(std::async(std::launch::async, &writeReads, std::ref(TargetReads), acq, "TargetReads.fasta"));
 
 
 	for (auto& task : tasks)
