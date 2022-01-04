@@ -14,7 +14,6 @@ if (${_index} GREATER -1)
     add_compile_options(-DARM_BUILD)
 endif()
 
-
 if (WIN32)
     add_compile_options(-D_WIN32_WINNT=0x600)
     add_compile_options("/MT")
