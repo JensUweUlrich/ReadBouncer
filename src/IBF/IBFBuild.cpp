@@ -3,6 +3,7 @@
 
 namespace interleave
 {
+    std::string IbfClassificationLog, InterleavedBloomFilterLog = "";
 
     /**
         read reference sequences from files and store them in reference sequence queue

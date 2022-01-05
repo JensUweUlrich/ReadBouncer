@@ -14,6 +14,7 @@ if (${_index} GREATER -1)
     add_compile_options(-DARM_BUILD)
 endif()
 
+
 if (WIN32)
     add_compile_options(-D_WIN32_WINNT=0x600)
     add_compile_options("/MT")
@@ -39,6 +40,7 @@ add_subdirectory(IBF)
 add_subdirectory(basecaller)
 add_subdirectory(minknow)
 add_subdirectory(lyra)
+add_subdirectory(config)
 add_subdirectory(main)
 #add_subdirectory(test)
 

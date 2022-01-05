@@ -25,6 +25,12 @@
 // IBF library
 #include "IBF.hpp"
 
+// tomel parser
+//#include "parsertoml.hpp"
+#include "configReader.hpp"
+// toml library 
+#include "../toml11/toml.hpp"
+
 // Basecalling library
 #if !defined(ARM_BUILD)
 	#include <DeepNanoBasecaller.hpp>
@@ -223,11 +229,16 @@ void signalHandler(int signum)
 /**
 *	setup global Logger for NanoLIVE
 */
-void initializeLogger()
+void initializeLogger(std::string toml_file)
 {
+	std::ifstream tomlFileReadBouncer(toml_file, std::ios_base::binary);
+	const auto configuration_ = toml::parse(tomlFileReadBouncer, /*optional -> */ toml_file);
+	auto log_file = toml::find<std::string>(configuration_, "log_directory");
+
+
 	try
 	{
-		nanolive_logger = spdlog::rotating_logger_mt("NanoLiveLog", "logs/NanoLiveLog.txt", 1048576 * 5, 100);
+		nanolive_logger = spdlog::rotating_logger_mt("NanoLiveLog", log_file + "logs/NanoLiveLog.txt", 1048576 * 5, 100);
 		nanolive_logger->set_level(spdlog::level::debug);
 	}
 	catch (const spdlog::spdlog_ex& e)
@@ -235,6 +246,7 @@ void initializeLogger()
 		std::cerr << "Log initialization failed: " << e.what() << std::endl;
 	}
 }
+
 
 #if defined(_WIN32)
 /**
@@ -283,62 +295,215 @@ double cputime()
 	}
 #endif
 
+/**
+* Set the configuration structs for classify/target
+* @param : config object, Toml output file, usage, a list of target and deplete files
+*/
+
+void inline configurationReader(configReader config, std::string const tomlFile, std::string subcommand, std::fstream& tomlOutput,
+	std::string target_files_,
+	std::string deplete_files_) 
+{
+
+	if (subcommand == "build") {
+
+		configReader::ibf_build_parser_ struct_ = config.ibfReader(tomlOutput, subcommand, target_files_, deplete_files_);
+
+		// Create a log of toml usage 
+		auto tbl = toml::value{ {
+
+		{subcommand, toml::table{{
+				{ "target_files", target_files_ },
+				{ "deplete_files", deplete_files_ },
+				{ "kmer-size", struct_.size_k },
+				{ "threads", struct_.threads },
+				{ "fragment-size", struct_.fragment_size }
+				 }}
+				},
+		} };
+
+		// chrono: https://en.cppreference.com/w/cpp/chrono
+		auto start = std::chrono::system_clock::now();
+		auto end = std::chrono::system_clock::now();
+
+		std::chrono::duration<double> elapsed_seconds = end - start;
+		std::time_t end_time = std::chrono::system_clock::to_time_t(end);
+
+		tomlOutput << "# Computation time: " << std::ctime(&end_time) << '\n';
+
+		tomlOutput << toml::format(tbl) << '\n';
+
+		tomlOutput.close();
+	}
+	
+	else if (subcommand == "classify") {
+
+		configReader::read_classify_parser_ struct_ = config.classifyReader(tomlOutput, subcommand, target_files_, deplete_files_);
+		read_classify_parser classify_command;
+
+		std::string reads_;
+		reads_ = struct_.read_file;
+		classify_command.ibf_deplete_file = struct_.ibf_deplete_file;
+		classify_command.ibf_target_file = struct_.ibf_target_file;
+		classify_command.read_file = reads_;
+		classify_command.out_dir = struct_.out_dir;
+		classify_command.command = struct_.command;
+		classify_command.show_help = struct_.show_help;
+		classify_command.kmer_significance = struct_.kmer_significance;
+		classify_command.error_rate = struct_.error_rate;
+		classify_command.threads = struct_.threads;
+		classify_command.preLen = struct_.preLen;
+		classify_command.max_chunks = struct_.max_chunks;
+		classify_command.verbose = struct_.verbose;
+
+		classify_reads(classify_command);
+
+		auto tbl = toml::value{ {
+
+		{subcommand, toml::table{{
+		{ "deplete_files", struct_.ibf_deplete_file  },
+		{ "target_files", struct_.ibf_target_file  },
+		{ "read_files", reads_},
+		{ "exp_seq_error_rate", struct_.kmer_significance },
+		{ "threads", struct_.threads },
+		{ "chunk_length", struct_.preLen },
+		{ "max_chunks", struct_.max_chunks }
+
+		    }}
+		   },
+		} };
+
+		// chrono: https://en.cppreference.com/w/cpp/chrono
+		auto start = std::chrono::system_clock::now();
+		auto end = std::chrono::system_clock::now();
+
+		std::chrono::duration<double> elapsed_seconds = end - start;
+		std::time_t end_time = std::chrono::system_clock::to_time_t(end);
+
+		tomlOutput << "# Computation time: " << std::ctime(&end_time) << '\n';
+
+		tomlOutput << toml::format(tbl) << '\n';
+
+		tomlOutput.close();
+
+	}
+
+	else if (subcommand == "target") {
+
+		configReader::live_target_parser_ struct_ = config.targetReader(tomlOutput, subcommand, target_files_, deplete_files_);
+
+		target_parser  target_command;
+
+		target_command.host = struct_.host;
+		target_command.device = struct_.device;
+		target_command.ibf_deplete_file = struct_.ibf_deplete_file;
+		target_command.ibf_target_file = struct_.ibf_target_file;
+		target_command.output_dir = struct_.output_dir;
+		target_command.guppy_host = struct_.guppy_host;
+		target_command.guppy_port = struct_.guppy_port;
+		target_command.caller = struct_.caller;
+		target_command.port = struct_.port;
+		target_command.basecall_threads = struct_.basecall_threads;
+		target_command.classify_threads = struct_.classify_threads;
+		target_command.kmer_significance = struct_.kmer_significance;
+		target_command.error_rate = struct_.error_rate;
+		target_command.command = struct_.command;
+		target_command.show_help = struct_.show_help;
+		target_command.verbose = struct_.verbose;
+
+		connection_test_parser cT = { target_command.host, target_command.device, target_command.port, false, false, true, false };
+		test_connection(cT);
+		
+
+		auto tbl1 = toml::value{ {
+		{subcommand, toml::table{{
+			{ "flowcell", target_command.device },
+			{ "host-ip ", target_command.host },
+			{ "port", target_command.port },
+			{ "depletion-file", target_command.ibf_deplete_file },
+			{ "target-file", target_command.ibf_target_file },
+			{ "significance", target_command.kmer_significance },
+			{ "error-rate", target_command.error_rate },
+			{ "basecall-threads", target_command.basecall_threads },
+			{ "classification-th", target_command.classify_threads },
+			{ "caller", target_command.caller },
+			{ "guppy_host", target_command.guppy_host },
+			{ "guppy_port", target_command.guppy_port }
+		   }}
+		   },
+		} };
+
+		// chrono: https://en.cppreference.com/w/cpp/chrono
+		auto start = std::chrono::system_clock::now();
+		auto end = std::chrono::system_clock::now();
+
+		std::chrono::duration<double> elapsed_seconds = end - start;
+		std::time_t end_time = std::chrono::system_clock::to_time_t(end);
+
+		tomlOutput << "# Computation date: " << std::ctime(&end_time) << '\n';
+		tomlOutput << toml::format(tbl1) << '\n';
+		tomlOutput.close();
+		adaptive_sampling(target_command);
+
+	}
+
+
+}
+
+
 int main(int argc, char const **argv)
 {
 
 	StopClock NanoLiveTime;
 	NanoLiveTime.start();
-	
-	std::signal(SIGINT, signalHandler);	
 
-	initializeLogger();
+	std::signal(SIGINT, signalHandler);
+
 	std::string binPath = argv[0];
 	NanoLiveRoot = binPath.substr(0, binPath.find("bin"));
 
-	auto cli = lyra::cli();
-	std::string command;
-	bool show_help = false;
-	cli.add_argument(lyra::help(show_help));
-	ibf_build_parser ibfbuild_parser{cli};
-	read_classify_parser classify_parser{cli};
-	target_parser target_parser{ cli };
-	connection_test_parser connect_parser{ cli };
-	auto result = cli.parse({ argc, argv });
-	if (!result)
-    {
-        std::cerr << result.errorMessage() << std::endl;
-        std::cerr << cli;
-        exit(1);
-    }
+	std::string const tomlFile = argv[1];
+	initializeLogger(tomlFile);
+
+	std::ifstream tomlFileReadBouncer(tomlFile, std::ios_base::binary);
+	const auto configuration_ = toml::parse(tomlFileReadBouncer, /*optional -> */ tomlFile);
+
+	auto log_file = toml::find<std::string>(configuration_, "log_directory");
+	auto output_fileTOML = toml::find<std::string>(configuration_, "output_directory");
+
+	configReader config(tomlFile);
+
+	//log files
+	readuntil::CSVFile += output_fileTOML;
+	interleave::InterleavedBloomFilterLog += log_file;
+	interleave::IbfClassificationLog += log_file;
+	readuntil::ReadUntilClientLog += log_file;
 	
-	
+	std::string subcommand = config.usage();
+	std::fstream tomlOutput = config.writeTOML();
 
-    if(show_help)
-    {
-        std::cout << cli << std::endl;
-        exit(0);
-    }
+	if (subcommand.length() > 1) {
 
-
-	try
-	{
-		if (ibfbuild_parser.command)
-			buildIBF(ibfbuild_parser);
-		else if (connect_parser.command)
-			test_connection(connect_parser);
-		else if (classify_parser.command)
-			classify_reads(classify_parser);
-		else if (target_parser.command)
-			adaptive_sampling(target_parser);
-		else
-			std::cout << cli << std::endl;
-			
-			
+		std::cout << "The usage is: " << subcommand << '\n';
+		std::cout << "\n";
 	}
-	catch (std::exception& e)
-	{
-		std::cerr << e.what() << std::endl;
+
+	else {
+
+		std::cerr << "No usage found in config.TOML file\nPlease define one of the usages:  [build, target, classify]" << '\n';
+		exit(0);
 	}
+
+	const auto& IBF = toml::find(configuration_, "IBF");
+
+	const auto  target_files = toml::find<std::string>(IBF, "target_files");
+	std::string target_files_ = target_files;
+
+	const auto  deplete_files = toml::find<std::string>(IBF, "deplete_files");
+	std::string deplete_files_ = deplete_files;
+
+	configurationReader(config, tomlFile, subcommand, tomlOutput, target_files_, deplete_files_);
+
 	NanoLiveTime.stop();
 
 	size_t peakSize = getPeakRSS();

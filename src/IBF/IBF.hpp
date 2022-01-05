@@ -118,7 +118,7 @@ namespace interleave
                 {
                     try
                     {
-                        ibf_logger = spdlog::rotating_logger_mt("IbfLog", "logs/InterleavedBloomFilterLog.txt", 1048576 * 5, 100);
+                        ibf_logger = spdlog::rotating_logger_mt("IbfLog", InterleavedBloomFilterLog + "logs/InterleavedBloomFilterLog.txt", 1048576 * 5, 100);
                     }
                     catch (const spdlog::spdlog_ex& e)
                     {

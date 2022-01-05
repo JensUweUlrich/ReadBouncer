@@ -9,6 +9,8 @@
 
 namespace readuntil
 {
+	std::string ReadUntilClientLog = "";
+
 	/**
 	*	Establishes a connection to a given device/flowcell
 	*	@device: Name of the flowcell to connect to
@@ -19,7 +21,7 @@ namespace readuntil
 	{
 		try
 		{
-			connection_logger = spdlog::rotating_logger_mt("RUClientLog", "logs/ReadUntilClientLog.txt", 1048576 * 5, 100);
+			connection_logger = spdlog::rotating_logger_mt("RUClientLog", ReadUntilClientLog + "logs/ReadUntilClientLog.txt", 1048576 * 5, 100);
 		}
 		catch(const spdlog::spdlog_ex& e)
 		{

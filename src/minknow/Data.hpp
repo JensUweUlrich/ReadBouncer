@@ -48,9 +48,11 @@ using namespace ::minknow_api::data;
 using namespace ::google::protobuf;
 using namespace ::interfaces;
 
+
+
 namespace readuntil
 {
-
+    extern std::string CSVFile;
     struct ActionResponse
     {
         uint32 channelNr{};

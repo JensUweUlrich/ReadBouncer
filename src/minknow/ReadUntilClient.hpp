@@ -28,6 +28,8 @@
 
 namespace readuntil
 {
+	extern std::string ReadUntilClientLog;
+
 	class ReadUntilClient
 	{
 
