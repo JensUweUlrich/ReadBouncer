@@ -103,6 +103,7 @@ foreach(proto ${protofiles})
         -I "${CMAKE_CURRENT_BINARY_DIR}/minknow/proto"
         -I "${CMAKE_CURRENT_BINARY_DIR}/protobuf/src"
         --plugin=protoc-gen-grpc=${_GRPC_CPP_PLUGIN_EXECUTABLE}
+	--experimental_allow_proto3_optional
         "${proto}"
       DEPENDS "${proto}")
   message(STATUS "building target for ${fname}.proto")
