@@ -8,9 +8,9 @@ log_directory      = "C:/ReadBouncer/"  # [IbfClassificationLog.txt, Interleaved
 kmer_size          = 13         #(unsigned integer with default 13) only required for 'usage = "build"' or if target_file/deplete_file is a fasta formate file 
 fragment_size      = 100000     #(unsigned integer with default 100000)  only required for 'usage = "build" or if target_file/deplete_file is a fasta formate file 
 threads            = 3          #(unsigned integer with default 3)
-target_files       = "Listeria_monocytogenes_ATCC_19115_.fasta_.ibf,Pseudomonas_aeruginosa_complete_genome.fasta_.ibf"        #comma-separated list of fasta or ibf files
+target_files       = "Listeria_monocytogenes_ATCC_19115_.fasta_.ibf,Pseudomonas_aeruginosa_complete_genome.fasta_.ibf" #comma-separated list of fasta or ibf files
 deplete_files      = "Pseudomonas_aeruginosa_complete_genome.fasta_.ibf"        #comma-separated list of fasta or ibf files
-read_files         = "Listeria.fastq,readsLong.fastq,SaccharomycesReal.fasta,Staphylococcus_Realreads.fasta"        #comma-separated list of fasta or fastq files
+read_files         = "Listeria.fastq,readsLong.fastq,SaccharomycesReal.fasta,Staphylococcus_Realreads.fasta"  #comma-separated list of fasta or fastq files
 exp_seq_error_rate = 0.1        #(unsigned float between 0 and 1 default 0.1)
 chunk_length       = 350        #(unsigned integer with default 250)
 max_chunks         = 1          #(unsigned integer with default 5)
@@ -23,9 +23,9 @@ flowcell           = "MS00000"  #(name of the flowcell used)
 
 
 [Basecaller]
-caller             = "Guppy" #DeepNano/Guppy (default is DeepNano)
+caller             = "Guppy"    #DeepNano/Guppy (default is DeepNano)
 host               = "127.0.0.1"#(ip address or name of the computer hosting Guppy Basecall Server)
-port               = "9501"       #(port number on which the basecall server is running on the host)
+port               = "9501"     #(port number on which the basecall server is running on the host)
 threads            = 3          # (unsigned integer with default 3)
 
 
