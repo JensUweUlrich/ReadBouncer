@@ -519,9 +519,9 @@ void adaptive_sampling(live_parser& parser)
 #if !defined(ARM_BUILD)
 	// first check if basecalling file exists
 	std::filesystem::path weights_file = NanoLiveRoot;
-	//weights_file.append("data");
-	//weights_file /= "rnn48.txt";
-	weights_file = "rnn48.txt";
+	weights_file.append("data");
+	weights_file /= "rnn48.txt";
+	//weights_file = "rnn48.txt";
 	if (!std::filesystem::exists(weights_file))
 	{
 		nanolive_logger->error("Could not find DeepNano weights file : " + weights_file.string());
