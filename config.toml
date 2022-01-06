@@ -1,3 +1,4 @@
+#./ReadBouncer.exe path/to/config.toml
 #[General]
 usage              ="target"  #["build", "target", "classify"] atm only one of those
 output_directory   = "C:/ReadBouncer/output_directory/" #path/to/write/output/files/to
