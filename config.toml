@@ -23,7 +23,7 @@ flowcell           = "MS00000"  #(name of the flowcell used)
 
 
 [Basecaller]
-caller             = "Guppy"    #DeepNano/Guppy (default is DeepNano)
+caller             = "DeepNano"    #DeepNano/Guppy (default is DeepNano)
 host               = "127.0.0.1"#(ip address or name of the computer hosting Guppy Basecall Server)
 port               = "9501"     #(port number on which the basecall server is running on the host)
 threads            = 3          # (unsigned integer with default 3)
