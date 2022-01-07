@@ -1,4 +1,4 @@
-# ReadBouncer (Toml feature) 
+# ReadBouncer (Toml feature) [Readme in process]
 
 ## Table of Contents
 
@@ -193,7 +193,7 @@ TCP/IP port of guppy basecall server (default: 5555).
 <b> [Basecaller] threads </b><br>
 Number of threads used for base calling.
 
-### <a name="ucase"></a>Use Cases (TODO from here --> to be checked)
+### <a name="ucase"></a>Use Cases 
 
 ### <a name="classifyreads"></a>Classify already sequenced reads
 Sometimes it can be useful to find all reads of an organism in a set of reads that were already sequenced without aligning the sequences. ReadBouncer offers this functionality by using the `classify` subcommand. The following steps describe how to classify all bacterial reads from a Zymo Mock Community that was sequenced on a MinION device.
