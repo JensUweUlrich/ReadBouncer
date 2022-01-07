@@ -254,7 +254,15 @@ flowcell           = "MS00000"            #(name of the flowcell used)
 
 ```
 The output should state that the connection could be successfully established and that you can continue with live-depletion.
-6. When ReadBouncer says that it successfully established a connection, you can start a sequencing run on the the device, which will playback the run from the bulkfile.
+6. When ReadBouncer says that it successfully established a connection, you can start a sequencing run on the the device, which will playback the run from the bulkfile. If you want to use Guppy basecaller, provide the parameters in the configuration file: 
+
+```
+[Basecaller]
+caller             = "DeepNano"    #DeepNano/Guppy (default is DeepNano)
+host               = "127.0.0.1"   #(ip address or name of the computer hosting Guppy Basecall Server)
+port               = "5555"        #(port number on which the basecall server is running on the host)
+threads            = 3             #(unsigned integer with default 3)
+```
 7. Open the read length histogram after 5 minutes and have a look at the read counts plot.
 <p align="center">
   <img src="images/unblock_all.PNG" width="750" title="Unblock All Image">
