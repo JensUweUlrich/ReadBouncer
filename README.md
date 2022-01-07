@@ -209,8 +209,8 @@ log_directory = "full\path\to\ReadBouncer\"
 [IBF]
 
 kmer_size     = 13                       #(unsigned integer with default 13)
-fragment_size = 100000                       #(unsigned integer with default 100000)
-threads       = 3                       #(unsigned integer with default 3) classification threads
+fragment_size = 100000                   #(unsigned integer with default 100000)
+threads       = 3                        #(unsigned integer with default 3) classification threads
 target_files  = "path\to\reference\file\ZmcBacterialReferences.fasta"
 deplete_files = "" 
 ```
@@ -258,7 +258,7 @@ The output should state that the connection could be successfully established an
 
 ```
 [Basecaller]
-caller             = "DeepNano"    #DeepNano/Guppy (default is DeepNano)
+caller             = "Guppy"       #DeepNano/Guppy (default is DeepNano)
 host               = "127.0.0.1"   #(ip address or name of the computer hosting Guppy Basecall Server)
 port               = "5555"        #(port number on which the basecall server is running on the host)
 threads            = 3             #(unsigned integer with default 3)
@@ -278,9 +278,26 @@ If that's the case you can go on with testing basecalling and classification
 In order to test if read depletion works on your machine, you can start a `depletion` playback run with the bulk FAST5 file from the test above. If you already set up the playback functionality, you only need to download the reference sequence of one or more human chromosomes from e.g. the [Telomere-to-telomere consortium](https://github.com/marbl/CHM13) as FASTA file. In the example below, we aim to deplete all human reads.
 
 1. Before depletion, we need to build an Interleaved Bloom Filter (IBF) for the reference sequence(s) we aim to deplete. 
+
 ```
-full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe ibfbuild -o path\to\output\directory\chm13.ibf -i path\to\reference\file\chm13.fasta -k 13 -f 100000
+usage         = "build"
+output_dir    = "full\path\to\ReadBouncer\output_dir\"
+log_directory = "full\path\to\ReadBouncer\"
+
+[IBF]
+
+kmer_size     = 13                      #(unsigned integer with default 13)
+fragment_size = 100000                  #(unsigned integer with default 100000)
+threads       = 3                       #(unsigned integer with default 3) classification threads
+target_files  = "path\to\reference\file\chm13.fasta"
+deplete_files = "" 
 ```
+Using command line: 
+
+```
+full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe  full\path\to\ReadBouncer\config.toml 
+```
+
 2. Now you can start depletion of human reads with the following subcommand from you working directory
  ```
 full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe deplete -d path\to\output\directory\chm13.ibf -f MS00000 -c 3 -b 3 -v
