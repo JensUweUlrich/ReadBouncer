@@ -289,8 +289,8 @@ log_directory = "full\path\to\ReadBouncer\"
 kmer_size     = 13                      #(unsigned integer with default 13)
 fragment_size = 100000                  #(unsigned integer with default 100000)
 threads       = 3                       #(unsigned integer with default 3) classification threads
-target_files  = "path\to\reference\file\chm13.fasta"
-deplete_files = "" 
+target_files  = ""
+deplete_files = "path\to\reference\file\chm13.fasta" 
 ```
 Using command line: 
 
@@ -298,9 +298,42 @@ Using command line:
 full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe  full\path\to\ReadBouncer\config.toml 
 ```
 
-2. Now you can start depletion of human reads with the following subcommand from you working directory
+2. Now you can start depletion of human reads with the following toml configuration from you working directory
+
+```
+usage         = "target"
+output_dir    = "full\path\to\ReadBouncer\output_dir\"
+log_directory = "full\path\to\ReadBouncer\"
+
+[IBF]
+
+kmer_size           = 13                      
+fragment_size       = 100000                  
+threads             = 3                      
+target_files        = ""
+deplete_files       = "path\to\output\directory\chm13.ibf"
+read_files          = ""    
+exp_seq_error_rate  = 0.1                      
+chunk_length        = 250                        
+max_chunks          = 5                   
+
+[MinKNOW]
+
+host                = "localhost"
+port                = 9501       
+flowcell            = "MS00000" 
+
+[Basecaller]
+
+caller             = "DeepNano"  
+host               = "127.0.0.1"
+port               = "9501"     
+threads            = 3         
+```
+Using command line: 
+
  ```
-full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe deplete -d path\to\output\directory\chm13.ibf -f MS00000 -c 3 -b 3 -v
+full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe  full\path\to\ReadBouncer\config.toml 
 ```
 3. Start a sequencing run on the simulated device as you did above. Open the read length histogram after 15 minutes and have a look at the read counts plot. When you zoom into the region for reads up to 5kb length, you should see a plot like this:
 <p align="center">
