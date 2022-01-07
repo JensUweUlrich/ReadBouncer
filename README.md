@@ -301,9 +301,9 @@ full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe  full\path\to\ReadBo
 2. Now you can start depletion of human reads with the following toml configuration from you working directory
 
 ```
-usage         = "target"
-output_dir    = "full\path\to\ReadBouncer\output_dir\"
-log_directory = "full\path\to\ReadBouncer\"
+usage               = "target"
+output_dir          = "full\path\to\ReadBouncer\output_dir\"
+log_directory       = "full\path\to\ReadBouncer\"
 
 [IBF]
 
