@@ -199,9 +199,24 @@ Number of threads used for base calling.
 Sometimes it can be useful to find all reads of an organism in a set of reads that were already sequenced without aligning the sequences. ReadBouncer offers this functionality by using the `classify` subcommand. The following steps describe how to classify all bacterial reads from a Zymo Mock Community that was sequenced on a MinION device.
 
 1. Download the bacterial reference sequences of the Zymo Mock Community from [here](https://owncloud.hpi.de/s/di1lwRsvkXAr4XN) and store it in your working directory.
-2. Build an Interleaved Bloom Filter (IBF) file from those reference sequence set
+2. Build an Interleaved Bloom Filter (IBF) file from those reference sequence set by providing the necessary parameters in the config.toml file.
+
 ```
-full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe ibfbuild -o path\to\output\directory\ZmcBacterialReferences.ibf -i path\to\reference\file\ZmcBacterialReferences.fasta -k 13 -f 100000
+usage         = "build"
+output_dir    = "full\path\to\ReadBouncer\output_dir\"
+log_directory = "full\path\to\ReadBouncer\"
+
+[IBF]
+
+kmer_size     = 13                       #(unsigned integer with default 13)
+fragment_size = 100000                       #(unsigned integer with default 100000)
+threads       = 3                       #(unsigned integer with default 3) classification threads
+target_files  = "path\to\reference\file\ZmcBacterialReferences.fasta"
+deplete_files = "" 
+```
+Using command line: 
+```
+full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe  full\path\to\ReadBouncer\config.toml 
 ```
 3. Use the `classify` subcommand get all reads that origin from one of the 7 bacteria in the Zymo Mock Community mix. (You can use the following [sample read set]() to simply test the feature)
 
@@ -228,16 +243,18 @@ sudo ./config_editor --conf application --filename ../conf/app_conf --set device
 ```
 
 4. In the MinKNOW GUI, right click on a sequencing position and select `Reload Scripts` (In some cases you need to reboot your operating system). Your MinKNOW instance will now show a simulated device named `MS00000` that will playback the bulkfile rather than live sequencing.
-5. Open a Windows Power Shell (or terminal) and go to your working directory where ReadBouncer result files shall be stored. Than call ReadBouncer with subcommand `connection-test` and correct parameters for host, port and device name
+5. Open a Windows Power Shell (or terminal) and go to your working directory where ReadBouncer result files shall be stored. Then provide the necessary parameters in the config.toml file for the live-depletion test. ReadBouncer will test the conncetion to MinKNOW automatically.  
+
 ```
-full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe connection-test --host 127.0.0.1 --port 9501 --device MS00000
+[MinKNOW]
+
+host               = "localhost"          #(ip address or name of the computer hosting MinKNOW)
+port               = 9501                 #(port number used fo grpc communication by by MinKNOW instance)
+flowcell           = "MS00000"            #(name of the flowcell used)
+
 ```
 The output should state that the connection could be successfully established and that you can continue with live-depletion.
-6. For testing the unblock functionality you should start a simulation with `--unblock-all` option 
-```
-full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe connection-test --host 127.0.0.1 --port 9501 --device MS00000 --unblock-all
-```
-When ReadBouncer says that it successfully established a connection, you can start a sequencing run on the the device, which will playback the run from the bulkfile.
+6. When ReadBouncer says that it successfully established a connection, you can start a sequencing run on the the device, which will playback the run from the bulkfile.
 7. Open the read length histogram after 5 minutes and have a look at the read counts plot.
 <p align="center">
   <img src="images/unblock_all.PNG" width="750" title="Unblock All Image">
