@@ -98,15 +98,15 @@ Build Interleaved Bloom Filter with given references sequences
 
 kmer_size     = X                       #(unsigned integer with default 13)
 fragment_size = X                       #(unsigned integer with default 100000)
-threads       = X                       #(unsigned integer with default 3)
+threads       = X                       #(unsigned integer with default 3) classification threads
 target_files  = "xxx.fasta,xxx.fasta"
 deplete_files = "xxx.fasta,xxx.fasta" 
 
 ```
-<b>--kmer-size</b><br>
+<b> kmer_size</b><br>
 For every fragment we compute all k-mers of this size, calculate hash values for the k-mers and add those to the Interleaved Bloom Filter like described by [Dadi et. al., 2018](https://academic.oup.com/bioinformatics/article/34/17/i766/5093228). For sequencing error rates of around 10% we recommend using k=13. But with ONT's continuous improvements in single read accuracy, higher values are feasible as well.
 
-<b>--fragment-size</b><br>
+<b> fragment_size</b><br>
 The reference sequence is fragmented in subsequences of this length, where every fragment is stored in a separate bin of the Interleaved Bloom Filter. Fragments overlap by 500 nucleotides since the expected length of received read information from MinKNOW before classification is between 200 and 400 nucleotides. The fragmentation leads to better classification specificity when using smaller ```kmer-size``` values. By default we recommend a fragment size of 100,000 basepairs. But for smaller expected sequencing errors, larger ```kmer-size``` values can be used and thus the size of the fragments can be increased as well.
 
 #### <a name="classify"></a>Classify Query Reads
@@ -130,61 +130,70 @@ max_chunks          = X                        #(unsigned integer with default 5
 
 
 ```
-<b>--chunk-length and --max-chunks</b><br>
+<b> chunk_length and max_chunks</b><br>
 These parameters decide about the number of nucleotides from the beginning of each read that is used for classification. ReadBouncer tries to classify reads in in chunk-wise manner, when using e.g. 2 chunks with 360 bp length, ReadBouncer takes the first 360 bp of the read for classification and will add the subsequent 360 bp of that read for another classification try if the firts try did not succeed. By default, ReadBouncer only takes the first 360 nucleotides since this represents approximately 0.8 seconds of sequencing.
 
-<b>--depletion-file and --target-file</b><br>
+<b> depletion_files and target_files</b><br>
 The depletion-file contains the IBF for references we would want to deplete in a real experiment. If we also have a priori knowledge about potential organisms in our sample we definitely want to sequence, it is also possible to build an IBF of the reference sequences of those organisms and provide ReadBouncer the IBF as a target filter file. This can improve the specificity of the classification.
 
-<b>--significance and --error-rate</b><br>
-For more accurate classification of reads we are calculating the expected number of mutated k-mers for each read prefix based on the expected sequencing ```error rate```. Than a confidence interval for the mutated k-mers is calculated as described by [Blanca et. al., 2021](https://www.biorxiv.org/content/10.1101/2021.01.15.426881v2) and the minimum number of matching k-mers is calculated based on the upper bound of the confidence interval. The significance level of the confidence interval can be specified, but is set to 95% by default.
+<b> exp_seq_error_rate </b><br>
+For more accurate classification of reads we are calculating the expected number of mutated k-mers for each read prefix based on the expected sequencing ```error rate```. Than a confidence interval for the mutated k-mers is calculated as described by [Blanca et. al., 2021](https://www.biorxiv.org/content/10.1101/2021.01.15.426881v2) and the minimum number of matching k-mers is calculated based on the upper bound of the confidence interval. The significance level of the confidence interval is set to 95% by default.
 
 
 
-#### <a name="deplete"></a>Live Depletion of Nanopore Reads (TODO after here)
+#### <a name="deplete"></a>Live Depletion of Nanopore Reads
 
 When nanopore reads of a certain organism (or even more) are not of interest, these reads can be unblocked with <b>deplete</b>. Therefore raw current signals are requested from ONT's MinKNOW software, basecalled and matched against the previously build IBF of the reference sequence set. If a read is classified as match with the depletion IBF (and not with the target IBF), an unblock request is sent back to the MinKNOW software. This results in a rejection of the read and another DNA molecule can enter the corresponding pore for sequencing.
 
 ```
-  deplete            Live classification and rejection of nanopore reads
-
-  -?, -h, --help
-  -v, --verbose           Show additional output as to what we are doing.
-  -f, --flowcell <device> Device or FlowCell name for live analysis (required)
-  -i, --host-ip <ip>      IP address on which MinKNOW software runs (default: localhost)
-  -p, --port <port>       MinKNOW communication port (default: 9501)
-  -d, --depletion-file <ibf-file>
-                          Interleaved Bloom Filter file with depletion references
-  -t, --target-file <ibf-file>
-                          Interleaved Bloom Filter file with target references
-  -s, --significance <probability>
-                          significance level for confidence interval of number of errorneous kmers (default: 0.95)
-  -e, --error-rate <err>  expected per read sequencing error rate (default: 0.1)
-  -w, --weights <weights> Deep Nano Weights (default: 48; other choices: 56, 64, 80, 96, 256)
-  -b, --basecall-threads <t>
-                          Number of threads used for base calling (default: 1)
-  -c, --classification-threads <t>
-                          Number of threads used for read classification (default: 1)
+  target            Live classification and rejection of nanopore reads that match the depletion filter, and not the taget filter (if provided)
+  
+  [IBF]
+  
+  target_files        = "xxx.fasta,xxx.fasta"
+  deplete_files       = "xxx.fasta,xxx.fasta" 
+  threads             = X                      #(unsigned integer with default 3) classification threads
+  
+  [MinKNOW]
+  
+  host                = xxx.xxx.xxx            #(ip address or name of the computer hosting MinKNOW) 
+  port                = X                      #(port number used fo grpc communication by by MinKNOW instance)
+  flowcell            = X                      #(name of the flowcell used)
+  
+  [Basecaller]
+  
+  caller              = DeepNano/Guppy         #(default is DeepNano)
+  host                = xxx.xxx.xxx            #(ip address or name of the computer hosting Guppy Basecall Server)
+  port                = X                      #(port number on which the basecall server is running on the host)
+  threads             = X                      #(unsigned integer with default 3) basecall threads
+  
 ```
-<b>--host-ip and --port</b><br>
+
+<b> depletion_files and target_files</b><br>
+The depletion-file contains the IBF for references we would want to deplete in a real experiment or you can provide the file as a FASTA file and assign the parameters to build the IBF. ReadBouncer builds automatically an IBF for each provided FASTA file. If we also have a priori knowledge about potential organisms or genomic regions of interest in our sample that should not be rejected, it is also possible to build an IBF of the reference sequences of those organisms or genomic regions and provide ReadBouncer this information as target IBF file. This can improve the specificity of the classification.
+
+<b> exp_seq_error_rate </b><br>
+For more accurate classification of reads we are calculating the expected number of mutated k-mers for each read prefix based on the expected sequencing ```error rate```. Than a confidence interval for the mutated k-mers is calculated as described by [Blanca et. al., 2021](https://www.biorxiv.org/content/10.1101/2021.01.15.426881v2) and the minimum number of matching k-mers is calculated based on the upper bound of the confidence interval. The significance level of the confidence interval is set to 95% by default.
+
+<b> [MinKNOW] host and port </b><br>
 This is the IP adress and the TCP/IP port on which the MinKNOW software is hosted. ReadBouncer will exchange data with the MinKNOW software via this communication channel. It is recommended to test the communication before starting the sequencing run.
 
-<b>--flowcell</b><br>
+<b> flowcell</b><br>
 This is the name of the FlowCell for which we want to do the live depletion. 
 
-<b>--depletion-file and --target-file</b><br>
-The depletion-file contains the IBF for references we would want to deplete in a real experiment. If we also have a priori knowledge about potential organisms or genomic regions of interest in our sample that should not be rejected, it is also possible to build an IBF of the reference sequences of those organisms or genomic regions and provide ReadBouncer this information as target IBF file. This can improve the specificity of the classification.
+<b> [Basecaller] caller </b><br>
+Basecaller used during adaptive sampling (default: DeepNano).
 
-<b>--significance and --error-rate</b><br>
-For more accurate classification of reads we are calculating the expected number of mutated k-mers for each read prefix based on the expected sequencing ```error rate```. Than a confidence interval for the mutated k-mers is calculated as described by [Blanca et. al., 2021](https://www.biorxiv.org/content/10.1101/2021.01.15.426881v2) and the minimum number of matching k-mers is calculated based on the upper bound of the confidence interval. The significance level of the confidence interval can be specified, but is set to 95% by default.
+<b> [Basecaller] host </b><br>
+IP address of guppy basecall server (default: 127.0.0.1).
 
-<b>--weights</b><br>
-For CPU based real-time basecalling of Nanopore reads, ReadBouncer integrates [DeepNano-blitz](https://github.com/fmfi-compbio/deepnano-blitz). This basecaller uses recurrent neural networks (RNNs) for signal-to-nucleotide translation. There are different sizes of RNNs available, e.g. 48, 56, 64, 80, 96 and 256. In general, the smaller the RNN the faster basecalling is performed. But on the other hand higher RNN weight values provide higher base call accuracy. <b>Note that necessary basecalling speed could only be supported for maximum weights value of 80 on a an Intel Core i7 2,8 GHz processor. Therefore we recommend values smaller than 80 to keep up with sequencing speed.</b>
+<b> [Basecaller] port </b><br>
+TCP/IP port of guppy basecall server (default: 5555).
 
-<b>--basecall-threads and --classification-threads</b><br>
-The number of CPU threads used for base calling and classification, respectively. Our internal tests showed best results when using 3 or 4 threads for each auf the two tasks.
-  
-### <a name="ucase"></a>Use Cases
+<b> [Basecaller] threads </b><br>
+Number of threads used for base calling.
+
+### <a name="ucase"></a>Use Cases (TODO from here --> to be checked)
 
 ### <a name="classifyreads"></a>Classify already sequenced reads
 Sometimes it can be useful to find all reads of an organism in a set of reads that were already sequenced without aligning the sequences. ReadBouncer offers this functionality by using the `classify` subcommand. The following steps describe how to classify all bacterial reads from a Zymo Mock Community that was sequenced on a MinION device.
