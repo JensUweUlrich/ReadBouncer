@@ -1,5 +1,4 @@
 
-#[General]
 usage              ="target"  #["build", "target", "classify"] atm only one of those
 output_directory   = "C:/ReadBouncer/output_directory/" #path/to/write/output/files/to
 log_directory      = "C:/ReadBouncer/"  # [IbfClassificationLog.txt, InterleavedBloomFilterLog.txt, NanoLiveLog.txt, ReadUntilClientLog.txt]
