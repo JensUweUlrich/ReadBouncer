@@ -18,11 +18,11 @@
     - [Deplete Host Background Reads](#host-depletion)
 
 ## <a name="overview"></a>Overview
-C++ based tool for live classification of Nanopore reads (aka adaptive sampling) on Windows and Linux without the need for GPUs. The Toolkit uses Oxford Nanopore's Read Until functionality to unblock reads that match to a given reference sequence database. The database is indexed as Interleaved Bloom Filter for fast classification.
+Readouncer is a nanopore adaptive sampling tool for Windows and Linux (x64 or ARM64) that uses Interleaved Bloom Filters for live classification of nanopore reads, basecalled with either Guppy(GPU mode) or DeepNano-blitz(CPU mode). The Toolkit uses Oxford Nanopore's Read Until functionality to unblock reads that match to a given reference sequence database. The database is indexed as Interleaved Bloom Filter for fast classification.
 * In a first step the reference sequences are used to build an Interleaved Bloom Filter using the [SeqAn library](https://github.com/seqan/seqan3)
 * Interleaved Bloom Filters can be used as depletion or enrichment target
 * After Starting a sequencing run, ReadBouncer receives raw current signals from the sequencer via ONT's [MinKNOW API](https://github.com/nanoporetech/minknow_api) using Google's remote procedure calls ([gRPC](https://grpc.io/))
-* Signals are basecalled in real-time with [DeepNano-blitz](https://github.com/fmfi-compbio/deepnano-blitz)
+* Signals are basecalled in real-time with [DeepNano-blitz](https://github.com/fmfi-compbio/deepnano-blitz) or Guppy
 * Basecalled reads are matched to the reference sequences in the Interleaved Bloom Filters and unblock/discard messages are sent back to the sequencer according to the read classification 
 
 
@@ -79,6 +79,11 @@ The last step creates the <b>ReadBouncer-1.0.0-Linux.sh</b> within the build dir
 
 
 ### <a name="general"></a>General usage
+ReadBouncer can simply be called from the command line by providing a TOML configuration file. 
+```
+full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe full\path\to\ReadBouncer\config.toml 
+```
+All parameters, input and output files and the usage are specified within the configuration file. First, there are three different modes for using ReadBouncer (build, target and classify). The <b>build</b> usage is specified when the goal is to create an Interleaved Bloom Filter index file. The <b>classify</b> usage is specified when only a read classification with based on ReadBouncer's IBF-based classifier shall be tested, and the The <b>target</b> usage is specified when ReadBouncer shall be used in an adaptive sampling experiment. You can also specify an output and a log directory.
 
 ```
 
@@ -89,7 +94,7 @@ log_directory = "path/to/write/log/files/to"            #all generated log files
 ```
 
 #### <a name="ibfbuild"></a>Building the database
-Before you can use ReadBouncer for selective sequencing, the reference database has to be build by using the usage <b>build</b> using the config.toml file. In this step you have to provide the reference sequence(s) as a comma-separated list of FASTA files (target/depletion files) and the size of the kmers used to build the IBF.  
+Before using ReadBouncer for adaptive sampling, you may want to create the reference database(s) for target and/or depletion reference sequences with the usage <b>build</b> using the config.toml file. In this step you have to provide the reference sequence(s) as a comma-separated list of FASTA files (target/depletion files), the fragment size and the size of the kmers used to build the IBF. The resulting Interleaved Bloom Filter files will be stored in the given output directory.
 
 ```
 Build Interleaved Bloom Filter with given references sequences
@@ -98,20 +103,20 @@ Build Interleaved Bloom Filter with given references sequences
 
 kmer_size     = X                       #(unsigned integer with default 13)
 fragment_size = X                       #(unsigned integer with default 100000)
-threads       = X                       #(unsigned integer with default 3) classification threads
+threads       = X                       #(unsigned integer with default 3) 
 target_files  = "xxx.fasta,xxx.fasta"
 deplete_files = "xxx.fasta,xxx.fasta" 
 
 ```
 <b> kmer_size</b><br>
-For every fragment we compute all k-mers of this size, calculate hash values for the k-mers and add those to the Interleaved Bloom Filter like described by [Dadi et. al., 2018](https://academic.oup.com/bioinformatics/article/34/17/i766/5093228). For sequencing error rates of around 10% we recommend using k=13. But with ONT's continuous improvements in single read accuracy, higher values are feasible as well.
+For every fragment we compute all k-mers of this size, calculate hash values for the k-mers and add those to the Interleaved Bloom Filter like described by [Dadi et. al., 2018](https://academic.oup.com/bioinformatics/article/34/17/i766/5093228). For adaptive sampling experiments using DeepNano for basecalling, we expect the sequencing error rates to be larger than 10%. Here, we recommend using a kmer_size of 13 and fragment_size of 100,000, whereas for experiments with Guppy live-basecalling, a kmer_size of 15 and fragment_size of 200,000 may yield best results.
 
 <b> fragment_size</b><br>
-The reference sequence is fragmented in subsequences of this length, where every fragment is stored in a separate bin of the Interleaved Bloom Filter. Fragments overlap by 500 nucleotides since the expected length of received read information from MinKNOW before classification is between 200 and 400 nucleotides. The fragmentation leads to better classification specificity when using smaller ```kmer-size``` values. By default we recommend a fragment size of 100,000 basepairs. But for smaller expected sequencing errors, larger ```kmer-size``` values can be used and thus the size of the fragments can be increased as well.
+The reference sequence is fragmented in subsequences of this length, where every fragment is stored in a separate bin of the Interleaved Bloom Filter. Fragments overlap by 1,500 nucleotides because ReadBouncer only tries to classify and unbloc a nanopore read until the first 1,500 nucleotides have been sequenced. The fragmentation leads to better classification specificity when using smaller ```kmer_size``` values. 
 
 #### <a name="classify"></a>Classify Query Reads
 
-If you like to test ReadBouncer's read classification with a set of Nanopore reads, you can use the <b>classify</b> usage. You only have to provide one or more than one Interleaved Bloom Filter (IBF) file or as FASTA files (automatically create ibf file for every given fasta file) and some reads as FASTA or FASTQ file. When providing an IBF file as `depletion-file` ReadBouncer takes the prefix from each read and maps it against each bin of the depletion-IBF. If the number of k-mers that are shared between the prefix and at least one bin of the IBF exceeds a certain threshold, the read is classified as match. The threshold is calculated as described in the publication. If you provide a target IBF file as well, ReadBouncer will not classify reads if the prefix matches the depletion IBF but not the target IBF. 
+If you like to test ReadBouncer's read classification with a set of Nanopore reads, you can use the <b>classify</b> usage. You only have to provide one or more Interleaved Bloom Filter (IBF) or FASTA files (automatically create ibf file for every given fasta file) and some reads as FASTA or FASTQ file. When providing already created IBF files, make sure that the files are located in the given output directory. When providing an IBF file as `depletion-file` ReadBouncer takes the prefix from each read and maps it against each bin of the depletion-IBF. If the number of k-mers that are shared between the prefix and at least one bin of the IBF exceeds a certain threshold, the read is classified as match. The threshold is calculated as described in the publication. If you provide a target IBF file as well, ReadBouncer will not classify reads if the prefix matches the depletion IBF but not the target IBF. Providing only target_files will lead ReadBouncer to assign each read to the best matching target filter file. Result files of the classification can also be found in the output directory.
 
 ```
 classify                classify nanopore reads based on a given IBF file
@@ -121,8 +126,8 @@ classify                classify nanopore reads based on a given IBF file
 kmer_size           = X                        #(unsigned integer with default 13)
 fragment_size       = X                        #(unsigned integer with default 100000)
 threads             = X                        #(unsigned integer with default 3)
-target_files        = "xxx.fasta,xxx.fasta"
-deplete_files       = "xxx.fasta,xxx.fasta" 
+target_files        = "xxx.fasta,xxx.fasta" or  "xxx.ibf,xxx.ibf"
+deplete_files       = "xxx.fasta,xxx.fasta" or  "xxx.ibf,xxx.ibf"
 read_files          = "xxx.fasta/xxx.fastq"    #can be a comma-separated list of fasta or fastq files
 exp_seq_error_rate  = 0.1                      #(unsigned float between 0 and 1 default 0.1)
 chunk_length        = X                        #(unsigned integer with default 250)
@@ -141,17 +146,17 @@ For more accurate classification of reads we are calculating the expected number
 
 
 
-#### <a name="deplete"></a>Live Depletion of Nanopore Reads
+#### <a name="deplete"></a>Adaptive Sampling
 
-When nanopore reads of a certain organism (or even more) are not of interest, these reads can be unblocked with <b>deplete</b>. Therefore raw current signals are requested from ONT's MinKNOW software, basecalled and matched against the previously build IBF of the reference sequence set. If a read is classified as match with the depletion IBF (and not with the target IBF), an unblock request is sent back to the MinKNOW software. This results in a rejection of the read and another DNA molecule can enter the corresponding pore for sequencing.
+When nanopore reads are not of interest, these reads can be rejected from the pore without sequencing the whole read. Therefore raw current signals are requested from ONT's MinKNOW software, basecalled and matched against one or more Interleaved Bloom Filter of a give reference sequence set. Depending on the given combinations of deplete and target files, ReadBouncer's adaptive sampling behaves different. a) If only depletion_files are provided, every read that matches with at least one of the given file is rejected from the corresponding pore by sending an unblock message to MinKNOW for that read. b) If only target_files are provided, all reads that do not match to at least one target file will be unblocked. c) If both target_files and deplete_files are provided, only reads that match to at least one of the deplete_files, but to none of the target_files are unblocked. This approach can be used to ensure high specificity if sequences in depletion and target reference databases have certain regions of high similarity.
 
 ```
-  target            Live classification and rejection of nanopore reads that match the depletion filter, and not the taget filter (if provided)
+  target            Adaptive sampling of nanopore reads, unblocking reads that match the depletion references but not the target references
   
   [IBF]
   
-  target_files        = "xxx.fasta,xxx.fasta"
-  deplete_files       = "xxx.fasta,xxx.fasta" 
+  target_files        = "xxx.fasta,xxx.fasta" or  "xxx.ibf,xxx.ibf"
+  deplete_files       = "xxx.fasta,xxx.fasta" or  "xxx.ibf,xxx.ibf"
   threads             = X                      #(unsigned integer with default 3) classification threads
   
   [MinKNOW]
@@ -179,7 +184,7 @@ For more accurate classification of reads we are calculating the expected number
 This is the IP adress and the TCP/IP port on which the MinKNOW software is hosted. ReadBouncer will exchange data with the MinKNOW software via this communication channel. It is recommended to test the communication before starting the sequencing run.
 
 <b> flowcell</b><br>
-This is the name of the FlowCell for which we want to do the live depletion. 
+This is the name of the FlowCell for which we want apply adaptive sampling. 
 
 <b> [Basecaller] caller </b><br>
 Basecaller used during adaptive sampling (default: DeepNano).
