@@ -1,4 +1,4 @@
-# ReadBouncer (Toml feature) [Readme in process]
+# ReadBouncer
 
 ## Table of Contents
 
@@ -208,9 +208,9 @@ log_directory = "full\path\to\ReadBouncer\"
 
 [IBF]
 
-kmer_size     = 13                       #(unsigned integer with default 13)
-fragment_size = 100000                   #(unsigned integer with default 100000)
-threads       = 3                        #(unsigned integer with default 3) classification threads
+kmer_size     = 13                       
+fragment_size = 100000                 
+threads       = 3                        
 target_files  = "path\to\reference\file\ZmcBacterialReferences.fasta"
 deplete_files = "" 
 ```
@@ -286,9 +286,9 @@ log_directory = "full\path\to\ReadBouncer\"
 
 [IBF]
 
-kmer_size     = 13                      #(unsigned integer with default 13)
-fragment_size = 100000                  #(unsigned integer with default 100000)
-threads       = 3                       #(unsigned integer with default 3) classification threads
+kmer_size     = 13                      
+fragment_size = 100000                  
+threads       = 3                       
 target_files  = ""
 deplete_files = "path\to\reference\file\chm13.fasta" 
 ```
