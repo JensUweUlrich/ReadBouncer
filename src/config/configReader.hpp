@@ -1,10 +1,4 @@
 
-/*
- * configReader.hpp
- *
- *  Created on: 22.10.1
- *  
- */
 
 #pragma once
 
