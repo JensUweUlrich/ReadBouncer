@@ -723,7 +723,11 @@ void adaptive_sampling(live_parser& parser)
 	
 	
 	basecall::Basecaller* caller;
+#if defined(_WIN32)
+	if (stricmp(parser.caller.c_str(), "guppy") == 0)
+#else
 	if (strcasecmp(parser.caller.c_str(), "guppy") == 0)
+#endif
 	{
 		std::string basecall_host = parser.guppy_host + ":" + parser.guppy_port;
 		std::string config_name = "dna_r9.4.1_450bps_fast";

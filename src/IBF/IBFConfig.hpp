@@ -62,7 +62,7 @@ namespace interleave
             uint64_t filter_size_bits = 0;
 
             uint64_t fragment_length    = 0;
-            uint16_t overlap_length     = 500;
+            uint16_t overlap_length     = 1500;
 
             uint16_t kmer_size      = 13;
             uint16_t hash_functions = 3;
