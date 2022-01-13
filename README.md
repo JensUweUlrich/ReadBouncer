@@ -11,11 +11,11 @@
   - [General usage](#general)
     - [Building the database](#ibfbuild)
     - [Classify Query Reads](#classify)
-    - [Live Depletion of Nanopore Reads](#deplete)
-  - [Use cases](#ucase)
-    - [Classify already sequenced reads](#classifyreads)
-    - [Test unblocking all reads](#unblockall)
-    - [Deplete Host Background Reads](#host-depletion)
+    - [Adaptive Sampling](#deplete)
+ - [Use cases](#ucase)
+   - [Classify already sequenced reads](#classifyreads)
+   - [Test unblocking all reads](#unblockall)
+   - [Deplete Host Background Reads](#host-depletion)
 
 ## <a name="overview"></a>Overview
 Readouncer is a nanopore adaptive sampling tool for Windows and Linux (x64 or ARM64) that uses Interleaved Bloom Filters for live classification of nanopore reads, basecalled with either Guppy(GPU mode) or DeepNano-blitz(CPU mode). The Toolkit uses Oxford Nanopore's Read Until functionality to unblock reads that match to a given reference sequence database. The database is indexed as Interleaved Bloom Filter for fast classification.
@@ -212,14 +212,14 @@ Number of threads used for base calling. This parameter only has an effect if CP
 
 ### <a name="ucase"></a>Use Cases 
 
-### <a name="classifyreads"></a>Classify already sequenced reads
-Sometimes it can be useful to find all reads of an organism in a set of reads that were already sequenced without aligning the sequences. ReadBouncer offers this functionality by using the `classify` subcommand. The following steps describe how to classify all bacterial reads from a Zymo Mock Community that were sequenced on a MinION device.
+## <a name="classifyreads"></a>Classify already sequenced reads
+Sometimes it can be useful to find all reads of an organism in a set of reads that were already sequenced without aligning the sequences. ReadBouncer offers this functionality by using the `classify` subcommand. The following steps describe how to classify all reads from a Zymo Mock Community to their corresponding reference genome. 
 
-1. Download the bacterial reference sequences of the Zymo Mock Community from [here](https://owncloud.hpi.de/s/di1lwRsvkXAr4XN) and store it in your working directory.
-2. Build an Interleaved Bloom Filter (IBF) file from those reference sequence set by providing the necessary parameters in the config.toml file.
+1. Download the reference sequences of the Zymo Mock Community from [here](https://owncloud.hpi.de/s/ZBIf9x6gkEsXb0A) and store it in your working directory.
+2. Create a configuration file similar to the following one, providing all necessary parameters, file and directory paths in the config.toml file.
 
 ```
-usage         = "build"
+usage         = "classify"
 output_dir    = "full\path\to\ReadBouncer\output_dir\"
 log_directory = "full\path\to\ReadBouncer\"
 
@@ -228,14 +228,15 @@ log_directory = "full\path\to\ReadBouncer\"
 kmer_size     = 13                       
 fragment_size = 100000                 
 threads       = 3                        
-target_files  = "path\to\reference\file\ZmcBacterialReferences.fasta"
-deplete_files = "" 
+target_files  = "path\to\reference\file\Bacillus_subtilis_complete_genome.fasta,path\to\reference\file\Enterococcus_faecalis_complete_genome.fasta,path\to\reference\file\Escherichia_coli_complete_genome.fasta"
+deplete_files = ""
+read_files    = "path\to\read\file\SampleZMCDataSet.fasta"
 ```
-Using command line: 
+In this example, we would try to find all reads that match to B.subtilis, E.faecalis and E.coli. You can easily add the other fasta files as well. Now we can start ReadBouncer from the command line using the config.toml file. For testing purposes, you can download a small set of sequenced Zymo Mock community nanopore reads that were basecalled with DeepNano ([sample read set](https://owncloud.hpi.de/s/HFFYsDhbukXBsu4))
 ```
 full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe  full\path\to\ReadBouncer\config.toml 
 ```
-3. Use the `classify` subcommand get all reads that origin from one of the 7 bacteria in the Zymo Mock Community mix. (You can use the following [sample read set]() to simply test the feature)
+Finally, you can find all result files in the given output directory. 
 
 ### <a name="unblockall"></a>Test ReadBouncer-to-MinKNOW interaction
 Before using ReadBouncer in a real experiment, we recommend running a playback experiment to test unblock speed first.
