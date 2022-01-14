@@ -88,8 +88,8 @@ All parameters, input and output files and the usage are specified within the co
 ```
 
 usage         = "build", "target", "classify"           #atm only one of those
-output_dir    = "path/to/write/output/files/to"         #all generated output files will be stored here
-log_directory = "path/to/write/log/files/to"            #all generated log files will be stored here
+output_dir    = 'path/to/write/output/files/to'         #all generated output files will be stored here
+log_directory = 'path/to/write/log/files/to'            #all generated log files will be stored here
 
 ```
 
@@ -98,8 +98,8 @@ Before using ReadBouncer for adaptive sampling, you may want to create the refer
 
 ```
 usage         = "build"
-output_dir    = "path/to/write/output/files/to"         #all generated output files will be stored here
-log_directory = "path/to/write/log/files/to"            #all generated log files will be stored here
+output_dir    = 'path/to/write/output/files/to'         #all generated output files will be stored here
+log_directory = 'path/to/write/log/files/to'            #all generated log files will be stored here
 
 [IBF]
 
@@ -122,17 +122,17 @@ If you like to test ReadBouncer's read classification with a set of Nanopore rea
 
 ```
 usage         = "classify"
-output_dir    = "path/to/write/output/files/to"         #all generated output files will be stored here
-log_directory = "path/to/write/log/files/to"            #all generated log files will be stored here
+output_dir    = 'path/to/write/output/files/to'         #all generated output files will be stored here
+log_directory = 'path/to/write/log/files/to'            #all generated log files will be stored here
 
 [IBF]
 
 kmer_size           = X                                 #(unsigned integer; default: 13)
 fragment_size       = X                                 #(unsigned integer; default: 100000)
 threads             = X                                 #(unsigned integer; default: 3)
-target_files        = "xxx.fasta,xxx.fasta" or  "xxx.ibf,xxx.ibf"
-deplete_files       = "xxx.fasta,xxx.fasta" or  "xxx.ibf,xxx.ibf"
-read_files          = "xxx.fasta/xxx.fastq"             #can be a comma-separated list of fasta or fastq files
+target_files        = 'xxx.fasta,xxx.fasta' or  'xxx.ibf,xxx.ibf'
+deplete_files       = 'xxx.fasta,xxx.fasta' or  'xxx.ibf,xxx.ibf'
+read_files          = 'xxx.fasta/xxx.fastq'             #can be a comma-separated list of fasta or fastq files
 exp_seq_error_rate  = 0.1                               #(unsigned float between 0 and 1; default: 0.1)
 chunk_length        = X                                 #(unsigned integer; default: 250)
 max_chunks          = X                                 #(unsigned integer; default: 5)
@@ -156,15 +156,15 @@ When nanopore reads are not of interest, these reads can be rejected from the po
 
 ```
   usage         = "target"
-  output_dir    = "path/to/write/output/files/to"         #all generated output files will be stored here
-  log_directory = "path/to/write/log/files/to"            #all generated log files will be stored here
+  output_dir    = 'path/to/write/output/files/to'         #all generated output files will be stored here
+  log_directory = 'path/to/write/log/files/to'            #all generated log files will be stored here
   
   [IBF]
   
   kmer_size           = X                                 #(unsigned integer; default: 13)
   fragment_size       = X                                 #(unsigned integer; default: 100000)
-  target_files        = "xxx.fasta,xxx.fasta" or  "xxx.ibf,xxx.ibf"
-  deplete_files       = "xxx.fasta,xxx.fasta" or  "xxx.ibf,xxx.ibf"
+  target_files        = 'xxx.fasta,xxx.fasta' or  'xxx.ibf,xxx.ibf'
+  deplete_files       = 'xxx.fasta,xxx.fasta' or  'xxx.ibf,xxx.ibf'
   exp_seq_error_rate  = 0.1                               #(unsigned float between 0 and 1; default: 0.1)
   threads             = X                                 #(unsigned integer; default: 3) classification threads
   
@@ -220,17 +220,17 @@ Sometimes it can be useful to find all reads of an organism in a set of reads th
 
 ```
 usage         = "classify"
-output_dir    = "full\path\to\ReadBouncer\output_dir\"
-log_directory = "full\path\to\ReadBouncer\"
+output_dir    = 'full\path\to\ReadBouncer\output_dir\'
+log_directory = 'full\path\to\ReadBouncer\'
 
 [IBF]
 
 kmer_size     = 13                       
 fragment_size = 100000                 
 threads       = 3                        
-target_files  = "path\to\reference\file\Bacillus_subtilis_complete_genome.fasta,path\to\reference\file\Enterococcus_faecalis_complete_genome.fasta,path\to\reference\file\Escherichia_coli_complete_genome.fasta"
-deplete_files = ""
-read_files    = "path\to\read\file\SampleZMCDataSet.fasta"
+target_files  = 'path\to\reference\file\Bacillus_subtilis_complete_genome.fasta,path\to\reference\file\Enterococcus_faecalis_complete_genome.fasta,path\to\reference\file\Escherichia_coli_complete_genome.fasta'
+deplete_files = ''
+read_files    = 'path\to\read\file\SampleZMCDataSet.fasta'
 ```
 In this example, we would try to find all reads that match to B.subtilis, E.faecalis and E.coli. You can easily add the other fasta files as well. Now we can start ReadBouncer from the command line using the config.toml file. For testing purposes, you can download a small set of sequenced Zymo Mock community nanopore reads that were basecalled with DeepNano ([sample read set](https://owncloud.hpi.de/s/HFFYsDhbukXBsu4))
 ```
@@ -299,16 +299,16 @@ In order to test if read depletion works on your machine, you can start a `deple
 
 ```
 usage         = "build"
-output_dir    = "full\path\to\ReadBouncer\output_dir\"
-log_directory = "full\path\to\ReadBouncer\"
+output_dir    = 'full\path\to\ReadBouncer\output_dir\'
+log_directory = 'full\path\to\ReadBouncer\'
 
 [IBF]
 
 kmer_size     = 13                      
 fragment_size = 100000                  
 threads       = 3                       
-target_files  = ""
-deplete_files = "path\to\reference\file\chm13.fasta" 
+target_files  = ''
+deplete_files = 'path\to\reference\file\chm13.fasta'
 ```
 Using command line: 
 
@@ -320,17 +320,17 @@ full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe  full\path\to\ReadBo
 
 ```
 usage               = "target"
-output_dir          = "full\path\to\ReadBouncer\output_dir\"
-log_directory       = "full\path\to\ReadBouncer\"
+output_dir          = 'full\path\to\ReadBouncer\output_dir\'
+log_directory       = 'full\path\to\ReadBouncer\'
 
 [IBF]
 
 kmer_size           = 13                      
 fragment_size       = 100000                  
 threads             = 3                      
-target_files        = ""
-deplete_files       = "path\to\output\directory\chm13.ibf"
-read_files          = ""    
+target_files        = ''
+deplete_files       = 'path\to\output\directory\chm13.ibf'
+read_files          = ''    
 exp_seq_error_rate  = 0.1                      
 chunk_length        = 250                        
 max_chunks          = 5                   
