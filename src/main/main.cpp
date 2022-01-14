@@ -8,12 +8,14 @@
 #include <fstream>
 #include <future>
 #include <filesystem>
+#include <string_view>
 
 #include <SafeQueue.hpp>
 #include <SafeMap.hpp>
 #include <SafeSet.hpp>
 #include <StopClock.hpp>
 #include <NanoLiveExceptions.hpp>
+
 
 // spdlog library
 #include "spdlog/spdlog.h"
@@ -231,14 +233,16 @@ void signalHandler(int signum)
 */
 void initializeLogger(std::string toml_file)
 {
+	
+	
 	std::ifstream tomlFileReadBouncer(toml_file, std::ios_base::binary);
 	const auto configuration_ = toml::parse(tomlFileReadBouncer, /*optional -> */ toml_file);
-	auto log_file = toml::find<std::string>(configuration_, "log_directory");
 
+	auto log_file = toml::find<std::string>(configuration_, "log_directory");
 
 	try
 	{
-		nanolive_logger = spdlog::rotating_logger_mt("NanoLiveLog", log_file + "logs/NanoLiveLog.txt", 1048576 * 5, 100);
+		nanolive_logger = spdlog::rotating_logger_mt("NanoLiveLog",  log_file + "/NanoLiveLog.txt" , 1048576 * 5, 100);
 		nanolive_logger->set_level(spdlog::level::debug);
 	}
 	catch (const spdlog::spdlog_ex& e)
@@ -450,7 +454,6 @@ void inline configurationReader(configReader config, std::string const tomlFile,
 
 }
 
-
 int main(int argc, char const **argv)
 {
 
@@ -463,6 +466,7 @@ int main(int argc, char const **argv)
 	NanoLiveRoot = binPath.substr(0, binPath.find("bin"));
 
 	std::string const tomlFile = argv[1];
+	
 	initializeLogger(tomlFile);
 
 	std::ifstream tomlFileReadBouncer(tomlFile, std::ios_base::binary);
@@ -471,13 +475,20 @@ int main(int argc, char const **argv)
 	auto log_file = toml::find<std::string>(configuration_, "log_directory");
 	auto output_fileTOML = toml::find<std::string>(configuration_, "output_directory");
 
+	if (!std::filesystem::is_directory(output_fileTOML) || !std::filesystem::exists(output_fileTOML)) {
+
+	std::filesystem::create_directory(output_fileTOML); 
+
+	}
+	
+
 	configReader config(tomlFile);
 
 	//log files
-	readuntil::CSVFile += output_fileTOML;
-	interleave::InterleavedBloomFilterLog += log_file;
-	interleave::IbfClassificationLog += log_file;
-	readuntil::ReadUntilClientLog += log_file;
+	readuntil::CSVFile += output_fileTOML + "/";
+	interleave::InterleavedBloomFilterLog += log_file + "/";
+	interleave::IbfClassificationLog += log_file + "/";
+	readuntil::ReadUntilClientLog += log_file + "/";
 	
 	std::string subcommand = config.usage();
 	std::fstream tomlOutput = config.writeTOML();

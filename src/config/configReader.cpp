@@ -8,6 +8,7 @@
 // seqan libraries
 #include <seqan/binning_directory.h>
 #include <IBF.hpp>
+//#include <ranges>
 
 
 namespace toml
@@ -70,7 +71,7 @@ std::string configReader::usage() {
 std::fstream configReader::writeTOML() {
 
     auto output_fileTOML = toml::find<std::string>(this->toml, "output_directory");
-    output_fileTOML += "configLog.toml";
+    output_fileTOML += "/configLog.toml";
     std::fstream tomlOutput(output_fileTOML, std::ios::app | std::ios::out | std::ios::in);
 
     return tomlOutput;
@@ -167,6 +168,11 @@ configReader::ibf_build_parser_ configReader::ibfReader(std::fstream& tomlOutput
 
     std::stringstream s_stream(target_files_);// list of target files 
 
+    if (!s_stream.good()){
+
+        std::cerr<< "Error parsing the files: "<< target_files_ << std::endl; 
+    }
+
     while (s_stream.good()) {
 
         std::string substr;
@@ -174,17 +180,29 @@ configReader::ibf_build_parser_ configReader::ibfReader(std::fstream& tomlOutput
 
     if (substr.length() > 1)
     {
+        if (!std::filesystem::exists(substr)) {
+
+                std::cerr << "ERROR parsing the file: "<<  substr << '\n';
+                exit(1);
+                
+        }
+
         if (configReader::filterException(substr)) {}
 
         else if (!configReader::filterException(substr)) {
 
             std::cout << "The target file is an fasta file, start building ibf ......." << '\n';
-            std::string outputIBF = substr + "_.ibf";
-            build_IBF = { output_fileTOML+outputIBF, substr, false, false, k, t, f, 0, true };
+            std::filesystem::path test (substr);
+            auto string_ = test.stem();
+            std::string name = string_.string();
+            name = name.substr(name.find_last_of('\\') +1);
+            std::string outputIBF = name + ".ibf";
+
+            build_IBF = { output_fileTOML+ "/" + outputIBF, substr, false, false, k, t, f, 0, true };
             buildIBF_(build_IBF);
         }
     }
-    
+
     else {
 
         std::cout << "No target file found! " << '\n';
@@ -194,6 +212,11 @@ configReader::ibf_build_parser_ configReader::ibfReader(std::fstream& tomlOutput
 
     std::stringstream s_stream1(deplete_files_);// list of depletion files 
 
+    if (!s_stream1.good()){
+
+        std::cerr<< "Error parsing the files: "<< target_files_ << std::endl; 
+    }
+
     while (s_stream1.good()) {
 
         std::string substr1;
@@ -201,13 +224,24 @@ configReader::ibf_build_parser_ configReader::ibfReader(std::fstream& tomlOutput
 
     if (substr1.length() > 1)
     {
+        if (!std::filesystem::exists(substr1)) {
+
+                std::cerr << "ERROR parsing the file: "<<  substr1 << '\n';
+                exit(1);
+                
+        }
+
         if (configReader::filterException(substr1)) {}
 
         else if (!configReader::filterException(substr1)) {
 
-            std::string outputIBF = substr1 + "_.ibf";
-            build_IBF = { output_fileTOML+outputIBF, substr1, false, false, k, t, f, 0, true };
+            std::filesystem::path test (substr1);
+            auto string_ = test.stem();
+            std::string name = string_.string();
+            name = name.substr(name.find_last_of('\\') +1);
+            std::string outputIBF = name + ".ibf";
 
+            build_IBF = { output_fileTOML+ "/" + outputIBF, substr1, false, false, k, t, f, 0, true };
             buildIBF_(build_IBF);
 
             buildStruct = { outputIBF, substr1, false, false, k, t, f, 0, true };
@@ -273,6 +307,13 @@ configReader::read_classify_parser_  configReader::classifyReader(std::fstream& 
 
     if (substr.length() > 1)
     {
+        if (!std::filesystem::exists(substr)) {
+
+                std::cerr << "ERROR parsing the file: "<<  substr << '\n';
+                exit(1);
+                
+        }
+
         if (configReader::filterException(substr)) {
 
             target = substr + ",";
@@ -284,8 +325,13 @@ configReader::read_classify_parser_  configReader::classifyReader(std::fstream& 
 
             std::cout << "The target file is an fasta file, start building ibf ......." << '\n';
 
-            target = output_fileTOML + substr + "_.ibf";
+            std::filesystem::path test (substr);
+            auto string_ = test.stem();
+            std::string name = string_.string();
+            name = name.substr(name.find_last_of('\\') +1);
+            target = output_fileTOML + "/" + name + ".ibf";
             target_holder = target_holder + target + ",";
+
             build_IBF = { target, substr, false, false, k, t, f, 0, true };
             buildIBF_(build_IBF);
 
@@ -311,6 +357,13 @@ configReader::read_classify_parser_  configReader::classifyReader(std::fstream& 
 
         if (substr1.length() > 1)
         {
+            if (!std::filesystem::exists(substr1)) {
+
+                std::cerr << "ERROR parsing the file: "<<  substr1 << '\n';
+                exit(1);
+                
+            }
+
             if (configReader::filterException(substr1)) {
 
                 deplete = substr1 + ",";
@@ -321,8 +374,13 @@ configReader::read_classify_parser_  configReader::classifyReader(std::fstream& 
 
                 std::cout << "The deplete file is an fasta file, start building ibf ......." << '\n';
 
-                deplete = output_fileTOML + substr1 + "_.ibf";
+                std::filesystem::path test (substr1);
+                auto string_ = test.stem();
+                std::string name = string_.string();
+                name = name.substr(name.find_last_of('\\') +1);
+                deplete = output_fileTOML + "/" + name + ".ibf";
                 deplete_holder = deplete_holder + deplete + ",";
+
                 build_IBF = { deplete, substr1, false, false, k, t, f, 0, true };
                 buildIBF_(build_IBF);
 
@@ -407,6 +465,13 @@ configReader::live_target_parser_ configReader::targetReader(std::fstream& tomlO
 
         if (substr1.length() > 1)
         {
+            if (!std::filesystem::exists(substr1)) {
+
+                std::cerr << "ERROR parsing the file: "<<  substr1 << '\n';
+                exit(1);
+                
+            }
+
             if (configReader::filterException(substr1)) {
 
                 deplete = substr1 + ",";
@@ -417,7 +482,11 @@ configReader::live_target_parser_ configReader::targetReader(std::fstream& tomlO
 
                 std::cout << "The deplete file is an fasta file, start building ibf ......." << '\n';
 
-                deplete = output_fileTOML + substr1 + "_.ibf";
+                std::filesystem::path test (substr1);
+                auto string_ = test.stem();
+                std::string name = string_.string();
+                name = name.substr(name.find_last_of('\\') +1);
+                deplete = output_fileTOML + "/" + name + ".ibf";
                 deplete_holder = deplete_holder + deplete + ",";
 
                 toml::value  kmerS = toml::get<toml::table >(IBF).at("kmer_size");
@@ -450,6 +519,13 @@ configReader::live_target_parser_ configReader::targetReader(std::fstream& tomlO
 
         if (substr.length() > 1)
         {
+            if (!std::filesystem::exists(substr)) {
+
+                std::cerr << "ERROR parsing the file: "<<  substr << '\n';
+                exit(1);
+                
+            }
+
             if (configReader::filterException(substr)) {
  
                 target = substr + ",";
@@ -459,7 +535,11 @@ configReader::live_target_parser_ configReader::targetReader(std::fstream& tomlO
 
                 std::cout << "The target file is an fasta file, start building ibf ......." << '\n';
 
-                target = output_fileTOML + substr + "_.ibf";
+                std::filesystem::path test (substr);
+                auto string_ = test.stem();
+                std::string name = string_.string();
+                name = name.substr(name.find_last_of('\\') +1);
+                target = output_fileTOML + "/" + name + ".ibf";
                 target_holder = target_holder + target + ",";
 
                 toml::value  kmerS = toml::get<toml::table >(IBF).at("kmer_size");

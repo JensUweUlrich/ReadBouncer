@@ -25,7 +25,7 @@ namespace interleave
             {
                 try
                 {
-                    classification_logger = spdlog::rotating_logger_mt("ClassifyLog", IbfClassificationLog + "logs/IbfClassificationLog.txt", 1048576 * 5, 100);
+                    classification_logger = spdlog::rotating_logger_mt("ClassifyLog", IbfClassificationLog + "IbfClassificationLog.txt", 1048576 * 5, 100);
                 }
                 catch (const spdlog::spdlog_ex& e)
                 {
