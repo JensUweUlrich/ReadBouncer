@@ -1,7 +1,7 @@
 
-usage              ="target"  #["build", "target", "classify"] atm only one of those
-output_directory   = 'C:\Users\yynk1\desktop/build\output_dir'
-log_directory      = 'C:\Users\yynk1\desktop/build\log_dir\' # [IbfClassificationLog.txt, InterleavedBloomFilterLog.txt, NanoLiveLog.txt, ReadUntilClientLog.txt]
+usage              ="classify"  #["build", "target", "classify"] 
+output_directory   = 'RB_out'
+log_directory      = 'RB_out\log'
 
 
 [IBF]
