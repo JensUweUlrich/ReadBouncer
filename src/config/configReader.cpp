@@ -168,11 +168,6 @@ configReader::ibf_build_parser_ configReader::ibfReader(std::fstream& tomlOutput
 
     std::stringstream s_stream(target_files_);// list of target files 
 
-    if (!s_stream.good()){
-
-        std::cerr<< "Error parsing the files: "<< target_files_ << std::endl; 
-    }
-
     while (s_stream.good()) {
 
         std::string substr;
