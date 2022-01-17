@@ -526,7 +526,9 @@ void adaptive_sampling(configReader::Target_Params& params)
 	{
 		nanolive_logger->error("Could not find DeepNano weights file : " + weights_file.string());
 		nanolive_logger->flush();
-		throw;
+		std::stringstream estr;
+		estr << "[Error] Could not find DeepNano weights file : " << weights_file.string();
+		throw basecall::BasecallerException(estr.str());
 	}
 #endif
 	std::vector<interleave::IBFMeta> DepletionFilters{};
@@ -718,7 +720,7 @@ void adaptive_sampling(configReader::Target_Params& params)
 #if defined(_WIN32)
 	if (stricmp(params.caller.c_str(), "guppy") == 0)
 #else
-	if (strcasecmp(parser.caller.c_str(), "guppy") == 0)
+	if (strcasecmp(params.caller.c_str(), "guppy") == 0)
 #endif
 	{
 		std::string basecall_host = params.guppy_host + ":" + params.guppy_port;

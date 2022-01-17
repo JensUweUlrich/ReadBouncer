@@ -155,6 +155,7 @@ configReader::IBF_Build_Params configReader::ibfReader(std::fstream& tomlOutput,
     try
     {
         output_fileTOML = toml::find<std::string>(this->toml, "output_directory");
+	output_fileTOML = output_fileTOML.make_preferred();
         toml::value IBF = toml::find(this->toml, "IBF");
 
         k = toml::find_or<int>(this->toml, "IBF", "kmer_size", 13);
@@ -243,8 +244,7 @@ configReader::Classify_Params configReader::classifyReader(std::fstream& tomlOut
     try
     {
         std::string out = toml::find<std::string>(this->toml, "output_directory");
-        std::cout << out << std::endl;
-        output_fileTOML = std::filesystem::path(out);
+        output_fileTOML = std::filesystem::path(out).make_preferred();
         toml::value IBF = toml::find(this->toml, "IBF");
 
         k = toml::find_or<int>(this->toml, "IBF", "kmer_size", 13);
@@ -265,10 +265,11 @@ configReader::Classify_Params configReader::classifyReader(std::fstream& tomlOut
     for (std::string file : rf_tmp)
     {
         std::filesystem::path rf(file);
-        if (!std::filesystem::exists(file))
+	rf = rf.make_preferred();
+        if (!std::filesystem::exists(rf))
         {
             // TODO: write message in log file
-            throw ConfigReaderException("[Error] The following read file does not exist: " + file);
+            throw ConfigReaderException("[Error] The following read file does not exist: " + rf.string());
         }
         else
         {
@@ -364,7 +365,6 @@ configReader::Target_Params configReader::targetReader(std::fstream& tomlOutput,
     int k, classifyThreads, f, l, m, basecallThreads;
     double e;
     double significance = 0.95;
-    std::vector<std::filesystem::path> read_files{};
     std::filesystem::path output_fileTOML{};
     std::vector<std::string> rf_tmp{};
     std::string device{};
@@ -377,29 +377,30 @@ configReader::Target_Params configReader::targetReader(std::fstream& tomlOutput,
     try
     {
         output_fileTOML = std::filesystem::path(toml::find<std::string>(this->toml, "output_directory"));
+	output_fileTOML = output_fileTOML.make_preferred();
         toml::value IBF = toml::find(this->toml, "IBF");
         toml::value MinKNOW = toml::find(this->toml, "MinKNOW");
         toml::value basecaller = toml::find(this->toml, "Basecaller");
-
-        k = toml::find_or<int>(this->toml, "IBF", "kmer_size", 13);
-        classifyThreads = toml::find_or<int>(this->toml, "IBF", "threads", 1);
-        f = toml::find_or<int>(this->toml, "IBF", "fragment_size", 100000);
-        e = toml::find_or<double>(this->toml, "IBF", "exp_seq_error_rate", 0.1);
-
+	
+        k = toml::find_or<int>(IBF, "kmer_size", 13);
+        classifyThreads = toml::find_or<int>(IBF, "threads", 1);
+        f = toml::find_or<int>(IBF, "fragment_size", 100000);
+        e = toml::find_or<double>(IBF, "exp_seq_error_rate", 0.1);
+	
         device = toml::find<std::string>(MinKNOW, "flowcell");
-        MinKNOW_host = toml::find_or<std::string>(this->toml, "MinKNOW", "host", "127.0.0.1");
-        MinKNOW_port = toml::find_or<std::string>(this->toml, "MinKNOW", "port", "9501");
-
-        caller = toml::find_or<std::string>(this->toml, "Basecaller", "caller", "DeepNano");
-        basecallThreads = toml::find_or<int>(this->toml, "Basecaller", "threads", 3);
+        MinKNOW_host = toml::find_or<std::string>(MinKNOW, "host", "127.0.0.1");
+        MinKNOW_port = toml::find_or<std::string>(MinKNOW, "port", "9501");
+	
+        caller = toml::find_or<std::string>(basecaller, "caller", "DeepNano");
+        basecallThreads = toml::find_or<int>(basecaller, "threads", 3);
 #if defined(_WIN32)
         if (stricmp(caller.c_str(), "guppy") == 0)
 #else
-        if (strcasecmp(caller.c_str(), "guppy") == 0
+        if (strcasecmp(caller.c_str(), "guppy") == 0)
 #endif
         {
             hostCaller = toml::find<std::string>(basecaller, "host");
-            portBasecaller = toml::find_or<std::string>(this->toml, "Basecaller", "port", "5555");
+            portBasecaller = toml::find_or<std::string>(basecaller, "port", "5555");
         }
     }
     catch (std::out_of_range& e)
@@ -408,7 +409,7 @@ configReader::Target_Params configReader::targetReader(std::fstream& tomlOutput,
         throw ConfigReaderException(e.what());
     }
 
- 
+    std::cout << "after parsing" << std::endl;
     std::vector<std::filesystem::path> target_holder{};
     std::vector<std::filesystem::path> deplete_holder{};
 

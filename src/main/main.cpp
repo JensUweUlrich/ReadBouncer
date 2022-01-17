@@ -239,6 +239,9 @@ void initializeLogger(const std::string& toml_file)
 	{
 		const toml::value configuration_ = toml::parse(tomlFileReadBouncer, /*optional -> */ toml_file);
 		std::filesystem::path log_file = toml::find<std::string>(configuration_, "log_directory");
+		std::cout << log_file.string() << std::endl;
+		log_file = log_file.make_preferred();
+		std::cout << log_file.string() << std::endl;
 		if (!std::filesystem::is_directory(log_file) || !std::filesystem::exists(log_file))
 		{
 			std::filesystem::create_directories(log_file);
@@ -419,7 +422,8 @@ void inline configurationReader(configReader config, std::string const tomlFile,
 			std::cerr << e.what() << std::endl;
 			throw;
 		}
-
+		
+		std::cout << "after target reader" << std::endl;
 		//connection_test_parser cT = { struct_.host, struct_.device, struct_.port, false, false, true, false };
 		//test_connection(cT);
 
@@ -451,7 +455,16 @@ void inline configurationReader(configReader config, std::string const tomlFile,
 		tomlOutput << "# Computation date: " << std::ctime(&end_time) << '\n';
 		tomlOutput << toml::format(tbl1) << '\n';
 		tomlOutput.close();
-		adaptive_sampling(struct_);
+		
+		try
+		{
+		    adaptive_sampling(struct_);
+		}
+		catch(std::exception& e)
+		{
+		    std::cerr << e.what() << std::endl;
+		    return;
+		}
 
 	}
 
@@ -479,7 +492,9 @@ int main(int argc, char const **argv)
 	{
 		 configuration_ = toml::parse(tomlFileReadBouncer, /*optional -> */ tomlFile);
 		 log_file = toml::find<std::string>(configuration_, "log_directory");
+		 log_file = log_file.make_preferred();
 		 output_fileTOML = toml::find<std::string>(configuration_, "output_directory");
+		 output_fileTOML = output_fileTOML.make_preferred();
 	}
 	catch (toml::exception& e)
 	{
@@ -530,11 +545,11 @@ int main(int argc, char const **argv)
 		const toml::value& IBF = toml::find(configuration_, "IBF");
 		std::vector<std::string> tmp = toml::find<std::vector<std::string>>(IBF, "target_files");
 		for (std::string s : tmp)
-			target_files.emplace_back(std::filesystem::path(s));
+			target_files.emplace_back((std::filesystem::path(s)).make_preferred());
 		tmp.clear();
 		tmp = toml::find<std::vector<std::string>>(IBF, "deplete_files");
 		for (std::string s : tmp)
-			deplete_files.emplace_back(std::filesystem::path(s)); 
+			deplete_files.emplace_back((std::filesystem::path(s)).make_preferred()); 
 	}
 	catch (std::out_of_range& e)
 	{
@@ -544,7 +559,7 @@ int main(int argc, char const **argv)
 		return 1;
 	}
 	
-
+	
 	configurationReader(config, tomlFile, subcommand, tomlOutput, target_files, deplete_files);
 
 	NanoLiveTime.stop();

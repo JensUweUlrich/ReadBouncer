@@ -25,11 +25,11 @@ if (WIN32)
     find_file(libbz2_DLL "libbz2-1__.dll")
     install(FILES ${libbz2_DLL} DESTINATION bin COMPONENT applications)
 else()
-#    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
     set(CMAKE_INSTALL_PREFIX "/usr/local/${PROJECT_NAME}")
     add_compile_options("-Ofast")
 #    add_link_options("stdc++fs")
-#    add_compile_options("-std=c++17")
+    add_compile_options("-std=c++17")
 endif()
 
 # add all subdirectories
