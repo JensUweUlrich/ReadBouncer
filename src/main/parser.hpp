@@ -425,7 +425,7 @@ struct connection_test_parser
 	// default host & port to communicate with MinKNOW
 	std::string host = "127.0.0.1";
 	std::string device{};
-	int port = 9501;
+	std::string port = "9501";
 	bool command = false;
 	bool show_help = false;
 	bool verbose = false;

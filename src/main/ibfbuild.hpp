@@ -12,7 +12,7 @@
 */
 void buildIBF(ibf_build_parser & parser)
 {
-	std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("NanoLiveLog");
+	std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("ReadBouncerLog");
 	interleave::IBFConfig config{};
 
 	config.reference_files.emplace_back(parser.reference_file);

@@ -28,7 +28,7 @@
 
 namespace readuntil
 {
-	extern std::string ReadUntilClientLog;
+	extern std::filesystem::path ReadUntilClientLog;
 
 	class ReadUntilClient
 	{
@@ -38,7 +38,7 @@ namespace readuntil
 			std::shared_ptr<::grpc::Channel> channel;
 			std::string mk_host{ "127.0.0.1" };
 			std::filesystem::path NanoLiveRoot{};
-			uint16_t mk_port{9501};
+			std::string mk_port{"9501"};
 			bool connected{false};
 			//std::shared_ptr<spdlog::sinks::daily_file_sink_mt> daily_sink = std::make_shared<spdlog::sinks::daily_file_sink_mt>("RUClientLog", 23, 59);
 			std::shared_ptr<spdlog::logger> connection_logger;
@@ -65,7 +65,7 @@ namespace readuntil
 				mk_host = newHost;
 			}
 
-			inline void setPort(const uint16_t &newPort)
+			inline void setPort(const std::string& newPort)
 			{
 				mk_port = newPort;
 			}

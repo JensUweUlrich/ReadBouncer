@@ -6,6 +6,7 @@
 #include <string>
 #include <iostream>
 #include <filesystem>
+#include <exception>
 #include "../toml11/toml.hpp"
 #include "IBF.hpp"
 
@@ -16,6 +17,29 @@ extern "C"
 {
 #endif
 
+    class ConfigReaderException : public std::exception
+    {
+    private:
+        std::string error_message
+        { };
+
+    public:
+
+        explicit ConfigReaderException() {};
+
+        explicit ConfigReaderException(const std::string& msg) :
+            error_message(msg)
+        {
+        }
+        virtual ~ConfigReaderException() throw ()
+        {
+        }
+
+        virtual const char* what() const throw ()
+        {
+            return error_message.c_str();
+        }
+    };
 
     
 class configReader {
@@ -23,10 +47,10 @@ class configReader {
 public:
 
     // Define many structs as Lyre to keep the reproducibility of Lyra command line
-    struct ibf_build_parser_
+    struct IBF_Build_Params
     {
-        std::string bloom_filter_output_path{ };
-        std::string reference_file{};
+        std::filesystem::path bloom_filter_output_path{ };
+        std::filesystem::path reference_file{};
         bool command = false;
         bool show_help = false;
         int size_k = 13;
@@ -36,12 +60,12 @@ public:
         bool verbose = false;
     };
 
-    struct read_classify_parser_
+    struct Classify_Params
     {
-        std::string ibf_deplete_file{ };
-        std::string ibf_target_file{ };
-        std::string read_file{};
-        std::string out_dir{};
+        std::vector<std::filesystem::path> ibf_deplete_files{ };
+        std::vector<std::filesystem::path> ibf_target_files{ };
+        std::vector<std::filesystem::path> read_files{};
+        std::filesystem::path out_dir{};
         bool command = false;
         bool show_help = false;
         double kmer_significance = 0.95;
@@ -52,19 +76,19 @@ public:
         bool verbose = false;
     };
 
-    struct live_parser_
+    struct Target_Params
     {
         std::string host = "127.0.0.1";
         std::string device{};
-        std::string ibf_deplete_file{ };
-        std::string ibf_target_file{ };
-        std::string output_dir{ };
+        std::vector<std::filesystem::path> ibf_deplete_files{ };
+        std::vector<std::filesystem::path> ibf_target_files{ };
+        std::filesystem::path out_dir{};
         std::string guppy_host = "127.0.0.1";
         std::string guppy_port = "5555";
         std::string caller = "DeepNano";
-        int port = 9501;
-        int basecall_threads = 1;
-        int classify_threads = 1;
+        std::string port = "9501";
+        int basecall_threads = 3;
+        int classify_threads = 3;
         double kmer_significance = 0.95;
         double error_rate = 0.1;
         bool command = false;
@@ -72,29 +96,29 @@ public:
         bool verbose = false;
     };
 
-    /*struct live_depletion_parser_ : live_parser_
-    {};*/
-    struct live_target_parser_ : live_parser_
-    {};
-    
-
     configReader(std::string const);
 
     std::string  usage( );
 
     std::fstream writeTOML();
 
-    bool filterException(std::string file);
+    bool filterException(std::filesystem::path& file);
 
-    ibf_build_parser_  ibfReader(std::fstream& tomlOutput, std::string usage, std::string target_files_, std::string deplete_files_);
+    IBF_Build_Params ibfReader(std::fstream& tomlOutput, std::string& usage, 
+                                 std::vector<std::filesystem::path>& target_files_, 
+                                 std::vector<std::filesystem::path>& deplete_files_);
 
-    void buildIBF_(ibf_build_parser_& parser);
+    void buildIBF_(IBF_Build_Params& parser);
 
-    read_classify_parser_  classifyReader(std::fstream& tomlOutput, std::string usage, std::string target_files_, std::string deplete_files_);
+    Classify_Params  classifyReader(std::fstream& tomlOutput, std::string& usage, 
+                                          std::vector<std::filesystem::path>& target_files_, 
+                                          std::vector<std::filesystem::path>& deplete_files_);
 
     //live_depletion_parser_  depleteReader(std::fstream& tomlOutput, std::string usage, std::string target_files_, std::string deplete_files_);
 
-    live_target_parser_  targetReader(std::fstream& tomlOutput, std::string usage, std::string target_files_, std::string deplete_files_);
+    Target_Params targetReader(std::fstream& tomlOutput, std::string& usage, 
+                                      std::vector<std::filesystem::path>& target_files_, 
+                                      std::vector<std::filesystem::path>& deplete_files_);
 
    
 

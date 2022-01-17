@@ -16,6 +16,7 @@
 #include <queue>
 #include <set>
 #include <mutex>
+#include <filesystem>
 
 #if defined(_WIN32)
     #include <io.h>
@@ -52,7 +53,8 @@ using namespace ::interfaces;
 
 namespace readuntil
 {
-    extern std::string CSVFile;
+
+    extern std::filesystem::path CSVFile;
     struct ActionResponse
     {
         uint32 channelNr{};

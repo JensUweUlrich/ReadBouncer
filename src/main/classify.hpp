@@ -58,17 +58,14 @@ std::vector<std::string> split(const string& s, char delim) {
 *	classify reads from an input file based on given depletion and/or target filters
 *	@parser	: command line input parameters
 */
-void classify_reads(read_classify_parser& parser)
+void classify_reads(configReader::Classify_Params& params)
 {
-	std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("NanoLiveLog");
+	std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("ReadBouncerLog");
 	// create classification config
 	interleave::ClassifyConfig Conf{};
 
-	std::stringstream s_stream(parser.read_file);
-	while (s_stream.good()) {
-		std::string readsFile;
-		getline(s_stream, readsFile, ',');
-
+	for (std::filesystem::path read_file : params.read_files)
+	{
 		// initialize depletion and target filters
 		std::vector<interleave::IBFMeta> DepletionFilters{};
 		std::vector<interleave::IBFMeta> TargetFilters{};
@@ -77,68 +74,59 @@ void classify_reads(read_classify_parser& parser)
 		bool target = false;
 
 		// parse depletion IBF if given as parameter
-		if (parser.ibf_deplete_file.length() > 0)
+		for (std::filesystem::path deplete_file : params.ibf_deplete_files)
 		{
-			std::vector<std::string> vector_files = split(parser.ibf_deplete_file, ',');
-			for (std::string n : vector_files)
+			interleave::IBFMeta filter{};
+			filter.name = deplete_file.stem().string();
+			interleave::IBF tf{};
+			interleave::IBFConfig DepleteIBFconfig{};
+			try
 			{
-				interleave::IBFMeta filter{};
-				filter.name = std::filesystem::path(n).stem().string();
-				interleave::IBF tf{};
-				interleave::IBFConfig DepleteIBFconfig{};
-				try
-				{
-					DepleteIBFconfig.input_filter_file = n;
-					interleave::FilterStats stats = std::move(tf.load_filter(DepleteIBFconfig));
-					filter.filter = std::move(tf.getFilter());
-					if (parser.verbose)
-						interleave::print_load_stats(stats);
-					deplete = true;
-				}
-				catch (interleave::ParseIBFFileException& e)
-				{
-					nanolive_logger->error("Error parsing depletion IBF using the following parameters");
-					nanolive_logger->error("Depletion IBF file                : " + n);
-					nanolive_logger->error("Error message : " + std::string(e.what()));
-					nanolive_logger->flush();
-					throw;
-				}
-
-				DepletionFilters.emplace_back(std::move(filter));
+				DepleteIBFconfig.input_filter_file = deplete_file.string();
+				interleave::FilterStats stats = tf.load_filter(DepleteIBFconfig);
+				filter.filter = std::move(tf.getFilter());
+				if (params.verbose)
+					interleave::print_load_stats(stats);
+				deplete = true;
 			}
+			catch (interleave::ParseIBFFileException& e)
+			{
+				nanolive_logger->error("Error parsing depletion IBF using the following parameters");
+				nanolive_logger->error("Depletion IBF file                : " + deplete_file.string());
+				nanolive_logger->error("Error message : " + std::string(e.what()));
+				nanolive_logger->flush();
+				throw;
+			}
+
+			DepletionFilters.emplace_back(std::move(filter));
 		}
 	    
 		// parse target IBF if given as parameter
-		if (parser.ibf_target_file.length() > 0)
+		for (std::filesystem::path target_file : params.ibf_target_files)
 		{
-			std::vector<std::string> vector_files = split(parser.ibf_target_file, ',');
-
-			for (std::string n : vector_files)
+			interleave::IBFMeta filter{};
+			filter.name = target_file.stem().string();
+			interleave::IBF tf{};
+			interleave::IBFConfig TargetIBFconfig{};
+			try
 			{
-				interleave::IBFMeta filter{};
-				filter.name = std::filesystem::path(n).stem().string();
-				interleave::IBF tf{};
-				interleave::IBFConfig TargetIBFconfig{};
-				try
-				{
-					TargetIBFconfig.input_filter_file = n;
-					interleave::FilterStats stats = std::move(tf.load_filter(TargetIBFconfig));
-					filter.filter = std::move(tf.getFilter());
-					if (parser.verbose)
-						interleave::print_load_stats(stats);
-					target = true;
-				}
-				catch (interleave::ParseIBFFileException& e)
-				{
-					nanolive_logger->error("Error parsing target IBF using the following parameters");
-					nanolive_logger->error("Target IBF file                : " + n);
-					nanolive_logger->error("Error message : " + std::string(e.what()));
-					nanolive_logger->flush();
-					throw;
-				}
-
-				TargetFilters.emplace_back(std::move(filter));
+				TargetIBFconfig.input_filter_file = target_file.string();
+				interleave::FilterStats stats = tf.load_filter(TargetIBFconfig);
+				filter.filter = std::move(tf.getFilter());
+				if (params.verbose)
+					interleave::print_load_stats(stats);
+				target = true;
 			}
+			catch (interleave::ParseIBFFileException& e)
+			{
+				nanolive_logger->error("Error parsing target IBF using the following parameters");
+				nanolive_logger->error("Target IBF file                : " + target_file.string());
+				nanolive_logger->error("Error message : " + std::string(e.what()));
+				nanolive_logger->flush();
+				throw;
+			}
+
+			TargetFilters.emplace_back(std::move(filter));
 		}
 
 		// parse input reads
@@ -147,8 +135,8 @@ void classify_reads(read_classify_parser& parser)
 
 	
 		Conf.strata_filter = -1;
-		Conf.significance = parser.kmer_significance;
-		Conf.error_rate = parser.error_rate;
+		Conf.significance = params.kmer_significance;
+		Conf.error_rate = params.error_rate;
 
 		uint64_t found = 0;
 		uint16_t failed = 0;
@@ -164,37 +152,41 @@ void classify_reads(read_classify_parser& parser)
 		seqan::SeqFileOut UnclassifiedOut;
 
 		// only print classified reads to file if option given via command line
-		if (parser.out_dir.length() > 0)
+		std::vector< std::ofstream> targetFastas{};
+		for (interleave::IBFMeta f : TargetFilters)
 		{
-			for (interleave::IBFMeta f : TargetFilters)
-			{
-				std::filesystem::path outfile(parser.out_dir);
-				outfile /= f.name + ".fasta";
-				if (!seqan::open(f.outfile, seqan::toCString(outfile.string())))
-				{
-					std::cerr << "ERROR: Unable to open the file: " << outfile.string() << std::endl;
-					return;
-				}
-			}
+			std::filesystem::path outfile(params.out_dir);
+			outfile /= f.name + ".fasta";
+			std::ofstream outf;
+			outf.open(outfile, std::ios::out);
 
-			std::filesystem::path outfile(parser.out_dir);
-			outfile /= "unclassified.fasta";
-			if (!seqan::open(UnclassifiedOut, seqan::toCString(outfile.string())))
+			/*seqan::SeqFileOut out;
+			if (!seqan::open(out, seqan::toCString(outfile.string())))
 			{
 				std::cerr << "ERROR: Unable to open the file: " << outfile.string() << std::endl;
 				return;
-			}
+			}*/
+			targetFastas.emplace_back(std::move(outf));
 		}
 
-		seqan::SeqFileIn seqFileIn;
-		if (!seqan::open(seqFileIn, seqan::toCString(readsFile)))
+		std::filesystem::path outfile(params.out_dir);
+		outfile /= "unclassified.fasta";
+		if (!seqan::open(UnclassifiedOut, seqan::toCString(outfile.string())))
 		{
-			std::cerr << "ERROR: Unable to open the file: " << readsFile << std::endl;
+			std::cerr << "ERROR: Unable to open the file: " << outfile.string() << std::endl;
+			return;
+		}
+		
+
+		seqan::SeqFileIn seqFileIn;
+		if (!seqan::open(seqFileIn, seqan::toCString(read_file.string())))
+		{
+			std::cerr << "ERROR: Unable to open the file: " << read_file.string() << std::endl;
 			return;
 		}
 
 		std::cout << '\n';
-		std::cout << "Classification results of: " << readsFile << '\n';
+		std::cout << "Classification results of: " << read_file.string() << '\n';
 		std::cout << '\n';
 
 		while (!seqan::atEnd(seqFileIn))
@@ -214,7 +206,7 @@ void classify_reads(read_classify_parser& parser)
 			}
 
 			// read length has to be at least the size of the prefix used for read classification
-			if (seqan::length(seq) < parser.preLen)
+			if (seqan::length(seq) < params.preLen)
 			{
 				too_short++;
 				continue;
@@ -230,10 +222,10 @@ void classify_reads(read_classify_parser& parser)
 				// as long as rea
 				uint8_t i = 0;
 				// try to classify read parser.max_chunks times
-				while (i < parser.max_chunks)
+				while (i < params.max_chunks)
 				{
-					uint64_t fragend = (i+1) * parser.preLen;
-					uint64_t fragstart = i * parser.preLen;
+					uint64_t fragend = (i+1) * params.preLen;
+					uint64_t fragstart = i * params.preLen;
 					// make sure that last fragment ends at last position of the reference sequence
 					if (fragend > length(seq)) fragend = length(seq);
 					seqan::Infix< seqan::CharString >::Type fragment = seqan::infix(seq, fragstart, fragend);
@@ -243,35 +235,61 @@ void classify_reads(read_classify_parser& parser)
 					{
 						//if (r.classify(DepletionFilters, Conf) > -1 )
 						//classified = r.classify(DepletionFilters, Conf) > -1 && r.classify(TargetFilters, Conf) == -1;
-						std::pair<uint64_t, uint64_t> p = r.classify(DepletionFilters, TargetFilters, Conf);
+						std::pair<uint64_t, uint64_t> p = r.classify(TargetFilters, DepletionFilters, Conf);
 						if (p.first > 0)
 						{
 							if (p.second > 0)
 							{
 								Conf.error_rate -= 0.02;
-								p = r.classify(DepletionFilters, TargetFilters, Conf);
+								p = r.classify(TargetFilters, DepletionFilters, Conf);
 								Conf.error_rate += 0.02;
 								//std::vector<interleave::TIbf> t;
 								//t.emplace_back(DepletionFilters[0].filter);
 								//r.classify(t, Conf);
 
-								if (p.first > 0 && p.second == 0)
+								if (p.first > 0 && p.second > 0)
 								{
-								classified = true;
+									// do nothing
+								}
+								else if (p.first > 0)
+								{
+									classified = true;
+									best_filter_index = r.classify(TargetFilters, Conf);
+									if (best_filter_index != -1)
+									{
+										TargetFilters[best_filter_index].classified += 1;
+										
+										//seqan::writeRecord(outfiles[best_filter_index], id, (seqan::Dna5String) seq);
+										targetFastas[best_filter_index] << ">" << id << std::endl;
+										targetFastas[best_filter_index] << seq << std::endl;
+										
+									}
 								}
 								else
 								{
 									classified = false;
-									//std::cerr << id << "\t Depletion Filter k-mers: " << p.first << "\t" << "Target Filter k-mers: " << p.second << "\t"
-									//	<< r.classify(DepletionFilters, Conf) << "\t" << r.classify(TargetFilters, Conf) << std::endl;
-									//both++;
+									seqan::writeRecord(UnclassifiedOut, id, (seqan::Dna5String)seq);
+									break;
 								}
 							}
 							else
+							{
 								classified = true;
+								best_filter_index = r.classify(TargetFilters, Conf);
+								if (best_filter_index != -1)
+								{
+									TargetFilters[best_filter_index].classified += 1;
+									//seqan::writeRecord(outfiles[best_filter_index], id, seq);
+									targetFastas[best_filter_index] << ">" << id << std::endl;
+									targetFastas[best_filter_index] << seq << std::endl;
+								}
+							}
 						}
 						else
+						{
 							classified = false;
+							seqan::writeRecord(UnclassifiedOut, id, (seqan::Dna5String)seq);
+						}
 					}
 					else if (deplete)
 						classified = r.classify(DepletionFilters, Conf) > -1;
@@ -282,8 +300,8 @@ void classify_reads(read_classify_parser& parser)
 						if (best_filter_index != -1)
 						{
 							TargetFilters[best_filter_index].classified += 1;
-							if (parser.out_dir.length() > 0)
-								seqan::writeRecord(TargetFilters[best_filter_index].outfile, id, seq);
+							targetFastas[best_filter_index] << ">" << id << std::endl;
+							targetFastas[best_filter_index] << seq << std::endl;
 						}
 					}
 					if (classified)// || last_frag)
@@ -317,7 +335,7 @@ void classify_reads(read_classify_parser& parser)
 				sstr << "Number of classified reads                         :   " << found;
 				nanolive_logger->info(sstr.str());
 				sstr.str("");
-				sstr << "Number of of too short reads (len < " << parser.preLen << ")   :   " << too_short;
+				sstr << "Number of of too short reads (len < " << params.preLen << ")   :   " << too_short;
 				nanolive_logger->info(sstr.str());
 				sstr.str("");
 				sstr << "Number of all reads                                :   " << readCounter;
@@ -331,13 +349,17 @@ void classify_reads(read_classify_parser& parser)
 			}
 
 		}
-		seqan::close(seqFileIn);
 
+		for (int i = 0; i < targetFastas.size(); ++i)
+			targetFastas[i].close();
+
+		//seqan::close(seqFileIn);
+		seqan::close(UnclassifiedOut);
 		
 		std::stringstream sstr;
 		std::cout << "------------------------------- Final Results -------------------------------" << std::endl;
 		std::cout << "Number of classified reads                         :   " << found << std::endl;
-		std::cout << "Number of of too short reads (len < " << parser.preLen << ")           :   " << too_short << std::endl;
+		std::cout << "Number of of too short reads (len < " << params.preLen << ")           :   " << too_short << std::endl;
 		std::cout << "Number of all reads                                :   " << readCounter << std::endl;
 
 		for (interleave::IBFMeta f : TargetFilters)
@@ -346,7 +368,7 @@ void classify_reads(read_classify_parser& parser)
 			std::cout << f.name << "\t : " << f.classified << "\t\t" << ((float) f.classified) / ((float) readCounter) << std::endl;
 
 			
-			if (parser.out_dir.length() > 0) { seqan::close(f.outfile); }
+			//seqan::close(f.outfile); 
 
 		}
 		std::cout << "Average Processing Time Read Classification        :   " << avgClassifyduration << std::endl;

@@ -85,13 +85,13 @@ std::fstream configReader::writeTOML() {
  * @return: Bool due to decision
  */
 
-bool configReader::filterException(std::string file) {
+bool configReader::filterException(std::filesystem::path& file) {
 
     TIbf_ filter;
 
     try
     {
-        seqan::retrieve(filter, seqan::toCString(file));
+        seqan::retrieve(filter, seqan::toCString(file.string()));
     }
     catch (seqan::Exception const& e)
     {
@@ -103,13 +103,13 @@ bool configReader::filterException(std::string file) {
 
 // Copied from buildIBF (src/main/ibfbuild.hpp)
 
-void configReader::buildIBF_(ibf_build_parser_& parser)
+void configReader::buildIBF_(IBF_Build_Params& parser)
 {
-    std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("NanoLiveLog");
+    std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("ReadBouncerLog");
     interleave::IBFConfig config{};
 
-    config.reference_files.emplace_back(parser.reference_file);
-    config.output_filter_file = parser.bloom_filter_output_path;
+    config.reference_files.emplace_back(parser.reference_file.string());
+    config.output_filter_file = parser.bloom_filter_output_path.string();
     config.kmer_size = parser.size_k;
     config.threads_build = parser.threads;
     config.fragment_length = parser.fragment_size;
@@ -125,8 +125,8 @@ void configReader::buildIBF_(ibf_build_parser_& parser)
     catch (const interleave::IBFBuildException& e)
     {
         nanolive_logger->error("Error building IBF using the following parameters");
-        nanolive_logger->error("Input reference file                : " + parser.reference_file);
-        nanolive_logger->error("Output IBF file                     : " + parser.bloom_filter_output_path);
+        nanolive_logger->error("Input reference file                : " + parser.reference_file.string());
+        nanolive_logger->error("Output IBF file                     : " + parser.bloom_filter_output_path.string());
         nanolive_logger->error("Kmer size                           : " + parser.size_k);
         nanolive_logger->error("Size of reference fragments per bin : " + parser.fragment_size);
         nanolive_logger->error("IBF file size in MegaBytes          : " + parser.filter_size);
@@ -146,109 +146,80 @@ void configReader::buildIBF_(ibf_build_parser_& parser)
  * @return: Struct with the needed parameters to construct IBF (all IBF will be constructed within ibfReader)
  */
 
-configReader::ibf_build_parser_ configReader::ibfReader(std::fstream& tomlOutput, std::string usage,
-                                                        std::string target_files_, std::string deplete_files_) {
-    configReader::ibf_build_parser_ build_IBF;
-    configReader::ibf_build_parser_ buildStruct;
-
-    auto output_fileTOML = toml::find<std::string>(this->toml, "output_directory");
-
-    // find IBF module 
-    const auto& IBF = toml::find(this->toml, "IBF");
-
-    toml::value  kmerS = toml::get<toml::table >(IBF).at("kmer_size");
-    int k = toml::get<toml::integer>(kmerS);
-
-    toml::value  threads = toml::get<toml::table >(IBF).at("threads");
-    int t = toml::get<toml::integer>(threads);
-
-    toml::value  fragment_size = toml::get<toml::table >(IBF).at("fragment_size");
-    int f = toml::get<toml::integer>(fragment_size);
-
-
-    std::stringstream s_stream(target_files_);// list of target files 
-
-    while (s_stream.good()) {
-
-        std::string substr;
-        getline(s_stream, substr, ','); 
-
-    if (substr.length() > 1)
+configReader::IBF_Build_Params configReader::ibfReader(std::fstream& tomlOutput, std::string& usage,
+                                                        std::vector<std::filesystem::path>& target_files_, 
+                                                        std::vector<std::filesystem::path>& deplete_files_) {
+    IBF_Build_Params build_IBF;
+    int k, t, f;
+    std::filesystem::path output_fileTOML{};
+    try
     {
-        if (!std::filesystem::exists(substr)) {
+        output_fileTOML = toml::find<std::string>(this->toml, "output_directory");
+        toml::value IBF = toml::find(this->toml, "IBF");
 
-                std::cerr << "ERROR parsing the file: "<<  substr << '\n';
-                exit(1);
-                
-        }
-
-        if (configReader::filterException(substr)) {}
-
-        else if (!configReader::filterException(substr)) {
-
-            std::cout << "The target file is an fasta file, start building ibf ......." << '\n';
-            std::filesystem::path test (substr);
-            auto string_ = test.stem();
-            std::string name = string_.string();
-            name = name.substr(name.find_last_of('\\') +1);
-            std::string outputIBF = name + ".ibf";
-
-            build_IBF = { output_fileTOML+ "/" + outputIBF, substr, false, false, k, t, f, 0, true };
-            buildIBF_(build_IBF);
-        }
+        k = toml::find_or<int>(this->toml, "IBF", "kmer_size", 13);
+        t = toml::find_or<int>(this->toml, "IBF", "threads", 1);
+        f = toml::find_or<int>(this->toml, "IBF", "fragment_size", 100000);
     }
-
-    else {
-
-        std::cout << "No target file found! " << '\n';
-        std::cout << "  " << '\n';
-    }
-    }
-
-    std::stringstream s_stream1(deplete_files_);// list of depletion files 
-
-    if (!s_stream1.good()){
-
-        std::cerr<< "Error parsing the files: "<< target_files_ << std::endl; 
-    }
-
-    while (s_stream1.good()) {
-
-        std::string substr1;
-        getline(s_stream1, substr1, ','); 
-
-    if (substr1.length() > 1)
+    catch (std::out_of_range& e)
     {
-        if (!std::filesystem::exists(substr1)) {
-
-                std::cerr << "ERROR parsing the file: "<<  substr1 << '\n';
-                exit(1);
-                
+        // TODO: write message in log file
+        throw ConfigReaderException(e.what());
+    }
+    
+    for (std::filesystem::path file : target_files_)
+    {
+        if (!std::filesystem::exists(file))
+        {
+            // TODO: write message in log file
+            throw ConfigReaderException("[Error] The following target file does not exist: " + file.string());
         }
 
-        if (configReader::filterException(substr1)) {}
+        if (!configReader::filterException(file))
+        {
 
-        else if (!configReader::filterException(substr1)) {
+            // TODO: write in log file
+            std::cout << "The target file is a fasta file, start building ibf ......." << '\n';
 
-            std::filesystem::path test (substr1);
-            auto string_ = test.stem();
-            std::string name = string_.string();
-            name = name.substr(name.find_last_of('\\') +1);
-            std::string outputIBF = name + ".ibf";
+            std::filesystem::path target = std::filesystem::path(output_fileTOML);
+            target /= file;
+            target.replace_extension("ibf");
 
-            build_IBF = { output_fileTOML+ "/" + outputIBF, substr1, false, false, k, t, f, 0, true };
+            build_IBF = { target, file, false, false, k, t, f, 0, true };
             buildIBF_(build_IBF);
 
-            buildStruct = { outputIBF, substr1, false, false, k, t, f, 0, true };
         }
-    }
-    else {
-        std::cout << "No deplete file found! " << '\n';
-        std::cout << "  " << '\n';
-    }
+
     }
 
-    return buildStruct;
+    for (std::filesystem::path file : deplete_files_)
+    {
+        if (!std::filesystem::exists(file))
+        {
+            // TODO: write message in log file
+            throw ConfigReaderException("[Error] The following target file does not exist: " + file.string());
+        }
+
+        if (!configReader::filterException(file))
+        {
+
+            // TODO: write in log file
+            std::cout << "The deplete file is a fasta file, start building ibf ......." << '\n';
+
+
+            std::filesystem::path deplete = std::filesystem::path(output_fileTOML);
+            deplete /= file;
+            deplete.replace_extension("ibf");
+
+            build_IBF = { deplete, file, false, false, k, t, f, 0, true };
+            buildIBF_(build_IBF);
+
+        }
+
+    }
+    
+
+    return build_IBF;
 };
 
 
@@ -258,145 +229,118 @@ configReader::ibf_build_parser_ configReader::ibfReader(std::fstream& tomlOutput
  * @return: Struct with the needed parameters to classify reads
  */
 
-configReader::read_classify_parser_  configReader::classifyReader(std::fstream& tomlOutput, std::string usage, 
-                                                                  std::string target_files_, std::string deplete_files_) {
+configReader::Classify_Params configReader::classifyReader(std::fstream& tomlOutput, std::string& usage, 
+                                                                  std::vector<std::filesystem::path>& target_files_, 
+                                                                  std::vector<std::filesystem::path>& deplete_files_) {
     
 
-    configReader::ibf_build_parser_ build_IBF;
-    configReader::read_classify_parser_ classifyStruct;
-
-    auto output_fileTOML = toml::find<std::string>(this->toml, "output_directory");
-
-    const auto& IBF = toml::find(this->toml, "IBF");
-
-    toml::value  kmerS = toml::get<toml::table >(IBF).at("kmer_size");
-    int k = toml::get<toml::integer>(kmerS);
-
-    toml::value  threads = toml::get<toml::table >(IBF).at("threads");
-    int t = toml::get<toml::integer>(threads);
-
-    toml::value  fragment_size = toml::get<toml::table >(IBF).at("fragment_size");
-    int f = toml::get<toml::integer>(fragment_size);
-
-    double e = toml::find<double     >(IBF, "exp_seq_error_rate");
-
-    toml::value  chunk_length = toml::get<toml::table >(IBF).at("chunk_length");
-    int l = toml::get<toml::integer>(chunk_length);
-
-    toml::value  max_chunks = toml::get<toml::table >(IBF).at("max_chunks");
-    int m = toml::get<toml::integer>(max_chunks);
-
-    const auto  read_files = toml::find<std::string>(IBF, "read_files");
-    std::string read_files_ = read_files;
-
-    std::string target, deplete;
-
-    std::string target_holder, deplete_holder;
-
-    std::stringstream s_stream(target_files_);
-
-    while (s_stream.good()) {
-
-        std::string substr;
-        getline(s_stream, substr, ',');
-
-    if (substr.length() > 1)
+    Classify_Params classifyStruct;
+    int k, t, f, l, m;
+    double e;
+    std::vector<std::filesystem::path> read_files{};
+    std::filesystem::path output_fileTOML{};
+    std::vector<std::string> rf_tmp{};
+    try
     {
-        if (!std::filesystem::exists(substr)) {
+        std::string out = toml::find<std::string>(this->toml, "output_directory");
+        std::cout << out << std::endl;
+        output_fileTOML = std::filesystem::path(out);
+        toml::value IBF = toml::find(this->toml, "IBF");
 
-                std::cerr << "ERROR parsing the file: "<<  substr << '\n';
-                exit(1);
-                
-        }
+        k = toml::find_or<int>(this->toml, "IBF", "kmer_size", 13);
+        t = toml::find_or<int>(this->toml, "IBF","threads", 1);
+        f = toml::find_or<int>(this->toml, "IBF", "fragment_size", 100000);
+        e = toml::find_or<double>(this->toml, "IBF", "exp_seq_error_rate", 0.1);
+        l = toml::find_or<int>(this->toml, "IBF", "chunk_length", 250);
+        m = toml::find_or<int>(this->toml, "IBF", "max_chunks", 5);
 
-        if (configReader::filterException(substr)) {
-
-            target = substr + ",";
-            target_holder += target;// If ibf then the target in the same dir
-            //target.clear();
-        }
-        
-        else if (!configReader::filterException(substr)) {
-
-            std::cout << "The target file is an fasta file, start building ibf ......." << '\n';
-
-            std::filesystem::path test (substr);
-            auto string_ = test.stem();
-            std::string name = string_.string();
-            name = name.substr(name.find_last_of('\\') +1);
-            target = output_fileTOML + "/" + name + ".ibf";
-            target_holder = target_holder + target + ",";
-
-            build_IBF = { target, substr, false, false, k, t, f, 0, true };
-            buildIBF_(build_IBF);
-
-        }   
-        
+        rf_tmp = toml::find<std::vector<std::string>>(IBF, "read_files");
     }
-    
-    else {
-
-        std::cout << "No target file found! " << '\n';
-        std::cout << "  " << '\n';
-        target_holder = ",";
-
-    }
+    catch (std::out_of_range& e)
+    {
+        // TODO: write message in log file
+        throw ConfigReaderException(e.what());
     }
 
-    std::stringstream s_stream_1(deplete_files_);
-
-    while (s_stream_1.good()) {
-
-        std::string substr1;
-        getline(s_stream_1, substr1, ','); 
-
-        if (substr1.length() > 1)
+    for (std::string file : rf_tmp)
+    {
+        std::filesystem::path rf(file);
+        if (!std::filesystem::exists(file))
         {
-            if (!std::filesystem::exists(substr1)) {
-
-                std::cerr << "ERROR parsing the file: "<<  substr1 << '\n';
-                exit(1);
-                
-            }
-
-            if (configReader::filterException(substr1)) {
-
-                deplete = substr1 + ",";
-                deplete_holder += deplete;// if ibf then the deplete file.ibf is in the same dir
-
-            }
-            else if (!configReader::filterException(substr1)) {
-
-                std::cout << "The deplete file is an fasta file, start building ibf ......." << '\n';
-
-                std::filesystem::path test (substr1);
-                auto string_ = test.stem();
-                std::string name = string_.string();
-                name = name.substr(name.find_last_of('\\') +1);
-                deplete = output_fileTOML + "/" + name + ".ibf";
-                deplete_holder = deplete_holder + deplete + ",";
-
-                build_IBF = { deplete, substr1, false, false, k, t, f, 0, true };
-                buildIBF_(build_IBF);
-
-            }
+            // TODO: write message in log file
+            throw ConfigReaderException("[Error] The following read file does not exist: " + file);
+        }
+        else
+        {
+            read_files.emplace_back(std::move(rf));
         }
 
-        else {
-
-            std::cout << "No deplete file found! " << '\n';
-            std::cout << "  " << '\n';
-            deplete_holder = ",";
-        }
-    
     }
 
- 
+    std::vector<std::filesystem::path> target_holder{};
+    std::vector<std::filesystem::path> deplete_holder{};
 
-    deplete_holder.pop_back();
-    target_holder.pop_back();
+    for (std::filesystem::path file : target_files_)
+    {
+        if (!std::filesystem::exists(file)) 
+        {
+            // TODO: write message in log file
+            throw ConfigReaderException("[Error] The following target file does not exist: " + file.string());
+        }
 
-    classifyStruct = { deplete_holder, target_holder, read_files_, output_fileTOML, false, false, 0.95 , e, t, l, m, false };
+        if (configReader::filterException(file)) 
+        {
+            target_holder.emplace_back(std::move(file));// If ibf then the target in the same dir  
+        }
+        else
+        {
+
+            // TODO: write in log file
+            std::cout << "The target file is a fasta file, start building ibf ......." << '\n';
+
+
+            std::filesystem::path target = std::filesystem::path(output_fileTOML.string());
+            target /= file.filename();
+            target.replace_extension("ibf");
+
+            IBF_Build_Params build_IBF = { target, file, false, false, k, t, f, 0, true };
+            buildIBF_(build_IBF);
+            target_holder.emplace_back(std::move(target));
+        }
+
+    }
+
+    for (std::filesystem::path file : deplete_files_)
+    {
+        if (!std::filesystem::exists(file))
+        {
+            // TODO: write message in log file
+            throw ConfigReaderException("[Error] The following target file does not exist: " + file.string());
+        }
+
+        if (configReader::filterException(file))
+        {
+            deplete_holder.emplace_back(std::move(file));// If ibf then the target in the same dir  
+        }
+        else
+        {
+
+            // TODO: write in log file
+            std::cout << "The deplete file is a fasta file, start building ibf ......." << '\n';
+
+
+            std::filesystem::path deplete = std::filesystem::path(output_fileTOML);
+            deplete /= file.filename();
+            deplete.replace_extension("ibf");
+
+            IBF_Build_Params build_IBF = { deplete, file, false, false, k, t, f, 0, true };
+            buildIBF_(build_IBF);
+            deplete_holder.emplace_back(std::move(deplete));
+        }
+
+    }
+
+    classifyStruct = { deplete_holder, target_holder, read_files, output_fileTOML, false, false, 0.95 , e, t, l, m, false };
 
     return classifyStruct;
 
@@ -410,159 +354,127 @@ configReader::read_classify_parser_  configReader::classifyReader(std::fstream& 
 * @param : Toml output file, usage, a list of target and deplete files 
 * @return: Struct with the needed parameters for live target ((Targeted Sequencing))
 */
-configReader::live_target_parser_ configReader::targetReader(std::fstream& tomlOutput, std::string usage,
-                                                             std::string target_files_, std::string deplete_files_) {
+configReader::Target_Params configReader::targetReader(std::fstream& tomlOutput, std::string& usage,
+                                                             std::vector<std::filesystem::path>& target_files_, 
+                                                             std::vector<std::filesystem::path>& deplete_files_) {
 
     std::string target, deplete;
-    configReader::ibf_build_parser_ build_IBF;
+    IBF_Build_Params build_IBF;
 
-    auto output_fileTOML = toml::find<std::string>(this->toml, "output_directory");
-    std::string output_dir = output_fileTOML;
-    const auto& IBF = toml::find(this->toml, "IBF");
-    const auto& MinKNOW = toml::find(this->toml, "MinKNOW");
-    const auto& basecaller = toml::find(this->toml, "Basecaller");
-
-    const auto  flowcell = toml::find<std::string>(MinKNOW, "flowcell");
-    const auto  hostIP = toml::find<std::string>(MinKNOW, "host");
-    toml::value  port_ = toml::get<toml::table >(MinKNOW).at("port");
-
-    std::string device = flowcell;
-    std::string MinKNOW_host = hostIP;
-    int MinKNOW_port = toml::get<toml::integer>(port_);
-
-    toml::value  threads = toml::get<toml::table >(IBF).at("threads");
+    int k, classifyThreads, f, l, m, basecallThreads;
+    double e;
     double significance = 0.95;
-    double error_rate = toml::find<double     >(IBF, "exp_seq_error_rate");
-  
-    const auto  weights_ = "48";
-    std::string weights = weights_;
-    int classifyThreads = toml::get<toml::integer>(threads);
+    std::vector<std::filesystem::path> read_files{};
+    std::filesystem::path output_fileTOML{};
+    std::vector<std::string> rf_tmp{};
+    std::string device{};
+    std::string MinKNOW_host{};
+    std::string MinKNOW_port{};
+    std::string weights = "48";
+    std::string caller{};
+    std::string hostCaller{};
+    std::string portBasecaller{};
+    try
+    {
+        output_fileTOML = std::filesystem::path(toml::find<std::string>(this->toml, "output_directory"));
+        toml::value IBF = toml::find(this->toml, "IBF");
+        toml::value MinKNOW = toml::find(this->toml, "MinKNOW");
+        toml::value basecaller = toml::find(this->toml, "Basecaller");
 
-    // Find caller settings 
-    const auto  caller_ = toml::find<std::string>(basecaller, "caller");
-    toml::value  basecaller_threads = toml::get<toml::table >(basecaller).at("threads");
-    const auto  hostCaller_ = toml::find<std::string>(basecaller, "host");
-    toml::value  portBasecaller_ = toml::get<toml::table >(basecaller).at("port");
-    int basecallThreads = toml::get<toml::integer>(basecaller_threads);
+        k = toml::find_or<int>(this->toml, "IBF", "kmer_size", 13);
+        classifyThreads = toml::find_or<int>(this->toml, "IBF", "threads", 1);
+        f = toml::find_or<int>(this->toml, "IBF", "fragment_size", 100000);
+        e = toml::find_or<double>(this->toml, "IBF", "exp_seq_error_rate", 0.1);
 
-    std::string caller = caller_;
-    std::string hostCaller = hostCaller_;
-    std::string portBasecaller = toml::get<std::string>(portBasecaller_);
+        device = toml::find<std::string>(MinKNOW, "flowcell");
+        MinKNOW_host = toml::find_or<std::string>(this->toml, "MinKNOW", "host", "127.0.0.1");
+        MinKNOW_port = toml::find_or<std::string>(this->toml, "MinKNOW", "port", "9501");
 
-    std::string target_holder, deplete_holder;
-
-    std::stringstream s_stream_1(deplete_files_);
-
-    while (s_stream_1.good()) {
-
-        std::string substr1;
-        getline(s_stream_1, substr1, ','); 
-
-        if (substr1.length() > 1)
+        caller = toml::find_or<std::string>(this->toml, "Basecaller", "caller", "DeepNano");
+        basecallThreads = toml::find_or<int>(this->toml, "Basecaller", "threads", 3);
+#if defined(_WIN32)
+        if (stricmp(caller.c_str(), "guppy") == 0)
+#else
+        if (strcasecmp(caller.c_str(), "guppy") == 0
+#endif
         {
-            if (!std::filesystem::exists(substr1)) {
-
-                std::cerr << "ERROR parsing the file: "<<  substr1 << '\n';
-                exit(1);
-                
-            }
-
-            if (configReader::filterException(substr1)) {
-
-                deplete = substr1 + ",";
-                deplete_holder += deplete;
-            }
-
-            else if (!configReader::filterException(substr1)) {
-
-                std::cout << "The deplete file is an fasta file, start building ibf ......." << '\n';
-
-                std::filesystem::path test (substr1);
-                auto string_ = test.stem();
-                std::string name = string_.string();
-                name = name.substr(name.find_last_of('\\') +1);
-                deplete = output_fileTOML + "/" + name + ".ibf";
-                deplete_holder = deplete_holder + deplete + ",";
-
-                toml::value  kmerS = toml::get<toml::table >(IBF).at("kmer_size");
-                toml::value  fragment_size = toml::get<toml::table >(IBF).at("fragment_size");
-                int f = toml::get<toml::integer>(fragment_size);
-                int k = toml::get<toml::integer>(kmerS);
-
-                build_IBF = { deplete, substr1, false, false, k, classifyThreads, f, 0, true };
-
-                buildIBF_(build_IBF);
-
-            }
-        }
-
-        else {
-
-            std::cout << "No deplete file found! " << '\n';
-            std::cout << "  " << '\n';
-            deplete_holder = ",";
+            hostCaller = toml::find<std::string>(basecaller, "host");
+            portBasecaller = toml::find_or<std::string>(this->toml, "Basecaller", "port", "5555");
         }
     }
+    catch (std::out_of_range& e)
+    {
+        // TODO: write message in log file
+        throw ConfigReaderException(e.what());
+    }
 
-
-    std::stringstream s_stream(target_files_);
-
-    while (s_stream.good()) {
-
-        std::string substr;
-        getline(s_stream, substr, ','); 
-
-        if (substr.length() > 1)
-        {
-            if (!std::filesystem::exists(substr)) {
-
-                std::cerr << "ERROR parsing the file: "<<  substr << '\n';
-                exit(1);
-                
-            }
-
-            if (configReader::filterException(substr)) {
  
-                target = substr + ",";
-                target_holder += target;
-            }
-            else if (!configReader::filterException(substr)) {
+    std::vector<std::filesystem::path> target_holder{};
+    std::vector<std::filesystem::path> deplete_holder{};
 
-                std::cout << "The target file is an fasta file, start building ibf ......." << '\n';
-
-                std::filesystem::path test (substr);
-                auto string_ = test.stem();
-                std::string name = string_.string();
-                name = name.substr(name.find_last_of('\\') +1);
-                target = output_fileTOML + "/" + name + ".ibf";
-                target_holder = target_holder + target + ",";
-
-                toml::value  kmerS = toml::get<toml::table >(IBF).at("kmer_size");
-                toml::value  fragment_size = toml::get<toml::table >(IBF).at("fragment_size");
-                int f = toml::get<toml::integer>(fragment_size);
-                int k = toml::get<toml::integer>(kmerS);
-
-                build_IBF = { target, substr, false, false, k, classifyThreads, f, 0, true };
-
-                buildIBF_(build_IBF);
-
-            }
+    for (std::filesystem::path file : target_files_)
+    {
+        if (!std::filesystem::exists(file))
+        {
+            // TODO: write message in log file
+            throw ConfigReaderException("[Error] The following target file does not exist: " + file.string());
         }
 
-        else {
-
-            std::cout << "No target file found! " << '\n';
-            std::cout << "  " << '\n';
-            target_holder = ",";
+        if (configReader::filterException(file))
+        {
+            target_holder.emplace_back(std::move(file));// If ibf then the target in the same dir  
         }
+        else
+        {
+
+            // TODO: write in log file
+            std::cout << "The target file is a fasta file, start building ibf ......." << '\n';
+
+
+            std::filesystem::path target = std::filesystem::path(output_fileTOML);
+            target /= file.filename();
+            target.replace_extension("ibf");
+
+            build_IBF = { target, file, false, false, k, classifyThreads, f, 0, true };
+            buildIBF_(build_IBF);
+            target_holder.emplace_back(std::move(target));
+        }
+
     }
-   
-    deplete_holder.pop_back();
-    target_holder.pop_back();
+
+    for (std::filesystem::path file : deplete_files_)
+    {
+        if (!std::filesystem::exists(file))
+        {
+            // TODO: write message in log file
+            throw ConfigReaderException("[Error] The following target file does not exist: " + file.string());
+        }
+
+        if (configReader::filterException(file))
+        {
+            deplete_holder.emplace_back(std::move(file));// If ibf then the target in the same dir  
+        }
+        else
+        {
+
+            // TODO: write in log file
+            std::cout << "The deplete file is a fasta file, start building ibf ......." << '\n';
+
+            std::filesystem::path deplete = std::filesystem::path(output_fileTOML);
+            deplete /= file.filename();
+            deplete.replace_extension("ibf");
+
+            build_IBF = { deplete, file, false, false, k, classifyThreads, f, 0, true };
+            buildIBF_(build_IBF);
+
+            deplete_holder.emplace_back(std::move(deplete));
+        }
+
+    }
 
 
-    configReader::live_target_parser_ targetStruct = { MinKNOW_host, device, deplete_holder, target_holder, output_dir, hostCaller, portBasecaller, caller, MinKNOW_port, basecallThreads, classifyThreads,
-                    significance, error_rate, false, false, false };
+    Target_Params targetStruct = { MinKNOW_host, device, deplete_holder, target_holder, output_fileTOML, hostCaller, portBasecaller, caller, MinKNOW_port, basecallThreads, classifyThreads,
+                    significance, e, false, false, false };
 
     
 

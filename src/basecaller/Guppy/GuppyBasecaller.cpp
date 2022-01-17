@@ -104,11 +104,11 @@ namespace basecall
 				StopClock get_clock;
 				get_clock.start();
 			//	std::queue<RTPair> called{};
-				StopClock::Seconds getCompletedAll{ 0.0 };
+				StopClock::Seconds getCompletedAll{0.0};
 				StopClock::Seconds findEraseAll{ 0.0 };
 				StopClock::Seconds newReadAll{ 0.0 };
 				StopClock::Seconds oldReadAll{ 0.0 };
-				StopClock::Seconds findPendAll{ 0.0 };
+				StopClock::Seconds findPendAll{ 0.0 }; 
 				int newreads = 0;
 				int oldreads = 0;
 				int numWaiting = 0;
@@ -129,8 +129,8 @@ namespace basecall
 					}
 
 					
-					StopClock forLoop;
-					forLoop.start();
+//					StopClock forLoop;
+//					forLoop.start();
 					for (guppy_cpp_client::CalledRead called_read : completed_reads)
 					{
 						StopClock findErase;
@@ -216,18 +216,18 @@ namespace basecall
 							oldReadAll += oldRead.elapsed();
 						}
 					}
-					forLoop.stop();
+	//				forLoop.stop();
 	//				std::cout << "For Loop " << done << " reads in " << forLoop.elapsed() << " seconds." << std::endl;
 				}
 		//		classification_queue.push_elements(called);
-				get_clock.stop();
-				std::cout << "Get completed " << done << " reads in " << getCompletedAll << " seconds." << std::endl;
+		//		get_clock.stop();
+		//		std::cout << "Get completed " << done << " reads in " << getCompletedAll << " seconds." << std::endl;
 		//		std::cout << "Num Waiting " << numWaiting << " call." << std::endl;
 		//		std::cout << "Find & Erase Passed " << done << " reads in " << findEraseAll << " seconds." << std::endl;
 		//		std::cout << "Find Pending " << done << " reads in " << findPendAll << " seconds." << std::endl;
 		//		std::cout << "New Read " << newreads << " reads in " << newReadAll << " seconds." << std::endl;
 		//		std::cout << "Old Reads " << oldreads << " reads in " << oldReadAll << " seconds." << std::endl;
-				std::cout << "Called " << done << " reads in " << get_clock.elapsed() << " seconds." << std::endl;
+		//		std::cout << "Called " << done << " reads in " << get_clock.elapsed() << " seconds." << std::endl;
 				//adaptBatchSize(basecall_queue.size());
 
 			}
