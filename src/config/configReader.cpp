@@ -409,7 +409,6 @@ configReader::Target_Params configReader::targetReader(std::fstream& tomlOutput,
         throw ConfigReaderException(e.what());
     }
 
-    std::cout << "after parsing" << std::endl;
     std::vector<std::filesystem::path> target_holder{};
     std::vector<std::filesystem::path> deplete_holder{};
 

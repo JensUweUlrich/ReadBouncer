@@ -239,9 +239,9 @@ void initializeLogger(const std::string& toml_file)
 	{
 		const toml::value configuration_ = toml::parse(tomlFileReadBouncer, /*optional -> */ toml_file);
 		std::filesystem::path log_file = toml::find<std::string>(configuration_, "log_directory");
-		std::cout << log_file.string() << std::endl;
+		
 		log_file = log_file.make_preferred();
-		std::cout << log_file.string() << std::endl;
+		
 		if (!std::filesystem::is_directory(log_file) || !std::filesystem::exists(log_file))
 		{
 			std::filesystem::create_directories(log_file);
@@ -423,7 +423,6 @@ void inline configurationReader(configReader config, std::string const tomlFile,
 			throw;
 		}
 		
-		std::cout << "after target reader" << std::endl;
 		//connection_test_parser cT = { struct_.host, struct_.device, struct_.port, false, false, true, false };
 		//test_connection(cT);
 
