@@ -30,7 +30,7 @@ Readouncer is a nanopore adaptive sampling tool for Windows and Linux (x64 or AR
 
 ### <a name="install"></a>Installation
 
-The easiest way is to download the provided installer files for [Windows](https://owncloud.hpi.de/s/v7D7OoFVnmVymzM) or [Linux](https://owncloud.hpi.de/s/RBpVMqZdGEG0j7r) and simply click through the installation process. 
+The easiest way is to download the provided installer files for [Windows](https://owncloud.hpi.de/s/7sEp5qltORzIdN9) or [Linux](https://owncloud.hpi.de/s/l5yoQbdMW3tFdaS) and simply click through the installation process. 
 
 ### <a name="compile"></a>Compilation From Source
 
