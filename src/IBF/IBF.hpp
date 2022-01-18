@@ -24,6 +24,7 @@
 #include <string>
 #include <tuple>
 #include <vector>
+#include <filesystem>
 
 using namespace interfaces;
 
@@ -116,9 +117,10 @@ namespace interleave
             {
                 if ((ibf_logger = spdlog::get("IbfLog")) == nullptr)
                 {
+                    InterleavedBloomFilterLog /= "InterleavedBloomFilterLog.txt";
                     try
                     {
-                        ibf_logger = spdlog::rotating_logger_mt("IbfLog", "logs/InterleavedBloomFilterLog.txt", 1048576 * 5, 100);
+                        ibf_logger = spdlog::rotating_logger_mt("IbfLog", InterleavedBloomFilterLog.string(), 1048576 * 5, 100);
                     }
                     catch (const spdlog::spdlog_ex& e)
                     {
@@ -144,7 +146,7 @@ namespace interleave
     {
         TIbf filter;
         std::string name;
-        seqan::SeqFileOut outfile;
+//        std::ofstream outfile;
         uint64_t classified;
     };
 

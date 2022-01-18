@@ -16,6 +16,7 @@
 #include <queue>
 #include <set>
 #include <mutex>
+#include <filesystem>
 
 #if defined(_WIN32)
     #include <io.h>
@@ -48,9 +49,12 @@ using namespace ::minknow_api::data;
 using namespace ::google::protobuf;
 using namespace ::interfaces;
 
+
+
 namespace readuntil
 {
 
+    extern std::filesystem::path CSVFile;
     struct ActionResponse
     {
         uint32 channelNr{};

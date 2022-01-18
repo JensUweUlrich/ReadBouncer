@@ -6,6 +6,7 @@
 #include <ostream>
 #include <string>
 #include <vector>
+#include <filesystem>
 
 //#include <dirent.h>
 #include <stdio.h>
@@ -16,15 +17,18 @@
 
 namespace interleave
 {
-
+   
+    extern std::filesystem::path IbfClassificationLog;
+    extern std::filesystem::path InterleavedBloomFilterLog;
     class ClassifyConfig
     {
         public:
             ClassifyConfig()
             {
+                IbfClassificationLog /= "IbfClassificationLog.txt";
                 try
                 {
-                    classification_logger = spdlog::rotating_logger_mt("ClassifyLog", "logs/IbfClassificationLog.txt", 1048576 * 5, 100);
+                    classification_logger = spdlog::rotating_logger_mt("ClassifyLog", IbfClassificationLog.string(), 1048576 * 5, 100);
                 }
                 catch (const spdlog::spdlog_ex& e)
                 {
@@ -61,7 +65,7 @@ namespace interleave
             uint64_t filter_size_bits = 0;
 
             uint64_t fragment_length    = 0;
-            uint16_t overlap_length     = 500;
+            uint16_t overlap_length     = 1500;
 
             uint16_t kmer_size      = 13;
             uint16_t hash_functions = 3;

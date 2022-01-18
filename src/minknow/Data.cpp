@@ -9,6 +9,7 @@
 
 namespace readuntil
 {
+    std::filesystem::path CSVFile{};
 
     /**
     *   Constructor of Data class
@@ -139,8 +140,8 @@ namespace readuntil
         data_logger->flush();
         // as long as signals are received from MinKnow
         // iterate over received data and stop further data allocation for every odd read on every odd channel
-        
-        csvfile csv("read_until_decision_stats.csv");
+        CSVFile /= "read_until_decision_stats.csv";
+        csvfile csv(CSVFile.string());
         // header
         csv << " " << "read_id" << "channel_nr" << "read_nr" << "sequence_length" << "decision" << "duration" << endrow;
 

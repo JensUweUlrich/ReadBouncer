@@ -23,12 +23,14 @@ struct ibf_build_parser
 	int fragment_size = 100000;
 	int filter_size = 0;
 	bool verbose = false;
+};
 
 	/**
 		parser constructor
 		creates the ibfbuild group and adds it to the lyra cli
 		@cli: lyra command line interface object
 	*/
+/*
 	ibf_build_parser(lyra::cli& cli)
 	{
 		cli.add_argument(
@@ -86,7 +88,7 @@ struct ibf_build_parser
 	/**
 		function is called after parsing the group parameters from the command line
 		prints the help page or the parameter values if option verbose is set
-	*/
+	*//*
 	void do_command(const lyra::group& g)
 	{
 		if (show_help)
@@ -128,12 +130,12 @@ struct read_classify_parser
 	int preLen = 360;
 	int max_chunks = 1;
 	bool verbose = false;
-
+};
 	/**
 		parser constructor
 		creates the classify group and adds it to the lyra cli
 		@cli: lyra command line interface object
-	*/
+	*//*
 	read_classify_parser(lyra::cli& cli)
 	{
 		cli.add_argument(
@@ -209,7 +211,7 @@ struct read_classify_parser
 	/**
 		function is called after parsing the group parameters from the command line
 		prints the help page or the parameter values if option verbose is set
-	*/
+	*//*
 	void do_command(const lyra::group& g)
 	{
 		if (show_help)
@@ -245,6 +247,7 @@ struct read_classify_parser
 		}
 	}
 };
+*/
 
 struct live_parser
 {
@@ -270,13 +273,13 @@ struct live_parser
 	class for generating the IBF build parser group
 */
 struct target_parser : live_parser
-{
+{};
 	
 	/**
 		parser constructor
 		creates the live-deplete group and adds it to the lyra cli
 		@cli: lyra command line interface object
-	*/
+	*//*
 	target_parser(lyra::cli& cli)
 	{
 		cli.add_argument(
@@ -373,7 +376,7 @@ struct target_parser : live_parser
 	/**
 		function is called after parsing the group parameters from the command line
 		prints the help page or the parameter values if option verbose is set
-	*/
+	*//*
 	void do_command(const lyra::group& g)
 	{
 		if (show_help)
@@ -422,17 +425,18 @@ struct connection_test_parser
 	// default host & port to communicate with MinKNOW
 	std::string host = "127.0.0.1";
 	std::string device{};
-	int port = 9501;
+	std::string port = "9501";
 	bool command = false;
 	bool show_help = false;
 	bool verbose = false;
 	bool unblock_all = false;
+};
 
 	/**
 		parser constructor
 		creates the connection-test group and adds it to the lyra cli
 		@cli: lyra command line interface object
-	*/
+	*//*
 	connection_test_parser(lyra::cli& cli)
 	{
 		cli.add_argument(
@@ -479,7 +483,7 @@ struct connection_test_parser
 	/**
 		function is called after parsing the group parameters from the command line
 		prints the help page or the parameter values if option verbose is set
-	*/
+	*//*
 	void do_command(const lyra::group& g)
 	{
 		if (show_help)
@@ -501,6 +505,6 @@ struct connection_test_parser
 		}
 	}
 };
-
+*/
 
 #endif //PARSER_HPP_

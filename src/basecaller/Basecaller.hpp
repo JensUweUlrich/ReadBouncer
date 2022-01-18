@@ -27,5 +27,31 @@ namespace basecall
 											 Runner& runner) = 0;
 	};
 
+	class BasecallerException: public std::exception
+	{
+		private:
+			std::string error_message
+			{ };
+
+		public:
+
+			explicit BasecallerException();
+
+			explicit BasecallerException(const std::string &msg) :
+							error_message(msg)
+			{
+			}
+			virtual ~BasecallerException() throw ()
+			{
+			}
+
+			virtual const char* what() const throw ()
+			{
+				return error_message.c_str();
+			}
+
+	};
+
+
 } //namespace
 

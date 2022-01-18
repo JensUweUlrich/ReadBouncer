@@ -3,6 +3,8 @@
 
 namespace interleave
 {
+    std::filesystem::path IbfClassificationLog{};
+    std::filesystem::path InterleavedBloomFilterLog{};
 
     /**
         read reference sequences from files and store them in reference sequence queue
