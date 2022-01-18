@@ -220,26 +220,39 @@ Sometimes it can be useful to find all reads of an organism in a set of reads th
 
 ```
 usage         = "classify"
-output_dir    = 'full\path\to\ReadBouncer\output_dir\'
-log_directory = 'full\path\to\ReadBouncer\'
+output_dir    = 'full/path/to/ReadBouncer/output_dir/'
+log_directory = 'full/path/to/ReadBouncer/log/files'
 
 [IBF]
 
 kmer_size     = 13                       
 fragment_size = 100000                 
 threads       = 3                        
-target_files  = 'path\to\reference\file\Bacillus_subtilis_complete_genome.fasta,path\to\reference\file\Enterococcus_faecalis_complete_genome.fasta,path\to\reference\file\Escherichia_coli_complete_genome.fasta'
-deplete_files = ''
-read_files    = 'path\to\read\file\SampleZMCDataSet.fasta'
+target_files  = ['path/to/reference/file/Bacillus_subtilis_complete_genome.fasta', 'path/to/reference/file/Enterococcus_faecalis_complete_genome.fasta', 'path/to/reference/file/Escherichia_coli_complete_genome.fasta']
+deplete_files = ['path/to/reference/file/Saccharomyces_cerevisiae_draft_genome.fasta']
+read_files    = ['path/to/read/file/SampleZMCDataSet.fasta']
 ```
-In this example, we would try to find all reads that match to B.subtilis, E.faecalis and E.coli. You can easily add the other fasta files as well. Now we can start ReadBouncer from the command line using the config.toml file. For testing purposes, you can download a small set of sequenced Zymo Mock community nanopore reads that were basecalled with DeepNano ([sample read set](https://owncloud.hpi.de/s/HFFYsDhbukXBsu4))
+In this example, we would try to find all reads that match to <i>B.subtilis</i>, <i>E.faecalis</i> and <i>E.coli</i>, but not to <i>S.cerevisiae</i>. You can easily add the other fasta files as well. Now we can start ReadBouncer from the command line using the config.toml file. For testing purposes, you can download a small set of sequenced Zymo Mock community nanopore reads that were basecalled with DeepNano ([sample read set](https://owncloud.hpi.de/s/HFFYsDhbukXBsu4))
 ```
 full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe  full\path\to\ReadBouncer\config.toml 
 ```
-Finally, you can find all result files in the given output directory. 
+Finally, you will get some stats printed to the command line, as the one below:
+
+```
+------------------------------- Final Results -------------------------------
+Number of classified reads                         :   47874
+Number of of too short reads (len < 250)           :   0
+Number of all reads                                :   100000
+Bacillus_subtilis_complete_genome        : 14409                0.14409
+Enterococcus_faecalis_complete_genome    : 13553                0.13553
+Escherichia_coli_complete_genome         : 19912                0.19912
+Average Processing Time Read Classification        :   0.00197617
+-----------------------------------------------------------------------------------
+```
+Resulting FASTA files and index files can be found in the provided output directory. 
 
 ### <a name="unblockall"></a>Test ReadBouncer-to-MinKNOW interaction
-Before using ReadBouncer in a real experiment, we recommend running a playback experiment to test unblock speed first.
+Before using ReadBouncer in a real experiment, we recommend running a playback experiment testing also basecalling and classification performance.
 
 1. Download an open access bulk FAST5 file from 
 [here](http://s3.amazonaws.com/nanopore-human-wgs/bulkfile/PLSP57501_20170308_FNFAF14035_MN16458_sequencing_run_NOTT_Hum_wh1rs2_60428.fast5). 
@@ -261,62 +274,7 @@ sudo ./config_editor --conf application --filename ../conf/app_conf --set device
 ```
 
 4. In the MinKNOW GUI, right click on a sequencing position and select `Reload Scripts` (In some cases you need to reboot your operating system). Your MinKNOW instance will now show a simulated device named `MS00000` that will playback the bulkfile rather than live sequencing.
-5. Open a Windows Power Shell (or terminal) and go to your working directory where ReadBouncer result files shall be stored. Then provide the necessary parameters in the config.toml file for the live-depletion test. ReadBouncer will test the conncetion to MinKNOW automatically.  
-
-```
-[MinKNOW]
-
-host               = "localhost"          #(ip address or name of the computer hosting MinKNOW)
-port               = 9501                 #(port number used fo grpc communication by by MinKNOW instance)
-flowcell           = "MS00000"            #(name of the flowcell used)
-
-```
-The output should state that the connection could be successfully established and that you can continue with live-depletion.
-6. When ReadBouncer says that it successfully established a connection, you can start a sequencing run on the the device, which will playback the run from the bulkfile. If you want to use Guppy basecaller, provide the parameters in the configuration file: 
-
-```
-[Basecaller]
-caller             = "Guppy"       #DeepNano/Guppy (default is DeepNano)
-host               = "127.0.0.1"   #(ip address or name of the computer hosting Guppy Basecall Server)
-port               = "5555"        #(port number on which the basecall server is running on the host)
-threads            = 3             #(unsigned integer with default 3)
-```
-7. Open the read length histogram after 5 minutes and have a look at the read counts plot.
-<p align="center">
-  <img src="images/unblock_all.PNG" width="750" title="Unblock All Image">
-</p>
-8. Now zoom in to the histogram so that only read counts for read lengths up to 5kb are shown. You should see a peak for read counts between 500b and 1 kb like the one in the figure below.
-<p align="center">
-  <img src="images/unblock_all_5kb.PNG" width="750" title="Unblock All Image (5kb)">
-</p>
-If that's the case you can go on with testing basecalling and classification
-
-### <a name="host-depletion"></a>Live-Basecalling and read classification
-
-In order to test if read depletion works on your machine, you can start a `depletion` playback run with the bulk FAST5 file from the test above. If you already set up the playback functionality, you only need to download the reference sequence of one or more human chromosomes from e.g. the [Telomere-to-telomere consortium](https://github.com/marbl/CHM13) as FASTA file. In the example below, we aim to deplete all human reads.
-
-1. Before depletion, we need to build an Interleaved Bloom Filter (IBF) for the reference sequence(s) we aim to deplete. 
-
-```
-usage         = "build"
-output_dir    = 'full\path\to\ReadBouncer\output_dir\'
-log_directory = 'full\path\to\ReadBouncer\'
-
-[IBF]
-
-kmer_size     = 13                      
-fragment_size = 100000                  
-threads       = 3                       
-target_files  = ''
-deplete_files = 'path\to\reference\file\chm13.fasta'
-```
-Using command line: 
-
-```
-full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe  full\path\to\ReadBouncer\config.toml 
-```
-
-2. Now you can start depletion of human reads with the following toml configuration from you working directory
+5. Open a Windows Power Shell (or terminal) and go to your working directory where ReadBouncer result files shall be stored. Then provide the necessary parameters in the config.toml file for the test. ReadBouncer will test the conncetion to MinKNOW automatically and tell you when to start the experiment from within MinKNOW. You can download two fasta files that include reference sequences for human [chromosomes 21 & 22](https://owncloud.hpi.de/s/yHX0REdcTqZ784p) as well as the [remaining chromsome reference sequences]() from the [Telomere-to-telomere consortium](https://github.com/marbl/CHM13). You should unzip them and use the following example toml file to test an experiment that targets the sequencing of reads that belong to chromosomes 21 & 22. All other reads shall be rejected/unblocked.
 
 ```
 usage               = "target"
@@ -328,12 +286,10 @@ log_directory       = 'full\path\to\ReadBouncer\'
 kmer_size           = 13                      
 fragment_size       = 100000                  
 threads             = 3                      
-target_files        = ''
-deplete_files       = 'path\to\output\directory\chm13.ibf'
-read_files          = ''    
+target_files        = ['path/to/reference/sequence/chm13.v1.1_chr21_22.fasta']
+deplete_files       = ['path/to/reference/sequence/chm13.v1.1_chr1-20_XM.fasta']  
 exp_seq_error_rate  = 0.1                      
-chunk_length        = 250                        
-max_chunks          = 5                   
+             
 
 [MinKNOW]
 
@@ -344,8 +300,6 @@ flowcell            = "MS00000"
 [Basecaller]
 
 caller             = "DeepNano"  
-host               = "127.0.0.1"
-port               = "9501"     
 threads            = 3         
 ```
 Using command line: 
@@ -353,7 +307,8 @@ Using command line:
  ```
 full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe  full\path\to\ReadBouncer\config.toml 
 ```
-3. Start a sequencing run on the simulated device as you did above. Open the read length histogram after 15 minutes and have a look at the read counts plot. When you zoom into the region for reads up to 5kb length, you should see a plot like this:
+6. Now ReadBouncer will construct Interleaved Bloom Filters for both reference files. After finishing the construction, IBF files are stored in the output directory for for further use. ReadBouncer will tell you if the connection to the MinKNOW host has been successfully established and that you can start sequencing now.
+7. Start a sequencing run on the simulated device from within the MinKNOW-GUI. Open the read length histogram after 15 minutes and have a look at the read counts plot. When you zoom into the region for reads up to 5kb length, you should see a plot like this:
 <p align="center">
   <img src="images/live_unblock.png" width="750" title="Live Unblock Image">
 </p>
