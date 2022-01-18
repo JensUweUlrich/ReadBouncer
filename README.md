@@ -14,8 +14,7 @@
     - [Adaptive Sampling](#deplete)
  - [Use cases](#ucase)
    - [Classify already sequenced reads](#classifyreads)
-   - [Test unblocking all reads](#unblockall)
-   - [Deplete Host Background Reads](#host-depletion)
+   - [Test Adaptive Sampling](#astest)
 
 ## <a name="overview"></a>Overview
 Readouncer is a nanopore adaptive sampling tool for Windows and Linux (x64 or ARM64) that uses Interleaved Bloom Filters for live classification of nanopore reads, basecalled with either Guppy(GPU mode) or DeepNano-blitz(CPU mode). The Toolkit uses Oxford Nanopore's Read Until functionality to unblock reads that match to a given reference sequence database. The database is indexed as Interleaved Bloom Filter for fast classification.
@@ -87,9 +86,9 @@ All parameters, input and output files and the usage are specified within the co
 
 ```
 
-usage         = "build", "target", "classify"           #atm only one of those
-output_dir    = 'path/to/write/output/files/to'         #all generated output files will be stored here
-log_directory = 'path/to/write/log/files/to'            #all generated log files will be stored here
+usage               = "build", "target", "classify"           #atm only one of those
+output_directory    = 'path/to/write/output/files/to'         #all generated output files will be stored here
+log_directory       = 'path/to/write/log/files/to'            #all generated log files will be stored here
 
 ```
 
@@ -121,9 +120,9 @@ The reference sequence is fragmented in subsequences of this length, where every
 If you like to test ReadBouncer's read classification with a set of Nanopore reads, you can use the <b>classify</b> usage. You only have to provide one or more Interleaved Bloom Filter (IBF) or FASTA files (automatically create ibf file for every given fasta file) and some reads as FASTA or FASTQ file. When providing already created IBF files, make sure that the files are located in the given output directory. When providing an IBF file as `depletion-file` ReadBouncer takes the prefix from each read and maps it against each bin of the depletion-IBF. If the number of k-mers that are shared between the prefix and at least one bin of the IBF exceeds a certain threshold, the read is classified as match. The threshold is calculated as described in the publication. If you provide a target IBF file as well, ReadBouncer will not classify reads if the prefix matches the depletion IBF but not the target IBF. Providing only target_files will lead ReadBouncer to assign each read to the best matching target filter file. Result files of the classification can also be found in the output directory.
 
 ```
-usage         = "classify"
-output_dir    = 'path/to/write/output/files/to'         #all generated output files will be stored here
-log_directory = 'path/to/write/log/files/to'            #all generated log files will be stored here
+usage               = "classify"
+output_directory    = 'path/to/write/output/files/to'         #all generated output files will be stored here
+log_directory       = 'path/to/write/log/files/to'            #all generated log files will be stored here
 
 [IBF]
 
@@ -155,9 +154,9 @@ Both parameters are only required if the given target or deplete files are in FA
 When nanopore reads are not of interest, these reads can be rejected from the pore without sequencing the whole read. Therefore raw current signals are requested from ONT's MinKNOW software, basecalled and matched against one or more Interleaved Bloom Filter of a give reference sequence set. Depending on the given combinations of deplete and target files, ReadBouncer's adaptive sampling behaves different. a) If only depletion_files are provided, every read that matches with at least one of the given file is rejected from the corresponding pore by sending an unblock message to MinKNOW for that read. b) If only target_files are provided, all reads that do not match to at least one target file will be unblocked. c) If both target_files and deplete_files are provided, only reads that match to at least one of the deplete_files, but to none of the target_files are unblocked. This approach can be used to ensure high specificity if sequences in depletion and target reference databases have certain regions of high similarity.
 
 ```
-  usage         = "target"
-  output_dir    = 'path/to/write/output/files/to'         #all generated output files will be stored here
-  log_directory = 'path/to/write/log/files/to'            #all generated log files will be stored here
+  usage               = "target"
+  output_directory    = 'path/to/write/output/files/to'         #all generated output files will be stored here
+  log_directory       = 'path/to/write/log/files/to'            #all generated log files will be stored here
   
   [IBF]
   
@@ -212,16 +211,16 @@ Number of threads used for base calling. This parameter only has an effect if CP
 
 ### <a name="ucase"></a>Use Cases 
 
-## <a name="classifyreads"></a>Classify already sequenced reads
+#### <a name="classifyreads"></a>Classify already sequenced reads
 Sometimes it can be useful to find all reads of an organism in a set of reads that were already sequenced without aligning the sequences. ReadBouncer offers this functionality by using the `classify` subcommand. The following steps describe how to classify all reads from a Zymo Mock Community to their corresponding reference genome. 
 
 1. Download the reference sequences of the Zymo Mock Community from [here](https://owncloud.hpi.de/s/ZBIf9x6gkEsXb0A) and store it in your working directory.
 2. Create a configuration file similar to the following one, providing all necessary parameters, file and directory paths in the config.toml file.
 
 ```
-usage         = "classify"
-output_dir    = 'full/path/to/ReadBouncer/output_dir/'
-log_directory = 'full/path/to/ReadBouncer/log/files'
+usage               = "classify"
+output_directory    = 'full/path/to/ReadBouncer/output_dir/'
+log_directory       = 'full/path/to/ReadBouncer/log/files'
 
 [IBF]
 
@@ -251,7 +250,7 @@ Average Processing Time Read Classification        :   0.00197617
 ```
 Resulting FASTA files and index files can be found in the provided output directory. 
 
-### <a name="unblockall"></a>Test ReadBouncer-to-MinKNOW interaction
+### <a name="astest"></a>Test Adaptive Sampling
 Before using ReadBouncer in a real experiment, we recommend running a playback experiment testing also basecalling and classification performance.
 
 1. Download an open access bulk FAST5 file from 
@@ -274,11 +273,11 @@ sudo ./config_editor --conf application --filename ../conf/app_conf --set device
 ```
 
 4. In the MinKNOW GUI, right click on a sequencing position and select `Reload Scripts` (In some cases you need to reboot your operating system). Your MinKNOW instance will now show a simulated device named `MS00000` that will playback the bulkfile rather than live sequencing.
-5. Open a Windows Power Shell (or terminal) and go to your working directory where ReadBouncer result files shall be stored. Then provide the necessary parameters in the config.toml file for the test. ReadBouncer will test the conncetion to MinKNOW automatically and tell you when to start the experiment from within MinKNOW. You can download two fasta files that include reference sequences for human [chromosomes 21 & 22](https://owncloud.hpi.de/s/yHX0REdcTqZ784p) as well as the [remaining chromsome reference sequences]() from the [Telomere-to-telomere consortium](https://github.com/marbl/CHM13). You should unzip them and use the following example toml file to test an experiment that targets the sequencing of reads that belong to chromosomes 21 & 22. All other reads shall be rejected/unblocked.
+5. Open a Windows Power Shell (or terminal) and go to your working directory where ReadBouncer result files shall be stored. Then provide the necessary parameters in the config.toml file for the test. ReadBouncer will test the conncetion to MinKNOW automatically and tell you when to start the experiment from within MinKNOW. You can download two fasta files that include reference sequences for human [chromosomes 21 & 22](https://owncloud.hpi.de/s/yHX0REdcTqZ784p) as well as the [remaining chromsome reference sequences](https://owncloud.hpi.de/s/MWPHCT0RBOhrrik) from the [Telomere-to-telomere consortium](https://github.com/marbl/CHM13). You should unzip them and use the following example toml file to test an experiment that targets the sequencing of reads that belong to chromosomes 21 & 22. All other reads shall be rejected/unblocked.
 
 ```
 usage               = "target"
-output_dir          = 'full\path\to\ReadBouncer\output_dir\'
+output_directory    = 'full\path\to\ReadBouncer\output_dir\'
 log_directory       = 'full\path\to\ReadBouncer\'
 
 [IBF]
@@ -313,4 +312,4 @@ full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe  full\path\to\ReadBo
   <img src="images/live_unblock.png" width="750" title="Live Unblock Image">
 </p>
 
-4. After stopping the run, ReadBouncer will provide you with some statistics about the number of classified (unblocked) and unclassified reads, which will be sequenced until the end. You will also see average overall processing times as well as for basecalling and classification. You should aim for overall processing times for classified reads below one second. The average processing time for basecalling and classification should be below 0.01 seconds. Otherwise you will experience bigger lengths of unblocked reads.
+8. After the run finished, ReadBouncer will provide you with some statistics about the number of classified (unblocked) and unclassified reads, which will be sequenced until the end. You will also see average overall processing times as well as for basecalling and classification. You should aim for overall processing times for classified reads below one second. The average processing time for basecalling and classification should be below 0.01 seconds. Otherwise you will experience bigger lengths of unblocked reads.
