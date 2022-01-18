@@ -728,9 +728,10 @@ void adaptive_sampling(configReader::Target_Params& params)
 		std::string config_name = "dna_r9.4.1_450bps_fast";
 		caller = new basecall::GuppyBasecaller(basecall_host, config_name);
 	}
+#if !defined(ARM_BUILD)
 	else
 		caller = new basecall::DeepNanoBasecaller(weights_file, params.basecall_threads);
-	
+#endif	
 	tasks.emplace_back(std::async(std::launch::async, &basecall::Basecaller::basecall_live_reads, std::move(caller), std::ref(basecall_queue),
 			std::ref(classification_queue), std::ref(channelStats), std::ref(runner)));
 	
