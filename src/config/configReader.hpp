@@ -85,6 +85,7 @@ public:
         std::filesystem::path out_dir{};
         std::string guppy_host = "127.0.0.1";
         std::string guppy_port = "5555";
+        std::string guppy_config = "dna_r9.4.1_450bps_fast";
         std::string caller = "DeepNano";
         std::string port = "9501";
         int basecall_threads = 3;
@@ -94,6 +95,8 @@ public:
         bool command = false;
         bool show_help = false;
         bool verbose = false;
+        uint8_t minChannel = 1;
+        uint8_t maxChannel = 512;
     };
 
     configReader(std::string const);

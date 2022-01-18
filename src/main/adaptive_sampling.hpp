@@ -663,10 +663,38 @@ void adaptive_sampling(configReader::Target_Params& params)
 		nanolive_logger->flush();
 	}
 
+	//setup basecalling
+	basecall::Basecaller* caller;
+
+#if defined(_WIN32)
+	if (stricmp(params.caller.c_str(), "guppy") == 0)
+#else
+	if (strcasecmp(params.caller.c_str(), "guppy") == 0)
+#endif
+	{
+		std::string basecall_host = params.guppy_host + ":" + params.guppy_port;
+		try
+		{
+			caller = new basecall::GuppyBasecaller(basecall_host, params.guppy_config);
+		}
+		catch (basecall::BasecallerException& e)
+		{
+			nanolive_logger->error("Failed establishing connection to Guppy basecall server!");
+			nanolive_logger->error("Error message : " + std::string(e.what()));
+			nanolive_logger->flush();
+			throw;
+		}
+	}
+#if !defined(ARM_BUILD)
+	else
+		caller = new basecall::DeepNanoBasecaller(weights_file, params.basecall_threads);
+#endif
+
+
 	// create Data Service object
 	// used for streaming live nanopore signals from MinKNOW and sending action messages back
 	data = (readuntil::Data*)client.getMinKnowService(readuntil::MinKnowServiceType::DATA);
-
+	data->setChannels(params.minChannel, params.maxChannel);
 	// start live streaming of data
 	try
 	{
@@ -708,30 +736,14 @@ void adaptive_sampling(configReader::Target_Params& params)
 		std::cout << "Start sending unblock messages thread" << std::endl;
 	}
 
+	
+
+
 	tasks.emplace_back(std::async(std::launch::async, &checkRunning, std::ref(runner), acq));
 
 	// create thread for receiving signals from MinKNOW
 	tasks.emplace_back(std::async(std::launch::async, &readuntil::Data::getLiveSignals, data, std::ref(basecall_queue)));
-
 	// create threads for live basecalling
-	
-	
-	basecall::Basecaller* caller;
-
-#if defined(_WIN32)
-	if (stricmp(params.caller.c_str(), "guppy") == 0)
-#else
-	if (strcasecmp(params.caller.c_str(), "guppy") == 0)
-#endif
-	{
-		std::string basecall_host = params.guppy_host + ":" + params.guppy_port;
-		std::string config_name = "dna_r9.4.1_450bps_fast";
-		caller = new basecall::GuppyBasecaller(basecall_host, config_name);
-	}
-#if !defined(ARM_BUILD)
-	else
-		caller = new basecall::DeepNanoBasecaller(weights_file, params.basecall_threads);
-#endif	
 	tasks.emplace_back(std::async(std::launch::async, &basecall::Basecaller::basecall_live_reads, std::move(caller), std::ref(basecall_queue),
 			std::ref(classification_queue), std::ref(channelStats), std::ref(runner)));
 	

@@ -79,6 +79,8 @@ namespace readuntil
             bool runs = false;
             bool unblock_all = false;
             uint8_t actionBatchSize = 50;
+            uint8_t minChannel = 1;
+            uint8_t maxChannel = 512;
             
             void addUnblockAction(GetLiveReadsRequest_Actions* actionList, uint32_t channelNr, uint32_t readNr, const double unblock_duration);
             void addStopReceivingDataAction(GetLiveReadsRequest_Actions* actionList, uint32_t channelNr, uint32_t readNr);
@@ -147,6 +149,12 @@ namespace readuntil
             inline void setUnblockAll(const bool &unblock)
             {
                 unblock_all = unblock;
+            }
+
+            inline void setChannels(const uint8_t minC, const uint8_t maxC)
+            {
+                minChannel = minC;
+                maxChannel = maxC;
             }
 
     };

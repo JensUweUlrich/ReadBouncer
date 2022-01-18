@@ -431,6 +431,8 @@ void inline configurationReader(configReader config, std::string const tomlFile,
 			{ "flowcell", struct_.device },
 			{ "host-ip ", struct_.host },
 			{ "port", struct_.port },
+			{ "minChannel", struct_.minChannel},
+			{ "maxChannel", struct_.maxChannel},
 			{ "depletion-files", deplete_files },
 			{ "target-files", target_files },
 			{ "significance", struct_.kmer_significance },
@@ -439,7 +441,8 @@ void inline configurationReader(configReader config, std::string const tomlFile,
 			{ "classification-th", struct_.classify_threads },
 			{ "caller", struct_.caller },
 			{ "guppy_host", struct_.guppy_host },
-			{ "guppy_port", struct_.guppy_port }
+			{ "guppy_port", struct_.guppy_port },
+			{ "guppy_config", struct_.guppy_config }
 		   }}
 		   },
 		} };
