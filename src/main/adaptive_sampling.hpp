@@ -717,6 +717,7 @@ void adaptive_sampling(configReader::Target_Params& params)
 	
 	
 	basecall::Basecaller* caller;
+
 #if defined(_WIN32)
 	if (stricmp(params.caller.c_str(), "guppy") == 0)
 #else
