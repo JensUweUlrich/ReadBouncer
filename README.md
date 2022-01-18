@@ -106,8 +106,8 @@ log_directory = 'path/to/write/log/files/to'            #all generated log files
 kmer_size     = X                       #(unsigned integer; default: 13)
 fragment_size = X                       #(unsigned integer; default: 100000)
 threads       = X                       #(unsigned integer; default: 3) 
-target_files  = "xxx.fasta,xxx.fasta"
-deplete_files = "xxx.fasta,xxx.fasta" 
+target_files  = ['xxx.fasta', 'xxx.fasta']
+deplete_files = ['xxx.fasta', 'xxx.fasta'] 
 ```
 
 <b> kmer_size</b><br>
@@ -130,9 +130,9 @@ log_directory       = 'path/to/write/log/files/to'            #all generated log
 kmer_size           = X                                 #(unsigned integer; default: 13)
 fragment_size       = X                                 #(unsigned integer; default: 100000)
 threads             = X                                 #(unsigned integer; default: 3)
-target_files        = 'xxx.fasta,xxx.fasta' or  'xxx.ibf,xxx.ibf'
-deplete_files       = 'xxx.fasta,xxx.fasta' or  'xxx.ibf,xxx.ibf'
-read_files          = 'xxx.fasta/xxx.fastq'             #can be a comma-separated list of fasta or fastq files
+target_files        = ['xxx.fasta', 'xxx.fasta'] or ['xxx.ibf', 'xxx.ibf']
+deplete_files       = ['xxx.fasta', 'xxx.fasta'] or ['xxx.ibf', 'xxx.ibf']
+read_files          = ['xxx.fasta', 'xxx.fasta'] or ['xxx.fastq', 'xxx.fastq']             
 exp_seq_error_rate  = 0.1                               #(unsigned float between 0 and 1; default: 0.1)
 chunk_length        = X                                 #(unsigned integer; default: 250)
 max_chunks          = X                                 #(unsigned integer; default: 5)
@@ -163,21 +163,21 @@ When nanopore reads are not of interest, these reads can be rejected from the po
   
   kmer_size           = X                                 #(unsigned integer; default: 13)
   fragment_size       = X                                 #(unsigned integer; default: 100000)
-  target_files        = 'xxx.fasta,xxx.fasta' or  'xxx.ibf,xxx.ibf'
-  deplete_files       = 'xxx.fasta,xxx.fasta' or  'xxx.ibf,xxx.ibf'
+  target_files        = ['xxx.fasta', 'xxx.fasta'] or ['xxx.ibf', 'xxx.ibf']
+  deplete_files       = ['xxx.fasta', 'xxx.fasta'] or ['xxx.ibf', 'xxx.ibf']
   exp_seq_error_rate  = 0.1                               #(unsigned float between 0 and 1; default: 0.1)
   threads             = X                                 #(unsigned integer; default: 3) classification threads
   
   [MinKNOW]
   
-  host                = xxx.xxx.xxx                       #(ip address or name of the computer hosting MinKNOW; default: 127.0.0.1) 
+  host                = "xxx.xxx.xxx"                     #(ip address or name of the computer hosting MinKNOW; default: 127.0.0.1) 
   port                = X                                 #(port number used fo grpc communication by MinKNOW instance; default: 9501)
-  flowcell            = X                                 #(name of the flowcell used)
+  flowcell            = "XXX"                             #(name of the flowcell used)
   
   [Basecaller]
   
   caller              = "DeepNano" or "Guppy"             #(default: DeepNano)
-  host                = xxx.xxx.xxx                       #(ip address or name of the computer hosting Guppy Basecall Server; default: 127.0.0.1)
+  host                = "xxx.xxx.xxx"                     #(ip address or name of the computer hosting Guppy Basecall Server; default: 127.0.0.1)
   port                = X                                 #(port number on which the basecall server is running on the host; default: 5555)
   threads             = X                                 #(unsigned integer; default 3) basecall threads; only required for DeepNano base-calling
   
