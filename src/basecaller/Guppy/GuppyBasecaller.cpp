@@ -23,9 +23,7 @@ namespace basecall
 		client->set_max_reads_queued(1000);
 		if (client->connect() != guppy_cpp_client::Result::success)
 		{
-			// @TODO: throw exception and write into log file
-			std::cerr << client->get_error_message() << std::endl;
-			return;
+			throw BasecallerException(client->get_error_message());
 		}
 			
 	}

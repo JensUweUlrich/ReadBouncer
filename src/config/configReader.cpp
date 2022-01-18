@@ -367,6 +367,7 @@ configReader::Target_Params configReader::targetReader(std::fstream& tomlOutput,
     double significance = 0.95;
     std::filesystem::path output_fileTOML{};
     std::vector<std::string> rf_tmp{};
+    std::vector<int> channels;
     std::string device{};
     std::string MinKNOW_host{};
     std::string MinKNOW_port{};
@@ -374,6 +375,7 @@ configReader::Target_Params configReader::targetReader(std::fstream& tomlOutput,
     std::string caller{};
     std::string hostCaller{};
     std::string portBasecaller{};
+    std::string guppyConfig{};
     try
     {
         output_fileTOML = std::filesystem::path(toml::find<std::string>(this->toml, "output_directory"));
@@ -390,6 +392,7 @@ configReader::Target_Params configReader::targetReader(std::fstream& tomlOutput,
         device = toml::find<std::string>(MinKNOW, "flowcell");
         MinKNOW_host = toml::find_or<std::string>(MinKNOW, "host", "127.0.0.1");
         MinKNOW_port = toml::find_or<std::string>(MinKNOW, "port", "9501");
+        channels = toml::find_or<std::vector<int>>(MinKNOW, "channels", std::vector<int>{});
 	
         caller = toml::find_or<std::string>(basecaller, "caller", "DeepNano");
         basecallThreads = toml::find_or<int>(basecaller, "threads", 3);
@@ -401,6 +404,9 @@ configReader::Target_Params configReader::targetReader(std::fstream& tomlOutput,
         {
             hostCaller = toml::find<std::string>(basecaller, "host");
             portBasecaller = toml::find_or<std::string>(basecaller, "port", "5555");
+            guppyConfig = toml::find_or<std::string>(basecaller, "config", "dna_r9.4.1_450bps_fast");
+            // TODO: check if guppyConfig is correct configuration file
+
         }
     }
     catch (std::out_of_range& e)
@@ -472,11 +478,13 @@ configReader::Target_Params configReader::targetReader(std::fstream& tomlOutput,
 
     }
 
-
-    Target_Params targetStruct = { MinKNOW_host, device, deplete_holder, target_holder, output_fileTOML, hostCaller, portBasecaller, caller, MinKNOW_port, basecallThreads, classifyThreads,
-                    significance, e, false, false, false };
-
-    
+    Target_Params targetStruct;
+    if (channels.size() == 2 )
+        targetStruct = { MinKNOW_host, device, deplete_holder, target_holder, output_fileTOML, hostCaller, portBasecaller, guppyConfig, caller, MinKNOW_port, basecallThreads, classifyThreads,
+                   significance, e, false, false, false, (uint8_t)channels[0], (uint8_t)channels[1] };
+    else
+        targetStruct = { MinKNOW_host, device, deplete_holder, target_holder, output_fileTOML, hostCaller, portBasecaller, guppyConfig, caller, MinKNOW_port, basecallThreads, classifyThreads,
+                    significance, e, false, false, false };   
 
     return targetStruct;
 };
