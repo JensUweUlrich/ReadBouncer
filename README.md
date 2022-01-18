@@ -15,9 +15,10 @@
  - [Use cases](#ucase)
    - [Classify already sequenced reads](#classifyreads)
    - [Test Adaptive Sampling](#astest)
+ - [Limitations](#limitations)
 
 ## <a name="overview"></a>Overview
-Readouncer is a nanopore adaptive sampling tool for Windows and Linux (x64 or ARM64) that uses Interleaved Bloom Filters for live classification of nanopore reads, basecalled with either Guppy(GPU mode) or DeepNano-blitz(CPU mode). The Toolkit uses Oxford Nanopore's Read Until functionality to unblock reads that match to a given reference sequence database. The database is indexed as Interleaved Bloom Filter for fast classification.
+ReadBouncer is a nanopore adaptive sampling tool for Windows and Linux (x64 or ARM64) that uses Interleaved Bloom Filters for live classification of nanopore reads, basecalled with either Guppy(GPU mode) or DeepNano-blitz(CPU mode). The Toolkit uses Oxford Nanopore's Read Until functionality to unblock reads that match to a given reference sequence database. The database is indexed as Interleaved Bloom Filter for fast classification.
 * In a first step the reference sequences are used to build an Interleaved Bloom Filter using the [SeqAn library](https://github.com/seqan/seqan3)
 * Interleaved Bloom Filters can be used as depletion or enrichment target
 * After Starting a sequencing run, ReadBouncer receives raw current signals from the sequencer via ONT's [MinKNOW API](https://github.com/nanoporetech/minknow_api) using Google's remote procedure calls ([gRPC](https://grpc.io/))
@@ -29,7 +30,7 @@ Readouncer is a nanopore adaptive sampling tool for Windows and Linux (x64 or AR
 
 ### <a name="install"></a>Installation
 
-The easiest way is to download the provided installer files for [Windows](https://owncloud.hpi.de/s/7sEp5qltORzIdN9) or [Linux](https://owncloud.hpi.de/s/l5yoQbdMW3tFdaS) and simply click through the installation process. 
+The easiest way is to download the provided installer files for [Windows](https://owncloud.hpi.de/s/7sEp5qltORzIdN9), [Linux x86_64](https://owncloud.hpi.de/s/l5yoQbdMW3tFdaS) or [Linux arm64](https://owncloud.hpi.de/s/DydbnVqkKCpjUAF) and simply click through the installation process. 
 
 ### <a name="compile"></a>Compilation From Source
 
@@ -59,7 +60,7 @@ cmake.exe  ..\src
 cmake.exe --build . --config Release
 cmake.exe --build . --config Release --target package
 ```
-The last step creates the <b>ReadBouncer-1.0.0-win64.exe</b> within the build directory, which is a simple installer for Windows that leads you through the installation process.
+The last step creates the <b>ReadBouncer-1.1.0-win64.exe</b> within the build directory, which is a simple installer for Windows that leads you through the installation process.
 
 #### <a name="linuxcompile"></a>Compilation on Linux
 
@@ -74,7 +75,7 @@ cmake  ../src
 cmake --build . --config Release
 cmake --build . --config Release --target package
 ```
-The last step creates the <b>ReadBouncer-1.0.0-Linux.sh</b> within the build directory, which is a simple command line installer for Linux that leads you through the installation process. You can also skip the last `cmake` step and just call `sudo make install`, which installs ReadBouncer in your `/usr/local/` directory. 
+The last step creates the <b>ReadBouncer-1.1.0-Linux.sh</b> within the build directory, which is a simple command line installer for Linux that leads you through the installation process. You can also skip the last `cmake` step and just call `sudo make install`, which installs ReadBouncer in your `/usr/local/` directory. 
 
 
 ### <a name="general"></a>General usage
@@ -277,8 +278,8 @@ sudo ./config_editor --conf application --filename ../conf/app_conf --set device
 
 ```
 usage               = "target"
-output_directory    = 'full\path\to\ReadBouncer\output_dir\'
-log_directory       = 'full\path\to\ReadBouncer\'
+output_directory    = 'full/path/to/ReadBouncer/output_dir/'
+log_directory       = 'full/path/to/ReadBouncer/'
 
 [IBF]
 
@@ -313,3 +314,9 @@ full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe  full\path\to\ReadBo
 </p>
 
 8. After the run finished, ReadBouncer will provide you with some statistics about the number of classified (unblocked) and unclassified reads, which will be sequenced until the end. You will also see average overall processing times as well as for basecalling and classification. You should aim for overall processing times for classified reads below one second. The average processing time for basecalling and classification should be below 0.01 seconds. Otherwise you will experience bigger lengths of unblocked reads.
+
+### <a name="limitations"></a>Limitations
+
+- ReadBouncer is highly dependent on basecallers and their accuracy. Since the base-calling accuracy of ONT's Guppy (in fast mode) is much higher than that of DeepNano-blitz, we highly recommend to use Guppy if GPUs are available. If you are not sure whether your GPU is powerful enough to perform live-basecalling, you can have a look at Miles Benton's great [github repository](https://github.com/sirselim/jetson_nanopore_sequencing), where he summarizes all his experiences with Adaptive Sampling on different GPUs. 
+- At the moment, CPU base-calling with DeepNano-blitz is not supported on ARM64.
+- We did not test ReadBouncer with Guppy6, but we plan to add support for Guppy6 to the next minor release.
