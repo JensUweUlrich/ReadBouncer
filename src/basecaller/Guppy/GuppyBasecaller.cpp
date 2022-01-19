@@ -21,6 +21,7 @@ namespace basecall
 		client->set_move_and_trace_enabled(false);
 		client->set_state_data_enabled(false);
 		client->set_max_reads_queued(1000);
+		client->set_reconnect_timeout(30);
 		if (client->connect() != guppy_cpp_client::Result::success)
 		{
 			throw BasecallerException(client->get_error_message());

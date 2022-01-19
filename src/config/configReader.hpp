@@ -95,9 +95,11 @@ public:
         bool command = false;
         bool show_help = false;
         bool verbose = false;
-        uint8_t minChannel = 1;
-        uint8_t maxChannel = 512;
+        uint16_t minChannel = 1;
+        uint16_t maxChannel = 512;
     };
+
+   
 
     configReader(std::string const);
 

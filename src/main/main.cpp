@@ -423,6 +423,30 @@ void inline configurationReader(configReader config, std::string const tomlFile,
 			throw;
 		}
 		
+		// if caller==guppy => test guppy client connection before starting computation
+
+#if defined(_WIN32)
+		if (stricmp(struct_.caller.c_str(), "guppy") == 0)
+#else
+		if (strcasecmp(struct_.caller.c_str(), "guppy") == 0)
+#endif
+		{
+			std::string basecall_host = struct_.guppy_host + ":" + struct_.guppy_port;
+			try
+			{
+				basecall::GuppyBasecaller* caller = new basecall::GuppyBasecaller(basecall_host, struct_.guppy_config);
+				caller->disconnect();
+			}
+			catch (basecall::BasecallerException& e)
+			{
+				nanolive_logger->error("Failed establishing connection to Guppy basecall server!");
+				nanolive_logger->error("Error message : " + std::string(e.what()));
+				nanolive_logger->flush();
+				std::cerr << "[Error] Could not connect to Guppy Basecall Server!" << std::endl;
+				std::cerr << e.what() << std::endl;
+				throw;
+			}
+		}
 		//connection_test_parser cT = { struct_.host, struct_.device, struct_.port, false, false, true, false };
 		//test_connection(cT);
 
@@ -563,7 +587,7 @@ int main(int argc, char const **argv)
 	
 	
 	configurationReader(config, tomlFile, subcommand, tomlOutput, target_files, deplete_files);
-
+	
 	NanoLiveTime.stop();
 
 	size_t peakSize = getPeakRSS();

@@ -265,7 +265,7 @@ configReader::Classify_Params configReader::classifyReader(std::fstream& tomlOut
     for (std::string file : rf_tmp)
     {
         std::filesystem::path rf(file);
-	rf = rf.make_preferred();
+	    rf = rf.make_preferred();
         if (!std::filesystem::exists(rf))
         {
             // TODO: write message in log file
@@ -481,7 +481,7 @@ configReader::Target_Params configReader::targetReader(std::fstream& tomlOutput,
     Target_Params targetStruct;
     if (channels.size() == 2 )
         targetStruct = { MinKNOW_host, device, deplete_holder, target_holder, output_fileTOML, hostCaller, portBasecaller, guppyConfig, caller, MinKNOW_port, basecallThreads, classifyThreads,
-                   significance, e, false, false, false, (uint8_t)channels[0], (uint8_t)channels[1] };
+                   significance, e, false, false, false, (uint16_t)channels[0], (uint16_t)channels[1] };
     else
         targetStruct = { MinKNOW_host, device, deplete_holder, target_holder, output_fileTOML, hostCaller, portBasecaller, guppyConfig, caller, MinKNOW_port, basecallThreads, classifyThreads,
                     significance, e, false, false, false };   
