@@ -183,7 +183,7 @@ configReader::IBF_Build_Params configReader::ibfReader(std::fstream& tomlOutput,
             std::cout << "The target file is a fasta file, start building ibf ......." << '\n';
 
             std::filesystem::path target = std::filesystem::path(output_fileTOML);
-            target /= file;
+            target /= file.filename();
             target.replace_extension("ibf");
 
             build_IBF = { target, file, false, false, k, t, f, 0, true };
@@ -209,7 +209,7 @@ configReader::IBF_Build_Params configReader::ibfReader(std::fstream& tomlOutput,
 
 
             std::filesystem::path deplete = std::filesystem::path(output_fileTOML);
-            deplete /= file;
+            deplete /= file.filename();
             deplete.replace_extension("ibf");
 
             build_IBF = { deplete, file, false, false, k, t, f, 0, true };
