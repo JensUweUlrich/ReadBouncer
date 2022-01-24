@@ -18,7 +18,7 @@ max_chunks         = 1          #(unsigned integer with default 5)
 
 [MinKNOW]
 host               = "localhost"#(ip address or name of the computer hosting MinKNOW)
-port               = 9501       #(port number used fo grpc communication by by MinKNOW instance)
+port               = "9501"       #(port number used fo grpc communication by by MinKNOW instance)
 flowcell           = "MS00000"  #(name of the flowcell used)
 
 
