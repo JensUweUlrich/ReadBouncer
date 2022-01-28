@@ -512,7 +512,7 @@ void checkRunning(Runner& runner, readuntil::Acquisition* acq)
  *	@parser: input from the command line
  *  @throws: IBFBuildException
  */
-void adaptive_sampling(configReader::Target_Params& params)
+void adaptive_sampling(ConfigReader::Target_Params& params)
 {
 	std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("ReadBouncerLog");
 	bool withTarget = false;

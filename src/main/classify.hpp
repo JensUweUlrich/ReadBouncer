@@ -58,13 +58,16 @@ std::vector<std::string> split(const string& s, char delim) {
 *	classify reads from an input file based on given depletion and/or target filters
 *	@parser	: command line input parameters
 */
-void classify_reads(configReader::Classify_Params& params)
+//void classify_reads(ConfigReader::Classify_Params& params)
+// Methods in main with vectorS
+// void classify_reads(ConfigReader config, std::vector<interleave::IBFMeta> DepletionFilters{}, std::vector<interleave::IBFMeta> TargetFilters{})
+void classify_reads(ConfigReader config)
 {
 	std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("ReadBouncerLog");
 	// create classification config
 	interleave::ClassifyConfig Conf{};
 
-	for (std::filesystem::path read_file : params.read_files)
+	for (std::filesystem::path read_file : config.IBF_Parsed.read_files)
 	{
 		// initialize depletion and target filters
 		std::vector<interleave::IBFMeta> DepletionFilters{};
@@ -74,60 +77,106 @@ void classify_reads(configReader::Classify_Params& params)
 		bool target = false;
 
 		// parse depletion IBF if given as parameter
-		for (std::filesystem::path deplete_file : params.ibf_deplete_files)
+		for (std::filesystem::path deplete_file : config.IBF_Parsed.deplete_files)
 		{
 			interleave::IBFMeta filter{};
 			filter.name = deplete_file.stem().string();
 			interleave::IBF tf{};
 			interleave::IBFConfig DepleteIBFconfig{};
-			try
-			{
-				DepleteIBFconfig.input_filter_file = deplete_file.string();
-				interleave::FilterStats stats = tf.load_filter(DepleteIBFconfig);
-				filter.filter = std::move(tf.getFilter());
-				if (params.verbose)
-					interleave::print_load_stats(stats);
-				deplete = true;
-			}
-			catch (interleave::ParseIBFFileException& e)
-			{
-				nanolive_logger->error("Error parsing depletion IBF using the following parameters");
-				nanolive_logger->error("Depletion IBF file                : " + deplete_file.string());
-				nanolive_logger->error("Error message : " + std::string(e.what()));
-				nanolive_logger->flush();
-				throw;
-			}
 
+			if (config.filterException(deplete_file)){
+				try
+				{
+					DepleteIBFconfig.input_filter_file = deplete_file.string();
+					interleave::FilterStats stats = tf.load_filter(DepleteIBFconfig);
+					filter.filter = std::move(tf.getFilter());
+					interleave::print_load_stats(stats);
+					deplete = true;
+				}
+				catch (interleave::ParseIBFFileException& e)
+				{
+					nanolive_logger->error("Error parsing depletion IBF using the following parameters");
+					nanolive_logger->error("Depletion IBF file                : " + deplete_file.string());
+					nanolive_logger->error("Error message : " + std::string(e.what()));
+					nanolive_logger->flush();
+					throw;
+				}
+
+				DepletionFilters.emplace_back(std::move(filter));
+			}
+		
+		    else
+			{
+				try
+				{
+					ibf_build_parser params;
+					std::filesystem::path out = std::filesystem::path(config.output_dir);
+					out /= deplete_file.filename();
+					out.replace_extension("ibf");
+					params = { out, deplete_file, false, false, config.IBF_Parsed.size_k, config.IBF_Parsed.threads, config.IBF_Parsed.fragment_size, 0, true };
+					//tf = buildIBF(params);
+					filter.filter = buildIBF(params);
+					}
+
+				catch (std::out_of_range& e)
+				{
+					throw ConfigReaderException(e.what());
+				}
 			DepletionFilters.emplace_back(std::move(filter));
-		}
+			}
+	}
 	    
-		// parse target IBF if given as parameter
-		for (std::filesystem::path target_file : params.ibf_target_files)
-		{
-			interleave::IBFMeta filter{};
-			filter.name = target_file.stem().string();
-			interleave::IBF tf{};
-			interleave::IBFConfig TargetIBFconfig{};
+	// parse target IBF if given as parameter
+	    for (std::filesystem::path target_file : config.IBF_Parsed.target_files)
+	{
+		interleave::IBFMeta filter{};
+		filter.name = target_file.stem().string();
+		interleave::IBF tf{};
+		interleave::IBFConfig TargetIBFconfig{};
+		if (config.filterException(target_file)){
 			try
 			{
 				TargetIBFconfig.input_filter_file = target_file.string();
 				interleave::FilterStats stats = tf.load_filter(TargetIBFconfig);
 				filter.filter = std::move(tf.getFilter());
-				if (params.verbose)
-					interleave::print_load_stats(stats);
+				interleave::print_load_stats(stats);
 				target = true;
 			}
 			catch (interleave::ParseIBFFileException& e)
-			{
-				nanolive_logger->error("Error parsing target IBF using the following parameters");
-				nanolive_logger->error("Target IBF file                : " + target_file.string());
-				nanolive_logger->error("Error message : " + std::string(e.what()));
-				nanolive_logger->flush();
-				throw;
-			}
+				{
+					nanolive_logger->error("Error building IBF for target file using the following parameters");
+					nanolive_logger->error("Depletion IBF file                : " + target_file.string());
+					nanolive_logger->error("Error message : " + std::string(e.what()));
+					nanolive_logger->flush();
+					throw;
+				}
 
 			TargetFilters.emplace_back(std::move(filter));
 		}
+		
+		else
+		{
+			try
+			{
+				ibf_build_parser params;
+				std::filesystem::path out = std::filesystem::path(config.output_dir);
+				out /= target_file.filename();
+				out.replace_extension("ibf");
+				params = { out, target_file, false, false, config.IBF_Parsed.size_k, config.IBF_Parsed.threads, config.IBF_Parsed.fragment_size, 0, true };
+				//tf = buildIBF(params);
+				filter.filter = buildIBF(params);
+			}
+
+			catch (std::out_of_range& e)
+			{
+				throw ConfigReaderException(e.what());
+			}
+
+			TargetFilters.emplace_back(std::move(filter));
+	    }
+	}
+
+
 
 		// parse input reads
 		//interleave::TReads reads;
@@ -135,8 +184,9 @@ void classify_reads(configReader::Classify_Params& params)
 
 	
 		Conf.strata_filter = -1;
-		Conf.significance = params.kmer_significance;
-		Conf.error_rate = params.error_rate;
+		//Conf.significance = params.kmer_significance;
+		Conf.significance = 0.95;
+		Conf.error_rate =config.IBF_Parsed.error_rate;
 
 		uint64_t found = 0;
 		uint16_t failed = 0;
@@ -155,7 +205,7 @@ void classify_reads(configReader::Classify_Params& params)
 		std::vector< std::ofstream> targetFastas{};
 		for (interleave::IBFMeta f : TargetFilters)
 		{
-			std::filesystem::path outfile(params.out_dir);
+			std::filesystem::path outfile(config.output_dir);
 			outfile /= f.name + ".fasta";
 			std::ofstream outf;
 			outf.open(outfile, std::ios::out);
@@ -169,7 +219,7 @@ void classify_reads(configReader::Classify_Params& params)
 			targetFastas.emplace_back(std::move(outf));
 		}
 
-		std::filesystem::path outfile(params.out_dir);
+		std::filesystem::path outfile(config.output_dir);
 		outfile /= "unclassified.fasta";
 		if (!seqan::open(UnclassifiedOut, seqan::toCString(outfile.string())))
 		{
@@ -206,8 +256,7 @@ void classify_reads(configReader::Classify_Params& params)
 			}
 
 			// read length has to be at least the size of the prefix used for read classification
-			if (seqan::length(seq) < params.preLen)
-			{
+			if (seqan::length(seq) < config.IBF_Parsed.chunk_length)			{
 				too_short++;
 				continue;
 			}
@@ -222,10 +271,10 @@ void classify_reads(configReader::Classify_Params& params)
 				// as long as rea
 				uint8_t i = 0;
 				// try to classify read parser.max_chunks times
-				while (i < params.max_chunks)
+				while (i < config.IBF_Parsed.max_chunks)
 				{
-					uint64_t fragend = (i+1) * params.preLen;
-					uint64_t fragstart = i * params.preLen;
+					uint64_t fragend = (i+1) * config.IBF_Parsed.chunk_length;
+					uint64_t fragstart = i * config.IBF_Parsed.chunk_length;
 					// make sure that last fragment ends at last position of the reference sequence
 					if (fragend > length(seq)) fragend = length(seq);
 					seqan::Infix< seqan::CharString >::Type fragment = seqan::infix(seq, fragstart, fragend);
@@ -335,7 +384,7 @@ void classify_reads(configReader::Classify_Params& params)
 				sstr << "Number of classified reads                         :   " << found;
 				nanolive_logger->info(sstr.str());
 				sstr.str("");
-				sstr << "Number of of too short reads (len < " << params.preLen << ")   :   " << too_short;
+				sstr << "Number of of too short reads (len < " << config.IBF_Parsed.chunk_length << ")   :   " << too_short;
 				nanolive_logger->info(sstr.str());
 				sstr.str("");
 				sstr << "Number of all reads                                :   " << readCounter;
@@ -359,7 +408,7 @@ void classify_reads(configReader::Classify_Params& params)
 		std::stringstream sstr;
 		std::cout << "------------------------------- Final Results -------------------------------" << std::endl;
 		std::cout << "Number of classified reads                         :   " << found << std::endl;
-		std::cout << "Number of of too short reads (len < " << params.preLen << ")           :   " << too_short << std::endl;
+		std::cout << "Number of of too short reads (len < " << config.IBF_Parsed.chunk_length << ")           :   " << too_short << std::endl;
 		std::cout << "Number of all reads                                :   " << readCounter << std::endl;
 
 		for (interleave::IBFMeta f : TargetFilters)

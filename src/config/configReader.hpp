@@ -42,41 +42,16 @@ extern "C"
     };
 
     
-class configReader {
+class ConfigReader {
 
 public:
 
-    // Define many structs as Lyre to keep the reproducibility of Lyra command line
-    struct IBF_Build_Params
-    {
-        std::filesystem::path bloom_filter_output_path{ };
-        std::filesystem::path reference_file{};
-        bool command = false;
-        bool show_help = false;
-        int size_k = 13;
-        int threads = 1;
-        int fragment_size = 100000;
-        int filter_size = 0;
-        bool verbose = false;
-    };
-
-    struct Classify_Params
-    {
-        std::vector<std::filesystem::path> ibf_deplete_files{ };
-        std::vector<std::filesystem::path> ibf_target_files{ };
-        std::vector<std::filesystem::path> read_files{};
-        std::filesystem::path out_dir{};
-        bool command = false;
-        bool show_help = false;
-        double kmer_significance = 0.95;
-        double error_rate = 0.1;
-        int threads = 1;
-        int preLen = 360;
-        int max_chunks = 1;
-        bool verbose = false;
-    };
-
-    struct Target_Params
+   toml::basic_value<struct toml::discard_comments, std::unordered_map, std::vector> configuration_ {};
+   std::filesystem::path output_dir{};
+   std::filesystem::path log_dir{};
+   std::string usage; 
+   
+   struct Target_Params// TODO
     {
         std::string host = "127.0.0.1";
         std::string device{};
@@ -95,41 +70,56 @@ public:
         bool command = false;
         bool show_help = false;
         bool verbose = false;
-        uint8_t minChannel = 1;
-        uint8_t maxChannel = 512;
+        uint16_t minChannel = 1;
+        uint16_t maxChannel = 512;
     };
 
-    configReader(std::string const);
+   struct IBF_Params 
+    {
+        int size_k = 13;
+        int fragment_size = 100000;
+        int threads = 1;
+        std::vector<std::filesystem::path> target_files{};
+	    std::vector<std::filesystem::path> deplete_files{};
+        std::vector<std::filesystem::path> read_files{};
+        double error_rate = 0.1;
+        int chunk_length = 360;
+        int max_chunks = 1;
+    }IBF_Parsed;
 
-    std::string  usage( );
+    struct MinKNOW_Params
+    {
+        std::string host = "127.0.0.1";
+        std::string port = "9501";
+        std::string flowcell{};
+        uint8_t minChannel = 1;
+        uint8_t maxChannel = 512;
+    }MinKNOW_Parsed;
 
-    std::fstream writeTOML();
+    struct Basecaller_Params 
+    {
+        std::string caller = "DeepNano";
+        std::string guppy_host = "127.0.0.1";
+        std::string guppy_port = "5555";
+        int basecall_threads = 3;
+        std::string guppy_config = "dna_r9.4.1_450bps_fast";
+    }Basecaller_Parsed;
 
+    ConfigReader(std::string const);
+
+    void parse_general();
     bool filterException(std::filesystem::path& file);
+    void parse();
+    void createLog(std::string& usage);
 
-    IBF_Build_Params ibfReader(std::fstream& tomlOutput, std::string& usage, 
-                                 std::vector<std::filesystem::path>& target_files_, 
-                                 std::vector<std::filesystem::path>& deplete_files_);
-
-    void buildIBF_(IBF_Build_Params& parser);
-
-    Classify_Params  classifyReader(std::fstream& tomlOutput, std::string& usage, 
-                                          std::vector<std::filesystem::path>& target_files_, 
-                                          std::vector<std::filesystem::path>& deplete_files_);
-
-    //live_depletion_parser_  depleteReader(std::fstream& tomlOutput, std::string usage, std::string target_files_, std::string deplete_files_);
-
-    Target_Params targetReader(std::fstream& tomlOutput, std::string& usage, 
+    /*Target_Params targetReader( std::string& usage, 
                                       std::vector<std::filesystem::path>& target_files_, 
-                                      std::vector<std::filesystem::path>& deplete_files_);
-
-   
-
+                                      std::vector<std::filesystem::path>& deplete_files_);*/
 
 private:
 
-    std::string tomlFile;
-    toml::basic_value<struct toml::discard_comments, std::unordered_map, std::vector> toml;
+    std::string tomlInputFile{};
+    void readIBF(), readMinKNOW(), readBasecaller();
 
 };
 
