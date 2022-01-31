@@ -487,38 +487,13 @@ void run_program(ConfigReader config){
 	
 	else if (subcommand == "classify") {
 
-		config.createLog(config.usage);
-		//std::vector<interleave::IBFMeta> DepletionFilters = getIBF(config, false, true);
-		//std::vector<interleave::IBFMeta> TargetFilters = getIBF(config, true, false);
-		classify_reads(config, getIBF(config, false, true), getIBF(config, true, false));
-		
-
-	}
-
-	else if (subcommand == "target") {
-
-		config.createLog(config.usage);
-		adaptive_sampling(config, getIBF(config, false, true), getIBF(config, true, false));
-	}	
-
-		/*
-		ConfigReader::Target_Params struct_{};
 		try
 		{
-			 struct_ = config.targetReader(subcommand, target_files, deplete_files);
-		}
-		catch (ConfigReaderException& e)
-		{
-			std::cerr << "Error in reading TOML configuration file!" << std::endl;
-			std::cerr << e.what() << std::endl;
-			throw;
-		}
-		*/
-		
-		
-		/*try
-		{
-		    adaptive_sampling(struct_);
+			
+			config.createLog(config.usage);
+			//std::vector<interleave::IBFMeta> DepletionFilters = getIBF(config, false, true);// avoid copying the IBF's 
+			//std::vector<interleave::IBFMeta> TargetFilters = getIBF(config, true, false);// avoid copying the IBF's 
+			classify_reads(config, getIBF(config, false, true), getIBF(config, true, false));
 		}
 		catch(std::exception& e)
 		{
@@ -526,7 +501,22 @@ void run_program(ConfigReader config){
 		    return;
 		}
 
-	}*/
+	}
+
+	else if (subcommand == "target") {
+
+		try
+		{
+		    config.createLog(config.usage);
+			adaptive_sampling(config, getIBF(config, false, true), getIBF(config, true, false));
+		}
+		catch(std::exception& e)
+		{
+		    std::cerr << e.what() << std::endl;
+		    return;
+		}
+	}	
+
 
 	else if( subcommand == "test") {
 
@@ -548,7 +538,7 @@ void run_program(ConfigReader config){
 	else{
 
 		std::cerr << "Please define one of the usages:  [build, target, classify, test]" << '\n';
-		exit(0);
+		exit(1);
 	}
 
 }

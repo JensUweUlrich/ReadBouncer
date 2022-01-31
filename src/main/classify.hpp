@@ -56,11 +56,8 @@ std::vector<std::string> split(const string& s, char delim) {
 
 /**
 *	classify reads from an input file based on given depletion and/or target filters
-*	@parser	: command line input parameters
+*	@parser	: toml input parameters
 */
-//void classify_reads(ConfigReader::Classify_Params& params)
-// Methods in main with vectorS
-// void classify_reads(ConfigReader config, std::vector<interleave::IBFMeta> DepletionFilters{}, std::vector<interleave::IBFMeta> TargetFilters{})
 void classify_reads(ConfigReader config, std::vector<interleave::IBFMeta> DepletionFilters, std::vector<interleave::IBFMeta> TargetFilters)
 {
 	std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("ReadBouncerLog");
@@ -94,7 +91,6 @@ void classify_reads(ConfigReader config, std::vector<interleave::IBFMeta> Deplet
 		//interleave::TReads reads;
 		//parse_reads(parser.read_file, reads, parser.preLen);
 
-	
 		Conf.strata_filter = -1;
 		//Conf.significance = params.kmer_significance;
 		Conf.significance = 0.95;
@@ -330,7 +326,6 @@ void classify_reads(ConfigReader config, std::vector<interleave::IBFMeta> Deplet
 
 			
 			//seqan::close(f.outfile); 
-			f.classified=0;
 
 		}
 		std::cout << "Average Processing Time Read Classification        :   " << avgClassifyduration << std::endl;

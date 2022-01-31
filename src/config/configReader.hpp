@@ -51,28 +51,6 @@ public:
    std::filesystem::path log_dir{};
    std::string usage; 
    
-   struct Target_Params// TODO
-    {
-        std::string host = "127.0.0.1";
-        std::string device{};
-        std::vector<std::filesystem::path> ibf_deplete_files{ };
-        std::vector<std::filesystem::path> ibf_target_files{ };
-        std::filesystem::path out_dir{};
-        std::string guppy_host = "127.0.0.1";
-        std::string guppy_port = "5555";
-        std::string guppy_config = "dna_r9.4.1_450bps_fast";
-        std::string caller = "DeepNano";
-        std::string port = "9501";
-        int basecall_threads = 3;
-        int classify_threads = 3;
-        double kmer_significance = 0.95;
-        double error_rate = 0.1;
-        bool command = false;
-        bool show_help = false;
-        bool verbose = false;
-        uint16_t minChannel = 1;
-        uint16_t maxChannel = 512;
-    };
 
    struct IBF_Params 
     {
@@ -112,9 +90,6 @@ public:
     void parse();
     void createLog(std::string& usage);
 
-    /*Target_Params targetReader( std::string& usage, 
-                                      std::vector<std::filesystem::path>& target_files_, 
-                                      std::vector<std::filesystem::path>& deplete_files_);*/
 
 private:
 
