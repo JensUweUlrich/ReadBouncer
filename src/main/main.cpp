@@ -301,24 +301,132 @@ double cputime()
 #endif
 
 
-// [Error] 
-/*
-/usr/include/c++/9/bits/stl_uninitialized.h: In instantiation of ‘_ForwardIterator std::uninitialized_copy(_InputIterator, _InputIterator, _ForwardIterator) [with _InputIterator = __gnu_cxx::__normal_iterator<const interleave::IBFMeta*, std::vector<interleave::IBFMeta> >; _ForwardIterator = interleave::IBFMeta*]’:
-/usr/include/c++/9/bits/stl_uninitialized.h:307:37:   required from ‘_ForwardIterator std::__uninitialized_copy_a(_InputIterator, _InputIterator, _ForwardIterator, std::allocator<_Tp>&) [with _InputIterator = __gnu_cxx::__normal_iterator<const interleave::IBFMeta*, std::vector<interleave::IBFMeta> >; _ForwardIterator = interleave::IBFMeta*; _Tp = interleave::IBFMeta]’
-/usr/include/c++/9/bits/stl_vector.h:555:31:   required from ‘std::vector<_Tp, _Alloc>::vector(const std::vector<_Tp, _Alloc>&) [with _Tp = interleave::IBFMeta; _Alloc = std::allocator<interleave::IBFMeta>]’
-/mnt/c/bug29/ReadBouncer/src/main/classify.hpp:66:76:   required from here
-/usr/include/c++/9/bits/stl_uninitialized.h:127:72: error: static assertion failed: result type must be constructible from value type of input range
-  127 |       static_assert(is_constructible<_ValueType2, decltype(*__first)>::value,
-      |                                                                        ^~~~~
+/**
+ * Build or load target/deplete IBF's for classify or target usage
+ * @param  config ConfigReader constructor 
+ * @param  targetFilter bool to parse target filters/fasta files
+ * @param  depleteFilter bool to parse deplete filters/fasta files
+ * @return vector of loaded/constructed IBF's 
+ */
 
-*/
-/*std::vector<interleave::IBFMeta> getIBF (ConfigReader config){
+std::vector<interleave::IBFMeta> getIBF (ConfigReader config, bool targetFilter, bool depleteFilter){
 
 	std::vector<interleave::IBFMeta> DepletionFilters{};
 	std::vector<interleave::IBFMeta> TargetFilters{};
 
-	return 	DepletionFilters;
-}*/
+	if(depleteFilter){
+		// parse depletion IBF if given as parameter
+		for (std::filesystem::path deplete_file : config.IBF_Parsed.deplete_files)
+		{
+			interleave::IBFMeta filter{};
+			filter.name = deplete_file.stem().string();
+			interleave::IBF tf{};
+			interleave::IBFConfig DepleteIBFconfig{};
+
+			if (config.filterException(deplete_file)){
+				try
+				{
+					DepleteIBFconfig.input_filter_file = deplete_file.string();
+					interleave::FilterStats stats = tf.load_filter(DepleteIBFconfig);
+					filter.filter = std::move(tf.getFilter());
+					interleave::print_load_stats(stats);
+					//deplete = true;
+				}
+				catch (interleave::ParseIBFFileException& e)
+				{
+					nanolive_logger->error("Error parsing depletion IBF using the following parameters");
+					nanolive_logger->error("Depletion IBF file                : " + deplete_file.string());
+					nanolive_logger->error("Error message : " + std::string(e.what()));
+					nanolive_logger->flush();
+					throw;
+				}
+
+				DepletionFilters.emplace_back(std::move(filter));
+			}
+		
+		    else
+			{
+				try
+				{
+					ibf_build_parser params;
+					std::filesystem::path out = std::filesystem::path(config.output_dir);
+					out /= deplete_file.filename();
+					out.replace_extension("ibf");
+					params = { out, deplete_file, false, false, config.IBF_Parsed.size_k, config.IBF_Parsed.threads, config.IBF_Parsed.fragment_size, 0, true };
+					//tf = buildIBF(params);
+					filter.filter = buildIBF(params);
+					//deplete = true;
+					}
+
+				catch (std::out_of_range& e)
+				{
+					throw ConfigReaderException(e.what());
+				}
+			DepletionFilters.emplace_back(std::move(filter));
+			}
+	}
+		return DepletionFilters;
+	}
+
+	if(targetFilter){
+		 for (std::filesystem::path target_file : config.IBF_Parsed.target_files)
+	{
+		interleave::IBFMeta filter{};
+		filter.name = target_file.stem().string();
+		interleave::IBF tf{};
+		interleave::IBFConfig TargetIBFconfig{};
+		if (config.filterException(target_file)){
+			try
+			{
+				TargetIBFconfig.input_filter_file = target_file.string();
+				interleave::FilterStats stats = tf.load_filter(TargetIBFconfig);
+				filter.filter = std::move(tf.getFilter());
+				interleave::print_load_stats(stats);
+				//target = true;
+			}
+			catch (interleave::ParseIBFFileException& e)
+				{
+					nanolive_logger->error("Error building IBF for target file using the following parameters");
+					nanolive_logger->error("Depletion IBF file                : " + target_file.string());
+					nanolive_logger->error("Error message : " + std::string(e.what()));
+					nanolive_logger->flush();
+					throw;
+				}
+
+			TargetFilters.emplace_back(std::move(filter));
+		}
+		
+		else
+		{
+			try
+			{
+				ibf_build_parser params;
+				std::filesystem::path out = std::filesystem::path(config.output_dir);
+				out /= target_file.filename();
+				out.replace_extension("ibf");
+				params = { out, target_file, false, false, config.IBF_Parsed.size_k, config.IBF_Parsed.threads, config.IBF_Parsed.fragment_size, 0, true };
+				//tf = buildIBF(params);
+				filter.filter = buildIBF(params);
+			}
+
+			catch (std::out_of_range& e)
+			{
+				throw ConfigReaderException(e.what());
+			}
+
+			TargetFilters.emplace_back(std::move(filter));
+	    }
+	}
+
+		return TargetFilters;
+	}
+
+	}
+
+/**
+ * Run ReadBouncer using the provided parameters in config.toml file
+ * @param  config ConfigReader constructor 
+ */
 
 void run_program(ConfigReader config){
 
@@ -380,14 +488,17 @@ void run_program(ConfigReader config){
 	else if (subcommand == "classify") {
 
 		config.createLog(config.usage);
-		classify_reads(config);
+		//std::vector<interleave::IBFMeta> DepletionFilters = getIBF(config, false, true);
+		//std::vector<interleave::IBFMeta> TargetFilters = getIBF(config, true, false);
+		classify_reads(config, getIBF(config, false, true), getIBF(config, true, false));
 		
 
 	}
 
 	else if (subcommand == "target") {
 
-		//config.createLog(config.usage);
+		config.createLog(config.usage);
+		adaptive_sampling(config, getIBF(config, false, true), getIBF(config, true, false));
 	}	
 
 		/*
