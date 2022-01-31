@@ -348,11 +348,11 @@ std::vector<interleave::IBFMeta> getIBF (ConfigReader config, bool targetFilter,
 			{
 				try
 				{
-					ibf_build_parser params;
+					//ibf_build_parser params;
 					std::filesystem::path out = std::filesystem::path(config.output_dir);
 					out /= deplete_file.filename();
 					out.replace_extension("ibf");
-					params = { out, deplete_file, false, false, config.IBF_Parsed.size_k, config.IBF_Parsed.threads, config.IBF_Parsed.fragment_size, 0, true };
+					ibf_build_parser params = { out.string(), deplete_file.string(), false, false, config.IBF_Parsed.size_k, config.IBF_Parsed.threads, config.IBF_Parsed.fragment_size, 0, true };
 					//tf = buildIBF(params);
 					filter.filter = buildIBF(params);
 					//deplete = true;
@@ -400,11 +400,11 @@ std::vector<interleave::IBFMeta> getIBF (ConfigReader config, bool targetFilter,
 		{
 			try
 			{
-				ibf_build_parser params;
+				//ibf_build_parser params;
 				std::filesystem::path out = std::filesystem::path(config.output_dir);
 				out /= target_file.filename();
 				out.replace_extension("ibf");
-				params = { out, target_file, false, false, config.IBF_Parsed.size_k, config.IBF_Parsed.threads, config.IBF_Parsed.fragment_size, 0, true };
+				ibf_build_parser params = { out.string(), target_file.string(), false, false, config.IBF_Parsed.size_k, config.IBF_Parsed.threads, config.IBF_Parsed.fragment_size, 0, true };
 				//tf = buildIBF(params);
 				filter.filter = buildIBF(params);
 			}
@@ -436,7 +436,7 @@ void run_program(ConfigReader config){
 
 	if (subcommand == "build") {
 
-		ibf_build_parser params;
+		//ibf_build_parser params;
 		config.createLog(config.usage);
 		
 		for (std::filesystem::path file : config.IBF_Parsed.target_files)
@@ -455,7 +455,7 @@ void run_program(ConfigReader config){
 				out /= file.filename();
 				out.replace_extension("ibf");
 				
-				params = { out, file, false, false, config.IBF_Parsed.size_k, config.IBF_Parsed.threads, config.IBF_Parsed.fragment_size, 0, true };
+				ibf_build_parser params = { out.string(), file.string(), false, false, config.IBF_Parsed.size_k, config.IBF_Parsed.threads, config.IBF_Parsed.fragment_size, 0, true };
 				buildIBF(params);
 				std::cout <<'\n';
 			}
@@ -477,7 +477,7 @@ void run_program(ConfigReader config){
 				out /= file.filename();
 				out.replace_extension("ibf");
 
-				params = { out, file, false, false, config.IBF_Parsed.size_k, config.IBF_Parsed.threads, config.IBF_Parsed.fragment_size, 0, true };
+				ibf_build_parser params = { out.string(), file.string(), false, false, config.IBF_Parsed.size_k, config.IBF_Parsed.threads, config.IBF_Parsed.fragment_size, 0, true };
 				buildIBF(params);
 				std::cout <<'\n';
 				}
