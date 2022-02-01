@@ -262,7 +262,7 @@ void ConfigReader::readIBF(){
 			if (!std::filesystem::exists(file))
 			{
 				// TODO: write message in log file
-				throw ConfigReader("[Error] The following target file does not exist: " + file.string());
+				throw ConfigReaderException("[Error] The following target file does not exist: " + file.string());
 			}
 		}
 
@@ -271,7 +271,7 @@ void ConfigReader::readIBF(){
 			if (!std::filesystem::exists(file))
 			{
 				// TODO: write message in log file
-				throw ConfigReader("[Error] The following deplete file does not exist: " + file.string());
+				throw ConfigReaderException("[Error] The following deplete file does not exist: " + file.string());
 			}
 		}
 
@@ -294,7 +294,7 @@ void ConfigReader::readIBF(){
         if (!std::filesystem::exists(rf))
         {
             // TODO: write message in log file
-            throw ConfigReader("[Error] The following read file does not exist: " + rf.string());
+            throw ConfigReaderException("[Error] The following read file does not exist: " + rf.string());
         }
         else
         {

@@ -330,7 +330,6 @@ std::vector<interleave::IBFMeta> getIBF (ConfigReader config, bool targetFilter,
 					interleave::FilterStats stats = tf.load_filter(DepleteIBFconfig);
 					filter.filter = std::move(tf.getFilter());
 					interleave::print_load_stats(stats);
-					//deplete = true;
 				}
 				catch (interleave::ParseIBFFileException& e)
 				{
@@ -353,9 +352,7 @@ std::vector<interleave::IBFMeta> getIBF (ConfigReader config, bool targetFilter,
 					out /= deplete_file.filename();
 					out.replace_extension("ibf");
 					ibf_build_parser params = { out.string(), deplete_file.string(), false, false, config.IBF_Parsed.size_k, config.IBF_Parsed.threads, config.IBF_Parsed.fragment_size, 0, true };
-					//tf = buildIBF(params);
 					filter.filter = buildIBF(params);
-					//deplete = true;
 					}
 
 				catch (std::out_of_range& e)
@@ -382,7 +379,7 @@ std::vector<interleave::IBFMeta> getIBF (ConfigReader config, bool targetFilter,
 				interleave::FilterStats stats = tf.load_filter(TargetIBFconfig);
 				filter.filter = std::move(tf.getFilter());
 				interleave::print_load_stats(stats);
-				//target = true;
+
 			}
 			catch (interleave::ParseIBFFileException& e)
 				{
@@ -405,7 +402,6 @@ std::vector<interleave::IBFMeta> getIBF (ConfigReader config, bool targetFilter,
 				out /= target_file.filename();
 				out.replace_extension("ibf");
 				ibf_build_parser params = { out.string(), target_file.string(), false, false, config.IBF_Parsed.size_k, config.IBF_Parsed.threads, config.IBF_Parsed.fragment_size, 0, true };
-				//tf = buildIBF(params);
 				filter.filter = buildIBF(params);
 			}
 
@@ -444,7 +440,7 @@ void run_program(ConfigReader config){
 			if (!std::filesystem::exists(file))
 			{
 				// TODO: write message in log file
-				throw ConfigReader("[Error] The following target file does not exist: " + file.string());
+				throw ConfigReaderException("[Error] The following target file does not exist: " + file.string());
 			}
 			
 			if (!config.filterException(file))
@@ -459,6 +455,11 @@ void run_program(ConfigReader config){
 				buildIBF(params);
 				std::cout <<'\n';
 			}
+
+			else 
+			{
+				std::cout<< "[INFO] The following target file is a IBF file: " << file.string() << '\n';
+			}
 		}
 
 		for (std::filesystem::path file : config.IBF_Parsed.deplete_files)
@@ -466,7 +467,7 @@ void run_program(ConfigReader config){
 			if (!std::filesystem::exists(file))
 			{
 				// TODO: write message in log file
-				throw ConfigReader("[Error] The following target file does not exist: " + file.string());
+				throw ConfigReaderException("[Error] The following deplete file does not exist: " + file.string());
 			}
 			
 			if (!config.filterException(file))
@@ -480,7 +481,11 @@ void run_program(ConfigReader config){
 				ibf_build_parser params = { out.string(), file.string(), false, false, config.IBF_Parsed.size_k, config.IBF_Parsed.threads, config.IBF_Parsed.fragment_size, 0, true };
 				buildIBF(params);
 				std::cout <<'\n';
-				}
+			}
+			else 
+			{
+				std::cout<< "[INFO] The following deplete file is a IBF file: " << file.string() << '\n';
+			}
 		}
 
 }
