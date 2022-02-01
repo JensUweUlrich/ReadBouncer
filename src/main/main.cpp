@@ -28,10 +28,8 @@
 #include "IBF.hpp"
 
 // tomel parser
-//#include "parsertoml.hpp"
 #include "configReader.hpp"
-// toml library 
-#include "../toml11/toml.hpp"
+
 
 // Basecalling library
 #if !defined(ARM_BUILD)
