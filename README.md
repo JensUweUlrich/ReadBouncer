@@ -1,5 +1,9 @@
 # ReadBouncer
 
+**ReadBouncer: Precise and Scalable Adaptive Sampling for Nanopore Sequencing**<br>
+Jens-Uwe Ulrich, Ahmad Lutfi, Kilian Rutzen, Bernhard Y. Renard<br>
+bioRxiv 2022.02.01.478636; doi: https://doi.org/10.1101/2022.02.01.478636
+
 ## Table of Contents
 
 - [Overview](#started)
