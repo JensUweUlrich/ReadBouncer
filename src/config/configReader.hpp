@@ -70,8 +70,8 @@ public:
         std::string host = "127.0.0.1";
         std::string port = "9501";
         std::string flowcell{};
-        uint8_t minChannel = 1;
-        uint8_t maxChannel = 512;
+        uint16_t minChannel = 1;
+        uint16_t maxChannel = 512;
     }MinKNOW_Parsed;
 
     struct Basecaller_Params 
@@ -83,6 +83,7 @@ public:
         std::string guppy_config = "dna_r9.4.1_450bps_fast";
     }Basecaller_Parsed;
 
+    ConfigReader() = default;
     ConfigReader(std::string const);
 
     void parse_general();

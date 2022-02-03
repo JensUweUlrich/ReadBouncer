@@ -359,27 +359,29 @@ std::vector<interleave::IBFMeta> getIBF (ConfigReader config, bool targetFilter,
 				}
 			DepletionFilters.emplace_back(std::move(filter));
 			}
-	}
+		}
 		return DepletionFilters;
 	}
 
-	if(targetFilter){
-		 for (std::filesystem::path target_file : config.IBF_Parsed.target_files)
+	if(targetFilter)
 	{
-		interleave::IBFMeta filter{};
-		filter.name = target_file.stem().string();
-		interleave::IBF tf{};
-		interleave::IBFConfig TargetIBFconfig{};
-		if (config.filterException(target_file)){
-			try
+		for (std::filesystem::path target_file : config.IBF_Parsed.target_files)
+		{
+			interleave::IBFMeta filter{};
+			filter.name = target_file.stem().string();
+			interleave::IBF tf{};
+			interleave::IBFConfig TargetIBFconfig{};
+			if (config.filterException(target_file))
 			{
-				TargetIBFconfig.input_filter_file = target_file.string();
-				interleave::FilterStats stats = tf.load_filter(TargetIBFconfig);
-				filter.filter = std::move(tf.getFilter());
-				interleave::print_load_stats(stats);
+				try
+				{
+					TargetIBFconfig.input_filter_file = target_file.string();
+					interleave::FilterStats stats = tf.load_filter(TargetIBFconfig);
+					filter.filter = std::move(tf.getFilter());
+					interleave::print_load_stats(stats);
 
-			}
-			catch (interleave::ParseIBFFileException& e)
+				}
+				catch (interleave::ParseIBFFileException& e)
 				{
 					nanolive_logger->error("Error building IBF for target file using the following parameters");
 					nanolive_logger->error("Depletion IBF file                : " + target_file.string());
@@ -388,34 +390,34 @@ std::vector<interleave::IBFMeta> getIBF (ConfigReader config, bool targetFilter,
 					throw;
 				}
 
-			TargetFilters.emplace_back(std::move(filter));
-		}
+				TargetFilters.emplace_back(std::move(filter));
+			}
 		
-		else
-		{
-			try
+			else
 			{
-				//ibf_build_parser params;
-				std::filesystem::path out = std::filesystem::path(config.output_dir);
-				out /= target_file.filename();
-				out.replace_extension("ibf");
-				ibf_build_parser params = { out.string(), target_file.string(), false, false, config.IBF_Parsed.size_k, config.IBF_Parsed.threads, config.IBF_Parsed.fragment_size, 0, true };
-				filter.filter = buildIBF(params);
-			}
+				try
+				{
+					//ibf_build_parser params;
+					std::filesystem::path out = std::filesystem::path(config.output_dir);
+					out /= target_file.filename();
+					out.replace_extension("ibf");
+					ibf_build_parser params = { out.string(), target_file.string(), false, false, config.IBF_Parsed.size_k, config.IBF_Parsed.threads, config.IBF_Parsed.fragment_size, 0, true };
+					filter.filter = buildIBF(params);
+				}
 
-			catch (std::out_of_range& e)
-			{
-				throw ConfigReaderException(e.what());
-			}
+				catch (std::out_of_range& e)
+				{
+					throw ConfigReaderException(e.what());
+				}
 
-			TargetFilters.emplace_back(std::move(filter));
-	    }
-	}
+				TargetFilters.emplace_back(std::move(filter));
+			}
+		}
 
 		return TargetFilters;
 	}
 
-	}
+}
 
 /**
  * Run ReadBouncer using the provided parameters in config.toml file
@@ -424,8 +426,14 @@ std::vector<interleave::IBFMeta> getIBF (ConfigReader config, bool targetFilter,
 
 void run_program(ConfigReader config){
 
-	
-	config.parse(); // parse all params from the different Moduls (one time parse and stores in struct)
+	try
+	{
+		config.parse(); // parse all params from the different Moduls (one time parse and stores in struct)
+	}
+	catch (ConfigReaderException& e)
+	{
+		std::cerr << e.what() << std::endl;
+	}
 	std::string subcommand = config.usage;
 
 	if (subcommand == "build") {
@@ -438,7 +446,8 @@ void run_program(ConfigReader config){
 			if (!std::filesystem::exists(file))
 			{
 				// TODO: write message in log file
-				throw ConfigReaderException("[Error] The following target file does not exist: " + file.string());
+				std::cerr << "[Error] The following target file does not exist: " << file.string() << std::endl;
+				return;
 			}
 			
 			if (!config.filterException(file))
@@ -456,7 +465,7 @@ void run_program(ConfigReader config){
 
 			else 
 			{
-				std::cout<< "[INFO] The following target file is a IBF file: " << file.string() << '\n';
+				std::cout<< "[INFO] The following target file is an IBF file: " << file.string() << '\n';
 			}
 		}
 
@@ -465,7 +474,8 @@ void run_program(ConfigReader config){
 			if (!std::filesystem::exists(file))
 			{
 				// TODO: write message in log file
-				throw ConfigReaderException("[Error] The following deplete file does not exist: " + file.string());
+				std::cerr << "[Error] The following deplete file does not exist: " << file.string() << std::endl;
+				return;
 			}
 			
 			if (!config.filterException(file))
@@ -482,7 +492,7 @@ void run_program(ConfigReader config){
 			}
 			else 
 			{
-				std::cout<< "[INFO] The following deplete file is a IBF file: " << file.string() << '\n';
+				std::cout<< "[INFO] The following deplete file is an IBF file: " << file.string() << '\n';
 			}
 		}
 
@@ -557,8 +567,18 @@ int main(int argc, char const **argv)
 	NanoLiveRoot = binPath.substr(0, binPath.find("bin"));
 
 	std::string const tomlFile = argv[1];
-	ConfigReader config(tomlFile);
-	config.parse_general();
+	ConfigReader config{};
+	try
+	{
+		config = ConfigReader(tomlFile);
+		config.parse_general();
+	}
+	catch (ConfigReaderException& e)
+	{
+		std::cerr << "Error in " << tomlFile << std::endl;
+		std::cerr << e.what() << std::endl;
+		return 1;
+	}
 
 	initializeLogger(config);
 	run_program(config);

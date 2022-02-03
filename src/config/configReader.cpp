@@ -35,8 +35,16 @@ ConfigReader::ConfigReader(std::string const tomlFile) {
 
         this->tomlInputFile = tomlFile;
         std::ifstream tomlFileReadBouncer(tomlInputFile, std::ios_base::binary);
-        this->configuration_ = toml::parse(tomlFileReadBouncer, /*optional -> */ tomlInputFile);
+        try
+        {
+            this->configuration_ = toml::parse(tomlFileReadBouncer, /*optional -> */ tomlInputFile);
+        }
+        catch (toml::exception& e)
+        {
+            throw ConfigReaderException(e.what());
+        }
 
+        // TODO: throw ConfigReaderException
         if (!tomlFileReadBouncer.is_open()) {
             std::cerr << "Error parsing the toml file: " << tomlInputFile << '\n';
     }
@@ -72,13 +80,11 @@ void ConfigReader::parse_general(){
 	}
 	catch (const toml::exception& e)
 	{
-		std::cerr << "Could not parse " << tomlInputFile << std::endl;
-		std::cerr << e.what() << std::endl;
+        throw ConfigReaderException(e.what());
 	}
 	catch (std::out_of_range& e)
 	{
-		std::cerr << "Error in " << tomlInputFile << std::endl;
-		std::cerr << e.what() << std::endl;
+        throw ConfigReaderException(e.what());
 
 	}
 }
@@ -154,12 +160,13 @@ void ConfigReader::createLog(std::string& usage){
 				{ "threads", IBF_Parsed.threads },
 				{ "fragment-size", IBF_Parsed.fragment_size},
                 { "exp_seq_error_rate", IBF_Parsed.error_rate},
-                { "chunk_length", IBF_Parsed.chunk_length},
-                { "max_chunks", IBF_Parsed.max_chunks},
                 {"host" , MinKNOW_Parsed.host},
                 {"port" , MinKNOW_Parsed.port},
                 {"flowcell" , MinKNOW_Parsed.flowcell},
+                {"MinChannel", MinKNOW_Parsed.minChannel},
+                {"MaxChannel", MinKNOW_Parsed.maxChannel},
                 {"caller", Basecaller_Parsed.caller},
+                {"GuppyConfig", Basecaller_Parsed.guppy_config},
                 {"host", Basecaller_Parsed.guppy_host},
                 {"port", Basecaller_Parsed.guppy_port},
                 {"threads", Basecaller_Parsed.basecall_threads},
@@ -238,7 +245,7 @@ void ConfigReader::readIBF(){
     catch (std::out_of_range& e)
     {
         // TODO: write message in log file
-        throw ConfigReader(e.what());
+        throw ConfigReaderException(e.what());
     }
 
     try
@@ -246,35 +253,59 @@ void ConfigReader::readIBF(){
 		std::vector<std::string> tmp = toml::find<std::vector<std::string>>(this->configuration_, "IBF", "target_files");
 		for (std::string s : tmp)
 			IBF_Parsed.target_files.emplace_back((std::filesystem::path(s)).make_preferred());
-		tmp.clear();
-		tmp = toml::find<std::vector<std::string>>(this->configuration_, "IBF", "deplete_files");
-		for (std::string s : tmp)
-			IBF_Parsed.deplete_files.emplace_back((std::filesystem::path(s)).make_preferred()); 
 	}
 	catch (toml::exception& e)
 	{
-		throw ConfigReader(e.what());
-
+		throw ConfigReaderException(e.what());
 	}
+    catch (std::out_of_range& e)
+    {
+        // Do nothing
+        // sometimes we only want to specify deplete files
+    }
+
+
+    try
+    {
+        std::vector<std::string> tmp = toml::find<std::vector<std::string>>(this->configuration_, "IBF", "deplete_files");
+        for (std::string s : tmp)
+            IBF_Parsed.deplete_files.emplace_back((std::filesystem::path(s)).make_preferred());
+    }
+    catch (toml::exception& e)
+    {
+        throw ConfigReaderException(e.what());
+    }
+    catch (std::out_of_range& e)
+    {
+        // Do nothing
+        // sometimes we only want to specify target files
+    }
+
+    if (!(this->usage.compare("test") == 0))
+    {
+        if (IBF_Parsed.deplete_files.size() + IBF_Parsed.target_files.size() == 0)
+        {
+            throw ConfigReaderException("[Error] At least one target or deplete file has to be specified!");
+        }
+    }
 
     for (std::filesystem::path file : IBF_Parsed.target_files)
+	{
+		if (!std::filesystem::exists(file))
 		{
-			if (!std::filesystem::exists(file))
-			{
-				// TODO: write message in log file
-				throw ConfigReaderException("[Error] The following target file does not exist: " + file.string());
-			}
+			// TODO: write message in log file
+			throw ConfigReaderException("[Error] The following target file does not exist: " + file.string());
 		}
+	}
 
-		for (std::filesystem::path file : IBF_Parsed.deplete_files)
+	for (std::filesystem::path file : IBF_Parsed.deplete_files)
+	{
+		if (!std::filesystem::exists(file))
 		{
-			if (!std::filesystem::exists(file))
-			{
-				// TODO: write message in log file
-				throw ConfigReaderException("[Error] The following deplete file does not exist: " + file.string());
-			}
+			// TODO: write message in log file
+			throw ConfigReaderException("[Error] The following deplete file does not exist: " + file.string());
 		}
-
+	}
 
     try
     {
@@ -282,9 +313,15 @@ void ConfigReader::readIBF(){
     }
     catch (toml::exception& e)
 	{
-
-		throw ConfigReader(e.what());
+		throw ConfigReaderException(e.what());
 	}
+    catch (std::out_of_range& e)
+    {
+        if (this->usage.compare("classify") == 0)
+        {
+            throw ConfigReaderException(e.what());
+        }
+    }
 
     for (std::string file : rf_tmp)
     {
@@ -313,15 +350,29 @@ void ConfigReader::readIBF(){
 
 void ConfigReader::readMinKNOW(){
     
+    toml::value MinKNOW;
+    try
+    {
+        MinKNOW = toml::find(this->configuration_, "MinKNOW");
+    }
+    catch (std::out_of_range& e)
+    {
+        // Do nothing and use default values
+        return;
+    }
 
     try
     {
-        toml::value MinKNOW = toml::find(this->configuration_, "MinKNOW");
+        
         MinKNOW_Parsed.flowcell = toml::find<std::string>(MinKNOW, "flowcell");
         MinKNOW_Parsed.host = toml::find_or<std::string>(MinKNOW, "host", "127.0.0.1");
         MinKNOW_Parsed.port = toml::find_or<std::string>(MinKNOW, "port", "9501");
-        //channels = toml::find_or<std::vector<int>>(MinKNOW, "channels", std::vector<int>{});
-    
+        std::vector<int> channels = toml::find_or<std::vector<int>>(MinKNOW, "channels", std::vector<int>{});
+        if (channels.size() == 2)
+        {
+            MinKNOW_Parsed.minChannel = (uint16_t) channels[0];
+            MinKNOW_Parsed.maxChannel = (uint16_t) channels[1];
+        }
     }
     catch (std::out_of_range& e)
     {
@@ -338,14 +389,24 @@ void ConfigReader::readMinKNOW(){
 
 void ConfigReader::readBasecaller(){
 
+    toml::value basecaller;
     try
     {
-        toml::value basecaller = toml::find(this->configuration_, "Basecaller");
+        basecaller = toml::find(this->configuration_, "Basecaller");
+    }
+    catch (std::out_of_range& e)
+    {
+        // Do nothing and use default values
+        return;
+    }
+
+    try
+    {
         Basecaller_Parsed.caller = toml::find_or<std::string>(basecaller, "caller", "DeepNano");
-        Basecaller_Parsed.guppy_host = toml::find<std::string>(basecaller, "host");
+        Basecaller_Parsed.guppy_host = toml::find_or<std::string>(basecaller, "host", "127.0.0.1");
         Basecaller_Parsed.guppy_port = toml::find_or<std::string>(basecaller, "port", "5555");
         Basecaller_Parsed.basecall_threads = toml::find_or<int>(basecaller, "threads", 3);
-        //Basecaller_Parsed.guppy_config = toml::find_or<std::string>(basecaller, "config", "dna_r9.4.1_450bps_fast");
+        Basecaller_Parsed.guppy_config = toml::find_or<std::string>(basecaller, "config", "dna_r9.4.1_450bps_fast");
     }
     catch (std::out_of_range& e)
     {
@@ -362,10 +423,15 @@ void ConfigReader::readBasecaller(){
 
 void ConfigReader::parse(){
     
-
-    ConfigReader::readIBF();
-    ConfigReader::readMinKNOW();
-    ConfigReader::readBasecaller();
-    
+    try
+    {
+        ConfigReader::readIBF();
+        ConfigReader::readMinKNOW();
+        ConfigReader::readBasecaller();
+    }
+    catch (ConfigReaderException& e)
+    {
+        throw;
+    }
 }
     

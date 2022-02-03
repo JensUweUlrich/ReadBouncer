@@ -305,8 +305,8 @@ namespace readuntil
         // we want to receive signals from all 512 channels of the MinION
         // has to be changed in case Flongle or PromethION is used
         // TODO: set last channel based on device type
-        setup->set_first_channel((uint32) minChannel);
-        setup->set_last_channel((uint32) maxChannel);
+        setup->set_first_channel((int)minChannel);
+        setup->set_last_channel((int)maxChannel);
 
         // we only want to receive calibrated data
         setup->set_raw_data_type(GetLiveReadsRequest_RawDataType_CALIBRATED);
