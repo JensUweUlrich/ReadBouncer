@@ -512,7 +512,7 @@ void checkRunning(Runner& runner, readuntil::Acquisition* acq)
  *	@parser: input from the command line
  *  @throws: IBFBuildException
  */
-void adaptive_sampling(configReader::Target_Params& params)
+void adaptive_sampling(ConfigReader config, std::vector<interleave::IBFMeta> DepletionFilters, std::vector<interleave::IBFMeta> TargetFilters)
 {
 	std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("ReadBouncerLog");
 	bool withTarget = false;
@@ -531,81 +531,16 @@ void adaptive_sampling(configReader::Target_Params& params)
 		throw basecall::BasecallerException(estr.str());
 	}
 #endif
-	std::vector<interleave::IBFMeta> DepletionFilters{};
-	std::vector<interleave::IBFMeta> TargetFilters{};
-	// first load IBFs of host reference sequence
-	if (params.verbose)
-		std::cout << "Loading Depletion Interleaved Bloom Filter(s)!" << ::std::endl;
 
-	for (std::filesystem::path deplete_file : params.ibf_deplete_files)
-	{
-		interleave::IBFMeta filter{};
-		filter.name = deplete_file.stem().string();
-		interleave::IBF tf{};
-		interleave::IBFConfig DepleteIBFconfig{};
-		try
-		{
-			DepleteIBFconfig.input_filter_file = deplete_file.string();
-			interleave::FilterStats stats = std::move(tf.load_filter(DepleteIBFconfig));
-			filter.filter = std::move(tf.getFilter());
-			if (params.verbose)
-				interleave::print_load_stats(stats);
-		}
-		catch (interleave::ParseIBFFileException& e)
-		{
-			nanolive_logger->error("Error parsing depletion IBF using the following parameters");
-			nanolive_logger->error("Depletion IBF file                : " + deplete_file.string());
-			nanolive_logger->error("Error message : " + std::string(e.what()));
-			nanolive_logger->flush();
-			throw;
-		}
+	std::cout << "Trying to connect to MinKNOW" << std::endl;
+	std::cout << "Host : " << config.MinKNOW_Parsed.host << std::endl;
+	std::cout << "Port : " <<  config.MinKNOW_Parsed.port << std::endl;
 
-		DepletionFilters.emplace_back(std::move(filter));
-	}
-
-	if (params.verbose)
-		std::cout << "Loading Target Interleaved Bloom Filter(s)!" << ::std::endl;
-	// parse target IBF if given as parameter
-	for (std::filesystem::path target_file : params.ibf_target_files)
-	{
-		interleave::IBFMeta filter{};
-		filter.name = target_file.stem().string();
-		interleave::IBF tf{};
-		interleave::IBFConfig TargetIBFconfig{};
-		try
-		{
-			TargetIBFconfig.input_filter_file = target_file.string();
-			interleave::FilterStats stats = std::move(tf.load_filter(TargetIBFconfig));
-			filter.filter = std::move(tf.getFilter());
-			if (params.verbose)
-				interleave::print_load_stats(stats);
-		}
-		catch (interleave::ParseIBFFileException& e)
-		{
-			nanolive_logger->error("Error parsing target IBF using the following parameters");
-			nanolive_logger->error("Target IBF file                : " + target_file.string());
-			nanolive_logger->error("Error message : " + std::string(e.what()));
-			nanolive_logger->flush();
-			throw;
-		}
-
-		TargetFilters.emplace_back(std::move(filter));
-	}
-
-
-	if (params.verbose)
-	{
-		std::cout << "Successfully loaded Interleaved Bloom Filter(s)!" << ::std::endl;
-		std::cout << "Trying to connect to MinKNOW" << std::endl;
-		std::cout << "Host : " << params.host << std::endl;
-		std::cout << "Port : " << params.port << std::endl;
-	}
-
-	nanolive_logger->info("Successfully loaded Interleaved Bloom Filter(s)!");
+	//nanolive_logger->info("Successfully loaded Interleaved Bloom Filter(s)!");
 	nanolive_logger->info("Trying to connect to MinKNOW");
-	nanolive_logger->info("Host : " + params.host);
+	nanolive_logger->info("Host : " + config.MinKNOW_Parsed.host);
 	std::stringstream sstr;
-	sstr << "Port : " << params.port;
+	sstr << "Port : " << config.MinKNOW_Parsed.port;
 	nanolive_logger->info(sstr.str());
 	nanolive_logger->flush();
 
@@ -613,31 +548,31 @@ void adaptive_sampling(configReader::Target_Params& params)
 
 	// create ReadUntilClient object and connect to specified device
 	readuntil::ReadUntilClient& client = readuntil::ReadUntilClient::getClient();
-	client.setHost(params.host);
-	client.setPort(params.port);
+	client.setHost(config.MinKNOW_Parsed.host);
+	client.setPort(config.MinKNOW_Parsed.port);
 	client.setRootPath(NanoLiveRoot);
 
 	// TODO: throw exception if connection could not be established
-	if (client.connect(params.device))
+	if (client.connect(config.MinKNOW_Parsed.flowcell))
 	{
-		if (params.verbose)
-			std::cout << "Connection successfully established!" << ::std::endl;
-		else
-		{
-			nanolive_logger->info("Connection successfully established!");
-			nanolive_logger->flush();
-		}
+		//if (params.verbose)
+		std::cout << "Connection successfully established!" << ::std::endl;
+		//else
+		//{
+		nanolive_logger->info("Connection successfully established!");
+		nanolive_logger->flush();
+		//}
 	}
 	else
 	{
 		std::cerr << "Could not establish connection to MinKNOW or MinION device" << std::endl;
-		nanolive_logger->error("Could not establish connection to MinKNOW or MinION device (" + params.device + ")");
+		nanolive_logger->error("Could not establish connection to MinKNOW or MinION device (" + config.MinKNOW_Parsed.flowcell + ")");
 		nanolive_logger->flush();
 	}
 
 	// wait until sequencing run has been started
-	if (params.verbose)
-		std::cout << "Waiting for device to start sequencing!" << ::std::endl;
+	//if (params.verbose)
+	std::cout << "Waiting for device to start sequencing!" << ::std::endl;
 
 	std::cout << "Please start the sequencing run now!" << ::std::endl;
 
@@ -645,8 +580,8 @@ void adaptive_sampling(configReader::Target_Params& params)
 	
 	if (runner.isRunning = acq->hasStarted())
 	{
-		if (params.verbose)
-			std::cout << "Sequencing has begun. Starting live signal processing!" << ::std::endl;
+		//if (params.verbose)
+		std::cout << "Sequencing has begun. Starting live signal processing!" << ::std::endl;
 
 		nanolive_logger->info("Sequencing has begun. Starting live signal processing!");
 		nanolive_logger->flush();
@@ -657,25 +592,25 @@ void adaptive_sampling(configReader::Target_Params& params)
 	// seems to be overturned by TOML file configuration
 	readuntil::AnalysisConfiguration* ana_conf = (readuntil::AnalysisConfiguration*)client.getMinKnowService(readuntil::MinKnowServiceType::ANALYSIS_CONFIGURATION);
 	ana_conf->set_break_reads_after_seconds(0.4);
-	if (params.verbose)
-	{
-		nanolive_logger->info("Set break_reads_after_seconds = 0.4");
-		nanolive_logger->flush();
-	}
+	//if (params.verbose)
+	//{
+	nanolive_logger->info("Set break_reads_after_seconds = 0.4");
+	nanolive_logger->flush();
+	//}
 
 	//setup basecalling
 	basecall::Basecaller* caller;
 
 #if defined(_WIN32)
-	if (stricmp(params.caller.c_str(), "guppy") == 0)
+	if (stricmp(config.Basecaller_Parsed.caller.c_str(), "guppy") == 0)
 #else
-	if (strcasecmp(params.caller.c_str(), "guppy") == 0)
+	if (strcasecmp(config.Basecaller_Parsed.caller.c_str(), "guppy") == 0)
 #endif
 	{
-		std::string basecall_host = params.guppy_host + ":" + params.guppy_port;
+		std::string basecall_host = config.Basecaller_Parsed.guppy_host + ":" + config.Basecaller_Parsed.guppy_port;
 		try
 		{
-			caller = new basecall::GuppyBasecaller(basecall_host, params.guppy_config);
+			caller = new basecall::GuppyBasecaller(basecall_host, config.Basecaller_Parsed.guppy_config);
 		}
 		catch (basecall::BasecallerException& e)
 		{
@@ -687,14 +622,14 @@ void adaptive_sampling(configReader::Target_Params& params)
 	}
 #if !defined(ARM_BUILD)
 	else
-		caller = new basecall::DeepNanoBasecaller(weights_file, params.basecall_threads);
+		caller = new basecall::DeepNanoBasecaller(weights_file, config.Basecaller_Parsed.basecall_threads);
 #endif
 
 
 	// create Data Service object
 	// used for streaming live nanopore signals from MinKNOW and sending action messages back
 	data = (readuntil::Data*)client.getMinKnowService(readuntil::MinKnowServiceType::DATA);
-	data->setChannels(params.minChannel, params.maxChannel);
+	data->setChannels(config.MinKNOW_Parsed.minChannel, config.MinKNOW_Parsed.maxChannel);
 	// start live streaming of data
 	try
 	{
@@ -702,7 +637,7 @@ void adaptive_sampling(configReader::Target_Params& params)
 	}
 	catch (readuntil::DataServiceException& e)
 	{
-		nanolive_logger->error("Could not start streaming signals from device (" + params.device + ")");
+		nanolive_logger->error("Could not start streaming signals from device (" + config.MinKNOW_Parsed.flowcell + ")");
 		nanolive_logger->error("Error message : " + std::string(e.what()));
 		nanolive_logger->flush();
 		throw;
@@ -728,13 +663,13 @@ void adaptive_sampling(configReader::Target_Params& params)
 	// start live signal streaming from ONT MinKNOW
 	std::vector< std::future< void > > tasks;
 
-	if (params.verbose)
-	{
-		std::cout << "Start receiving live signals thread" << std::endl;
-		std::cout << "Start basecalling thread" << std::endl;
-		std::cout << "Start read classification thread" << std::endl;
-		std::cout << "Start sending unblock messages thread" << std::endl;
-	}
+	//if (params.verbose)
+	//{
+	std::cout << "Start receiving live signals thread" << std::endl;
+	std::cout << "Start basecalling thread" << std::endl;
+	std::cout << "Start read classification thread" << std::endl;
+	std::cout << "Start sending unblock messages thread" << std::endl;
+	//}
 
 	
 
@@ -751,11 +686,12 @@ void adaptive_sampling(configReader::Target_Params& params)
 	// create classification config
 	interleave::ClassifyConfig conf{};
 	conf.strata_filter = -1;
-	conf.significance = params.kmer_significance;
-	conf.error_rate = params.error_rate;
+	//conf.significance = params.kmer_significance;
+	conf.significance = 0.95;
+	conf.error_rate = config.IBF_Parsed.error_rate;
 
 	// create thread/task for classification
-	for (uint8_t t = 0; t < params.classify_threads; ++t)
+	for (uint8_t t = 0; t < config.IBF_Parsed.threads; ++t)
 	{
 		
 		tasks.emplace_back(std::async(std::launch::async, &classify_live_reads, std::ref(classification_queue),

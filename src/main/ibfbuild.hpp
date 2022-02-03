@@ -10,7 +10,7 @@
 * @parser	: input from the command line for "build" command
 * @throws : IBFBuildException
 */
-void buildIBF(ibf_build_parser & parser)
+interleave::TIbf buildIBF(ibf_build_parser & parser)
 {
 	std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("ReadBouncerLog");
 	interleave::IBFConfig config{};
@@ -24,6 +24,7 @@ void buildIBF(ibf_build_parser & parser)
 	config.verbose = parser.verbose;
 
 	interleave::IBF filter{};
+	//interleave::TIbf filter_out;
 	try
 	{
 		interleave::FilterStats stats = filter.create_filter(config);
@@ -43,5 +44,7 @@ void buildIBF(ibf_build_parser & parser)
 		nanolive_logger->flush();
 		throw;
 	}
+
+	return filter.getFilter();
 
 }

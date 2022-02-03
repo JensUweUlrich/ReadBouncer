@@ -1,32 +1,32 @@
-
 usage              = "classify"  #["build", "target", "classify", "test"] 
 output_directory   = 'RB_out'
-log_directory      = 'RB_out/log'
+log_directory      = 'RB_out/logs'
 
 
 [IBF]
-kmer_size          = 13         #(unsigned integer with default 13) only required for 'usage = "build"' or if target_file/deplete_file is a fasta formate file 
+kmer_size          = 15         #(unsigned integer with default 13) only required for 'usage = "build"' or if target_file/deplete_file is a fasta formate file 
 fragment_size      = 100000     #(unsigned integer with default 100000)  only required for 'usage = "build" or if target_file/deplete_file is a fasta formate file 
 threads            = 3          #(unsigned integer with default 3)
-target_files       = ['C:/ReadBouncer/build/main/Release/Listeria_monocytogenes_ATCC_19115_.fasta','C:/ReadBouncer/build/main/Release/Pseudomonas_aeruginosa_complete_genome.fasta']
-deplete_files      = ['C:/ReadBouncer/build/main/Release/Bacillus_subtilis_complete_genome.fasta','C:/ReadBouncer/build/main/Release/Enterococcus_faecalis_complete_genome.fasta']
-read_files         = ['C:/ReadBouncer/build/main/Release/Listeria.fastq','C:/ReadBouncer/build/main/Release/SaccharomycesReal.fasta']
+target_files       = ['/mnt/c/ReadBouncerToml/build/main/Release/Listeria_monocytogenes_ATCC_19115_.fasta','/mnt/c/ReadBouncerToml/build/main/Release/Pseudomonas_aeruginosa_complete_genome.fasta']
+deplete_files      = ['/mnt/c/ReadBouncerToml/build/main/Release/Bacillus_subtilis_complete_genome.ibf','/mnt/c/ReadBouncerToml/build/main/Release/Enterococcus_faecalis_complete_genome.fasta']
+read_files         = ['/mnt/c/ReadBouncerToml/build/main/Release/Listeria.fastq','/mnt/c/ReadBouncerToml/build/main/Release/SaccharomycesReal.fasta']
 exp_seq_error_rate = 0.1        #(unsigned float between 0 and 1 default 0.1)
 chunk_length       = 350        #(unsigned integer with default 250)
 max_chunks         = 1          #(unsigned integer with default 5)
 
 
 [MinKNOW]
-host               = "localhost"#(ip address or name of the computer hosting MinKNOW)
-port               = "9501"       #(port number used fo grpc communication by by MinKNOW instance)
-flowcell           = "MS00000"  #(name of the flowcell used)
+host               = "localhost" #(ip address or name of the computer hosting MinKNOW)
+port               = "9501"      #(port number used fo grpc communication by by MinKNOW instance)
+flowcell           = "MS00000"   #(name of the flowcell used)
+channels           = [1,512]
 
 
 [Basecaller]
-caller             = "DeepNano"    #DeepNano/Guppy (default is DeepNano)
+caller             = "DeepNano" #DeepNano/Guppy (default is DeepNano)
 host               = "127.0.0.1"#(ip address or name of the computer hosting Guppy Basecall Server)
 port               = "9501"     #(port number on which the basecall server is running on the host)
 threads            = 3          # (unsigned integer with default 3)
-
+config             = "dna_r9.4.1_450bps_fast"
 
 
