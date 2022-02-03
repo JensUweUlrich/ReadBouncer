@@ -30,7 +30,7 @@ ReadBouncer is a nanopore adaptive sampling tool for Windows and Linux (x64 or A
 
 ### <a name="install"></a>Installation
 
-The easiest way is to download the provided installer files for [Windows](https://owncloud.hpi.de/s/7sEp5qltORzIdN9), [Linux x86_64](https://owncloud.hpi.de/s/l5yoQbdMW3tFdaS) or [Linux arm64](https://owncloud.hpi.de/s/DydbnVqkKCpjUAF) and simply click through the installation process. 
+The easiest way is to download the provided installer files for [Windows](https://owncloud.hpi.de/s/C6kOOWq26NLiuRp), [Linux x86_64](https://owncloud.hpi.de/s/l5yoQbdMW3tFdaS) or [Linux arm64](https://owncloud.hpi.de/s/DydbnVqkKCpjUAF) and simply click through the installation process. 
 
 ### <a name="compile"></a>Compilation From Source
 

@@ -531,7 +531,9 @@ void run_program(ConfigReader config){
 	}	
 
 
-	else if( subcommand == "test") {
+	else if( subcommand == "test") 
+  {
+
 
 		try
 		{

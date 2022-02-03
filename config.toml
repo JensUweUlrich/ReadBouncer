@@ -1,4 +1,4 @@
-usage              = "test"  #["build", "target", "classify", "test"] 
+usage              = "classify"  #["build", "target", "classify", "test"] 
 output_directory   = 'RB_out'
 log_directory      = 'RB_out/logs'
 
@@ -19,6 +19,7 @@ max_chunks         = 1          #(unsigned integer with default 5)
 host               = "localhost" #(ip address or name of the computer hosting MinKNOW)
 port               = "9501"      #(port number used fo grpc communication by by MinKNOW instance)
 flowcell           = "MS00000"   #(name of the flowcell used)
+channels           = [1,512]
 
 
 [Basecaller]
@@ -26,6 +27,6 @@ caller             = "DeepNano" #DeepNano/Guppy (default is DeepNano)
 host               = "127.0.0.1"#(ip address or name of the computer hosting Guppy Basecall Server)
 port               = "9501"     #(port number on which the basecall server is running on the host)
 threads            = 3          # (unsigned integer with default 3)
-
+config             = "dna_r9.4.1_450bps_fast"
 
 

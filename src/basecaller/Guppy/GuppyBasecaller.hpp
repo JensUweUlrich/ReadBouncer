@@ -50,6 +50,11 @@ namespace basecall
 				SafeMap<uint16_t, uint32_t>& channel_stats,
 				Runner& runner);
 
+			inline void disconnect()
+			{
+				client->disconnect();
+			}
+
 	}
 	;
 

@@ -83,6 +83,7 @@ public:
         std::string guppy_config = "dna_r9.4.1_450bps_fast";
     }Basecaller_Parsed;
 
+
     ConfigReader() = default;
     ConfigReader(std::string const);
 
