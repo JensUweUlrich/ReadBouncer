@@ -21,6 +21,7 @@ add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
 
 
 # add test directories for own tests
-add_subdirectory(libBloomFilterTests)
-add_subdirectory(libMinimizerTests)
+#add_subdirectory(libBloomFilterTests)
+#add_subdirectory(libMinimizerTests)
+add_subdirectory(libConfigReaderTests)
 

@@ -46,6 +46,7 @@
 #include "classify.hpp"
 #include "adaptive_sampling.hpp"
 
+
 #if defined(_WIN32)
 	#include <windows.h>
 	#include <psapi.h>
@@ -60,6 +61,7 @@
 std::shared_ptr<spdlog::logger> nanolive_logger;
 //std::filesystem::path NanoLiveRoot;
 //readuntil::Data* data;
+
 
 /**
 *	shift incoming signals directly as unblock response to action queue
@@ -211,6 +213,7 @@ void test_connection(ConfigReader config)
 	}
 	
 }
+
 
 void signalHandler(int signum)
 {
@@ -531,9 +534,7 @@ void run_program(ConfigReader config){
 	}	
 
 
-	else if( subcommand == "test") 
-  {
-
+	else if( subcommand == "test") {
 
 		try
 		{
@@ -557,7 +558,7 @@ void run_program(ConfigReader config){
 	}
 
 }
-int main(int argc, char const **argv)
+int main(int argc, char **argv)
 {
 
 	StopClock NanoLiveTime;

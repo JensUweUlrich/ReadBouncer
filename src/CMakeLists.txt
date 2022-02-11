@@ -21,7 +21,7 @@ if (WIN32)
     add_compile_options("/std:c++17")
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17 /MT")
     set(CMAKE_ASM_NASM_OBJECT_FORMAT win64)
-    set(CMAKE_INSTALL_PREFIX "C:/${PROJECT_NAME}")
+    set(CMAKE_INSTALL_PREFIX "C:/Apps/${PROJECT_NAME}")
     find_file(libbz2_DLL "libbz2-1__.dll")
     install(FILES ${libbz2_DLL} DESTINATION bin COMPONENT applications)
 else()
@@ -31,6 +31,7 @@ else()
 #    add_link_options("stdc++fs")
     add_compile_options("-std=c++17")
 endif()
+
 
 # add all subdirectories
 add_subdirectory(interfaces)
@@ -42,7 +43,7 @@ add_subdirectory(minknow)
 add_subdirectory(lyra)
 add_subdirectory(config)
 add_subdirectory(main)
-#add_subdirectory(test)
+add_subdirectory(test)
 
 # now pack everything into an installer
 
