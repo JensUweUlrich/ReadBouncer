@@ -41,7 +41,7 @@ The easiest way is to download the provided installer files for [Windows](https:
 ReadBouncer has the following dependencies that should be installed before compiling the source code
 
 * [CMake](https://cmake.org/) for building
-* [C++ Compiler](https://visualstudio.microsoft.com/) Currently we support MSVC (on Windows) and GCC (on Linux)
+* [C++ Compiler](https://visualstudio.microsoft.com/) Currently we support MSVC (on Windows) and GCC-8 or later (on Linux)
 * [Perl](http://strawberryperl.com/releases.html)
 * [Go](https://golang.org/dl/)
 * [NASM Compiler](https://www.nasm.us/)
@@ -247,9 +247,9 @@ Finally, you will get some stats printed to the command line, as the one below:
 Number of classified reads                         :   47874
 Number of of too short reads (len < 250)           :   0
 Number of all reads                                :   100000
-Bacillus_subtilis_complete_genome        : 14409                0.14409
-Enterococcus_faecalis_complete_genome    : 13553                0.13553
-Escherichia_coli_complete_genome         : 19912                0.19912
+Bacillus_subtilis_complete_genome                  :   14409  
+Enterococcus_faecalis_complete_genome              :   13553            
+Escherichia_coli_complete_genome                   :   19912            
 Average Processing Time Read Classification        :   0.00197617
 -----------------------------------------------------------------------------------
 ```
