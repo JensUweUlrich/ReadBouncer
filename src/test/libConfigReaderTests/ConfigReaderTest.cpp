@@ -1,5 +1,7 @@
 #include "gtest/gtest.h"
+#include "gmock/gmock.h"
 #include "configReader.hpp"
+#include <algorithm>
 
 //https://chromium.googlesource.com/external/github.com/google/googletest/+/refs/tags/release-1.8.0/googletest/docs/Primer.md#:~:text=Google%20Test%20assertions%20are%20macros,along%20with%20a%20failure%20message.
 
@@ -37,6 +39,11 @@ class ConfigReaderTest: public ::testing::Test
 
 };
 
+class MockConfigReader : public ConfigReader
+{
+public:
+    MOCK_METHOD(void, createLog, (std::string& usage));
+};
 
 // TEST_F:  writing two or more tests that operate on similar data
 // 
@@ -51,6 +58,9 @@ TEST_F(ConfigReaderTest, TestConfigReaderConstructur)
     // fatal failure if both configurations are unequal
     //ASSERT_STREQ only for C strings // ASSERT_EQ any two values! could be two IBF
 	EXPECT_EQ(config->configuration_, configurationSet);
+
+    //std::ifstream configurationFile (tomlF, std::ios_base::binary);
+    //EXPECT_THROW(!configurationFile.is_open(),ConfigReaderException); //not important as ConfigReader catches exception while parsing! 
     
 
 }
@@ -66,12 +76,14 @@ TEST_F(ConfigReaderTest, TestParseGeneral)
     output     = toml::find<std::string>(configurationSet, "output_directory");
     subcommand = toml::find<std::string>(configurationSet, "usage");
 
+    std::cout<<'\n';
     std::cout << "Testing parse_general......................................" << '\n';
     std::cout<<'\n';
 
     // Test if toml::find acutally parses correctly! 
     EXPECT_EQ("RB_out/logs", log);// Nonfatal assertion to check afterwards if ConfigReader throws an exception at this point! 
     EXPECT_EQ("RB_out", output);
+
     if(subcommand == "build" || subcommand == "test" || subcommand == "classify" || subcommand == "target"){
 
         SUCCEED();
@@ -90,7 +102,7 @@ TEST_F(ConfigReaderTest, TestParseGeneral)
 
     if (Test::HasFailure()){
         
-        EXPECT_THROW(config->parse_general(),ConfigReaderException);
+        EXPECT_THROW(config->parse_general(),ConfigReaderException);// Does ConfigReader throws exception? 
     }
 
     else{
@@ -99,7 +111,24 @@ TEST_F(ConfigReaderTest, TestParseGeneral)
     } 
 }
 
+TEST_F(ConfigReaderTest, TestCreateLog){
 
+    std::cout<<'\n';
+    std::cout << "Testing createLog......................................" << '\n';
+    std::cout<<'\n';
+
+    std::string usage_ = "build";
+    config->createLog(usage_);
+
+    if(std::filesystem::exists("/mnt/c/bug29/readbouncer/build/main/RB_out/configLog.toml")){
+
+        SUCCEED();
+    }
+    else{
+
+        FAIL();
+    }
+}
 
 TEST_F(ConfigReaderTest, TestParse)
 {
@@ -109,9 +138,7 @@ TEST_F(ConfigReaderTest, TestParse)
    std::vector<std::filesystem::path> deplete_files{};
    std::vector<std::filesystem::path> read_files{};
 
-
-    // readIBF()
-
+   std::cout<<'\n';
    std::cout << "Testing parse......................................" << '\n';
    std::cout<<'\n';
    
@@ -134,7 +161,7 @@ TEST_F(ConfigReaderTest, TestParse)
    std::vector<std::string>  reads_tmp = toml::find<std::vector<std::string>>(configurationSet, "IBF", "read_files");
    for (std::string s : reads_tmp) read_files.emplace_back((std::filesystem::path(s)).make_preferred());
 
-   // Test if toml::find acutally parses correctly! 
+   // Test if toml::find parsed correctly! 
    EXPECT_EQ(k, 15); 
    EXPECT_EQ(f, 100000); 
    EXPECT_EQ(t, 3); 
@@ -186,10 +213,15 @@ TEST_F(ConfigReaderTest, TestParse)
 
 }
 
-/*
-TEST(ConfigReaderTest, TestIBFStruct)// what ConfigReader sends to main! 
-{
+
+TEST_F(ConfigReaderTest, TestIBFStruct){// structs simulation, are the written structs 100% correct? 
+
     config->parse();
+    //MockConfigReader logTest;
+
+    std::cout<<'\n';
+    std::cout << "Testing IBFStruct......................................" << '\n';
+    std::cout<<'\n';
 
     struct IBF_Struct_Test
     {
@@ -200,18 +232,34 @@ TEST(ConfigReaderTest, TestIBFStruct)// what ConfigReader sends to main!
 	    std::vector<std::filesystem::path> deplete_files = {"/mnt/c/ReadBouncerToml/build/main/Release/Bacillus_subtilis_complete_genome.ibf", "/mnt/c/ReadBouncerToml/build/main/Release/Enterococcus_faecalis_complete_genome.fasta"};
         std::vector<std::filesystem::path> reads = {"/mnt/c/ReadBouncerToml/build/main/Release/Listeria.fastq","/mnt/c/ReadBouncerToml/build/main/Release/SaccharomycesReal.fasta"};
         double error_rate = 0.1;
-        int chunk_length = 360;
+        int chunk_length = 350;
         int max_chunks = 1;
-    };
+    }IBF_Struct_Test_;
 
-    EXPECT_EQ(IBF_Struct_Test, config->IBF_Parsed); 
-
+    //EXPECT_CALL(logTest, createLog("build")).Times(Exactly(1));
     
-
+   
+    EXPECT_EQ(IBF_Struct_Test_.size_k, config->IBF_Parsed.size_k); 
+    EXPECT_EQ(IBF_Struct_Test_.fragment_size, config->IBF_Parsed.fragment_size); 
+    EXPECT_EQ(IBF_Struct_Test_.threads, config->IBF_Parsed.threads); 
+    EXPECT_EQ(IBF_Struct_Test_.fragment_size, config->IBF_Parsed.fragment_size); 
+    EXPECT_EQ(IBF_Struct_Test_.target_files, config->IBF_Parsed.target_files); 
+    EXPECT_EQ(IBF_Struct_Test_.deplete_files, config->IBF_Parsed.deplete_files); 
+    EXPECT_EQ(IBF_Struct_Test_.reads, config->IBF_Parsed.read_files); 
+    EXPECT_EQ(IBF_Struct_Test_.error_rate, config->IBF_Parsed.error_rate); 
+    EXPECT_EQ(IBF_Struct_Test_.chunk_length, config->IBF_Parsed.chunk_length); 
+    EXPECT_EQ(IBF_Struct_Test_.max_chunks, config->IBF_Parsed.max_chunks); 
 }
 
-TEST(ConfigReaderTest, TestMinKNOWStruct)// what ConfigReader sends to main! 
-{
+TEST_F(ConfigReaderTest, TestMinKNOWStruct){// structs simulation, are the written structs 100% correct? 
+
+    config->parse();
+    //MockConfigReader logTest;
+
+    std::cout<<'\n';
+    std::cout << "Testing MinKNOWStruct......................................" << '\n';
+    std::cout<<'\n';
+
     struct MinKNOW_Struct_Test
     {
         std::string host = "localhost";
@@ -219,26 +267,44 @@ TEST(ConfigReaderTest, TestMinKNOWStruct)// what ConfigReader sends to main!
         std::string flowcell = "MS00000";
         uint16_t minChannel = 1;
         uint16_t maxChannel = 512;
-    };
 
-    //ASSERT_EQ(MinKNOW_Struct_Test, config->MinKNOW_Parsed); 
+    }MinKNOW_Struct_Test_;
+
+   EXPECT_EQ(MinKNOW_Struct_Test_.host, config->MinKNOW_Parsed.host);
+   EXPECT_EQ(MinKNOW_Struct_Test_.port, config->MinKNOW_Parsed.port);
+   EXPECT_EQ(MinKNOW_Struct_Test_.flowcell, config->MinKNOW_Parsed.flowcell);
+   EXPECT_EQ(MinKNOW_Struct_Test_.minChannel, config->MinKNOW_Parsed.minChannel);
+   EXPECT_EQ(MinKNOW_Struct_Test_.maxChannel, config->MinKNOW_Parsed.maxChannel);
 
 }
 
-TEST(ConfigReaderTest, TestBasecallerStruct)// what ConfigReader sends to main! 
-{
-  struct Basecaller_Struct_Test
+TEST_F(ConfigReaderTest, TestBaseCallerStruct){// structs simulation, are the written structs 100% correct? 
+
+    config->parse();
+    //MockConfigReader logTest;
+
+    std::cout<<'\n';
+    std::cout << "Testing BaseCallerStruct......................................" << '\n';
+    std::cout<<'\n';
+
+    struct Basecaller_Struct_Test
     {
         std::string caller = "DeepNano";
         std::string guppy_host = "127.0.0.1";
         std::string guppy_port = "9501";
         int basecall_threads = 3;
         std::string guppy_config = "dna_r9.4.1_450bps_fast";
-    };
 
-    //EXPECT_EQ(Basecaller_Struct_Test, config->Basecaller_Parsed); 
+    }Basecaller_Struct_Test_;
 
-}*/
+   EXPECT_EQ(Basecaller_Struct_Test_.caller, config->Basecaller_Parsed.caller);
+   EXPECT_EQ(Basecaller_Struct_Test_.guppy_host, config->Basecaller_Parsed.guppy_host);
+   EXPECT_EQ(Basecaller_Struct_Test_.guppy_port, config->Basecaller_Parsed.guppy_port);
+   EXPECT_EQ(Basecaller_Struct_Test_.basecall_threads, config->Basecaller_Parsed.basecall_threads);
+   EXPECT_EQ(Basecaller_Struct_Test_.guppy_config, config->Basecaller_Parsed.guppy_config);
+
+}
+
 
 int main(int argc, char** argv)
 {
