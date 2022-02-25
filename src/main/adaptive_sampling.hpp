@@ -266,7 +266,7 @@ void classify_live_reads(SafeQueue<RTPair>& classification_queue,
 							avgReadLenMutex.lock();
 							avgReadLen += ((double)read.getReadLength() - avgReadLen) / (double) ++rCounter;
 							avgReadLenMutex.unlock();
-							once_seen.erase(it);
+							once_seen.erase(rp.first.id);
 						}
 						else
 						{
@@ -274,7 +274,7 @@ void classify_live_reads(SafeQueue<RTPair>& classification_queue,
 							// we assume read to be on target
 							if (read.getReadLength() > 1500) //iterstep >= 5)
 							{
-								once_seen.erase(it);
+								once_seen.erase(rp.first.id);
 								rp.first.unblock = false;
 								action_queue.push(rp);
 								TargetReads.push(read);
