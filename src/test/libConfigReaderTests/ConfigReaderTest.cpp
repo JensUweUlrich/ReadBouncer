@@ -1,9 +1,7 @@
 #include "gtest/gtest.h"
-#include "gmock/gmock.h"
+//#include "gmock/gmock.h"
 #include "configReader.hpp"
 #include <algorithm>
-
-//https://chromium.googlesource.com/external/github.com/google/googletest/+/refs/tags/release-1.8.0/googletest/docs/Primer.md#:~:text=Google%20Test%20assertions%20are%20macros,along%20with%20a%20failure%20message.
 
 
 class ConfigReaderTest: public ::testing::Test
@@ -11,6 +9,7 @@ class ConfigReaderTest: public ::testing::Test
 	protected:
 
 		ConfigReader* config;
+        
 		// prepare the objects for each test.
 		void SetUp() override
 		{
@@ -39,14 +38,11 @@ class ConfigReaderTest: public ::testing::Test
 
 };
 
-class MockConfigReader : public ConfigReader
-{
-public:
-    MOCK_METHOD(void, createLog, (std::string& usage));
-};
+/*
+* Test reading config.toml 
+* @TEST_F writing two or more tests that operate on similar data
+*/
 
-// TEST_F:  writing two or more tests that operate on similar data
-// 
 TEST_F(ConfigReaderTest, TestConfigReaderConstructur)
 {
     std::cout<<'\n';
@@ -55,22 +51,16 @@ TEST_F(ConfigReaderTest, TestConfigReaderConstructur)
     // check if file exists
     EXPECT_TRUE(std::filesystem::exists(tomlF));
 
-    // fatal failure if both configurations are unequal
-    //ASSERT_STREQ only for C strings // ASSERT_EQ any two values! could be two IBF
 	EXPECT_EQ(config->configuration_, configurationSet);
-
-    //std::ifstream configurationFile (tomlF, std::ios_base::binary);
-    //EXPECT_THROW(!configurationFile.is_open(),ConfigReaderException); //not important as ConfigReader catches exception while parsing! 
-    
 
 }
 
-
+/*
+* Test parsing [General] from config.toml 
+*/
 TEST_F(ConfigReaderTest, TestParseGeneral)
 {
     config->parse_general();
-    //EXPECT_ANY_THROW(config->parse_general(), ConfigReaderException);
-    //EXPECT_NO_THROW(config->parse_general());
 
     log        = toml::find<std::string>(configurationSet, "log_directory");
     output     = toml::find<std::string>(configurationSet, "output_directory");
@@ -95,7 +85,6 @@ TEST_F(ConfigReaderTest, TestParseGeneral)
     }
 
 
-    // ConfigReader Test
 	EXPECT_EQ(config->log_dir, log);// Nonfatal assertion to check afterwards if ConfigReader throws an exception at this point! 
     EXPECT_EQ(config->output_dir, output);
     EXPECT_EQ(config->usage, subcommand);
@@ -110,6 +99,10 @@ TEST_F(ConfigReaderTest, TestParseGeneral)
         EXPECT_NO_THROW(config->parse_general());
     } 
 }
+
+/*
+* Test writing the correct path/to/configLog.toml file  
+*/
 
 TEST_F(ConfigReaderTest, TestCreateLog){
 
@@ -130,6 +123,10 @@ TEST_F(ConfigReaderTest, TestCreateLog){
     }
 }
 
+/*
+* Testparse function from ConfigReader class
+*/
+
 TEST_F(ConfigReaderTest, TestParse)
 {
     config->parse();
@@ -142,7 +139,7 @@ TEST_F(ConfigReaderTest, TestParse)
    std::cout << "Testing parse......................................" << '\n';
    std::cout<<'\n';
    
-   //[IBF]
+
    int    k  = toml::find_or<int>(configurationSet, "IBF", "kmer_size", 13);
    int    f  = toml::find_or<int>(configurationSet, "IBF", "fragment_size", 100000);
    int    t  = toml::find_or<int>(configurationSet, "IBF", "threads", 1);
@@ -170,7 +167,7 @@ TEST_F(ConfigReaderTest, TestParse)
    EXPECT_EQ(mc, 1); 
 
    std::vector<std::filesystem::path> target  = {"/mnt/c/ReadBouncerToml/build/main/Release/Listeria_monocytogenes_ATCC_19115_.fasta", "/mnt/c/ReadBouncerToml/build/main/Release/Pseudomonas_aeruginosa_complete_genome.fasta"};
-   std::vector<std::filesystem::path> deplete = {"/mnt/c/ReadBouncerToml/build/main/Release/Bacillus_subtilis_complete_genome.ibf", "/mnt/c/ReadBouncerToml/build/main/Release/Enterococcus_faecalis_complete_genome.fasta"};
+   std::vector<std::filesystem::path> deplete = {"/mnt/c/ReadBouncerToml/build/main/Release/Bacillus_subtilis_complete_genome.fasta", "/mnt/c/ReadBouncerToml/build/main/Release/Enterococcus_faecalis_complete_genome.fasta"};
    std::vector<std::filesystem::path> reads   = {"/mnt/c/ReadBouncerToml/build/main/Release/Listeria.fastq","/mnt/c/ReadBouncerToml/build/main/Release/SaccharomycesReal.fasta"};
 
    EXPECT_EQ(target_files, target);
@@ -213,8 +210,11 @@ TEST_F(ConfigReaderTest, TestParse)
 
 }
 
+/*
+* Struct equality [IBF]
+*/
 
-TEST_F(ConfigReaderTest, TestIBFStruct){// structs simulation, are the written structs 100% correct? 
+TEST_F(ConfigReaderTest, TestIBFStruct){ 
 
     config->parse();
     //MockConfigReader logTest;
@@ -229,7 +229,7 @@ TEST_F(ConfigReaderTest, TestIBFStruct){// structs simulation, are the written s
         int fragment_size = 100000;
         int threads = 3;
         std::vector<std::filesystem::path> target_files = {"/mnt/c/ReadBouncerToml/build/main/Release/Listeria_monocytogenes_ATCC_19115_.fasta", "/mnt/c/ReadBouncerToml/build/main/Release/Pseudomonas_aeruginosa_complete_genome.fasta"};
-	    std::vector<std::filesystem::path> deplete_files = {"/mnt/c/ReadBouncerToml/build/main/Release/Bacillus_subtilis_complete_genome.ibf", "/mnt/c/ReadBouncerToml/build/main/Release/Enterococcus_faecalis_complete_genome.fasta"};
+	    std::vector<std::filesystem::path> deplete_files = {"/mnt/c/ReadBouncerToml/build/main/Release/Bacillus_subtilis_complete_genome.fasta", "/mnt/c/ReadBouncerToml/build/main/Release/Enterococcus_faecalis_complete_genome.fasta"};
         std::vector<std::filesystem::path> reads = {"/mnt/c/ReadBouncerToml/build/main/Release/Listeria.fastq","/mnt/c/ReadBouncerToml/build/main/Release/SaccharomycesReal.fasta"};
         double error_rate = 0.1;
         int chunk_length = 350;
@@ -238,7 +238,6 @@ TEST_F(ConfigReaderTest, TestIBFStruct){// structs simulation, are the written s
 
     //EXPECT_CALL(logTest, createLog("build")).Times(Exactly(1));
     
-   
     EXPECT_EQ(IBF_Struct_Test_.size_k, config->IBF_Parsed.size_k); 
     EXPECT_EQ(IBF_Struct_Test_.fragment_size, config->IBF_Parsed.fragment_size); 
     EXPECT_EQ(IBF_Struct_Test_.threads, config->IBF_Parsed.threads); 
@@ -251,7 +250,11 @@ TEST_F(ConfigReaderTest, TestIBFStruct){// structs simulation, are the written s
     EXPECT_EQ(IBF_Struct_Test_.max_chunks, config->IBF_Parsed.max_chunks); 
 }
 
-TEST_F(ConfigReaderTest, TestMinKNOWStruct){// structs simulation, are the written structs 100% correct? 
+/*
+* Struct equality [MinKNOW]
+*/
+
+TEST_F(ConfigReaderTest, TestMinKNOWStruct){ 
 
     config->parse();
     //MockConfigReader logTest;
@@ -278,7 +281,11 @@ TEST_F(ConfigReaderTest, TestMinKNOWStruct){// structs simulation, are the writt
 
 }
 
-TEST_F(ConfigReaderTest, TestBaseCallerStruct){// structs simulation, are the written structs 100% correct? 
+/*
+* Struct equality [IBaseCaller]
+*/
+
+TEST_F(ConfigReaderTest, TestBaseCallerStruct){ 
 
     config->parse();
     //MockConfigReader logTest;
