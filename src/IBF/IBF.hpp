@@ -31,6 +31,7 @@ using namespace interfaces;
 #ifndef INTERLEAVE_IBFBUILD_HPP_
 #define INTERLEAVE_IBFBUILD_HPP_
 
+
 namespace interleave
 {
 
@@ -101,6 +102,7 @@ namespace interleave
 
     class IBF
     {
+        friend class IBFTest;
 
         private:
             TIbf filter{};
@@ -111,6 +113,7 @@ namespace interleave
             std::vector<std::string> cutOutNNNs(std::string& seq, uint64_t seqlen);
             uint64_t calculate_filter_size_bits(IBFConfig& config, uint64_t numberOfBins);
             std::shared_ptr<spdlog::logger> ibf_logger;
+            
 
         public:
             IBF()
@@ -138,6 +141,11 @@ namespace interleave
             {
                 return filter;
             }
+
+            std::future< void > test_read_task;// for gtest
+            std::string cutOutNNNsTest; // for gtest
+            TIbf filter_{}; // for gtest
+            TIbf getFilter_() {return this->filter_;}
         
 
     };

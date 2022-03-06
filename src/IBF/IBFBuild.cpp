@@ -85,6 +85,8 @@ namespace interleave
                             buf << seq;			   
                         }
 			std::string newseq = buf.str();
+
+            interleave::IBF::cutOutNNNsTest = buf.str();// for getest
 			queue_refs.push(Seqs{ seqid, ((seqan::Dna5String) newseq) });
 			// calculate bins needed for that sequence
 	                stats.totalBinsBinId += ( newseq.length() / config.fragment_length) + 1;
@@ -436,6 +438,8 @@ namespace interleave
         try{
             stats.timeLoadSeq.start();
             std::future< void > read_task = parse_ref_seqs(queue_refs, config, stats);
+            interleave::IBF::test_read_task = parse_ref_seqs(queue_refs, config, stats); // for gtest
+
             read_task.get();
             stats.timeLoadSeq.stop();
         }
@@ -457,6 +461,7 @@ namespace interleave
         try
         {
             this->filter = TIbf(stats.totalBinsBinId, config.hash_functions, config.kmer_size, config.filter_size_bits);
+            this->filter_ = TIbf(stats.totalBinsBinId, config.hash_functions, config.kmer_size, config.filter_size_bits); // for gtest
             stats.totalBinsFile = seqan::getNumberOfBins(this->filter);
         }
         catch (seqan::Exception const& e)
