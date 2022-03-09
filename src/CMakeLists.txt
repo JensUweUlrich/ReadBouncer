@@ -25,7 +25,7 @@ if (WIN32)
     find_file(libbz2_DLL "libbz2-1__.dll")
     install(FILES ${libbz2_DLL} DESTINATION bin COMPONENT applications)
 else()
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -g -O0 -Wall -fprofile-arcs -ftest-coverage")
     set(CMAKE_INSTALL_PREFIX "/usr/local/${PROJECT_NAME}")
     add_compile_options("-Ofast")
 #    add_link_options("stdc++fs")
@@ -44,6 +44,16 @@ add_subdirectory(lyra)
 add_subdirectory(config)
 add_subdirectory(main)
 add_subdirectory(test)
+
+# Create the gcov target. Run coverage tests with 'make gcov'
+add_custom_target(gcov
+    COMMAND mkdir -p coverage
+    COMMAND ${CMAKE_MAKE_PROGRAM} test
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    )
+
+# Testing
+enable_testing()
 
 # now pack everything into an installer
 
