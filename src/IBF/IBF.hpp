@@ -146,6 +146,13 @@ namespace interleave
             std::string cutOutNNNsTest; // for gtest
             TIbf filter_{}; // for gtest
             TIbf getFilter_() {return this->filter_;}
+            struct test_add_seq_to_filter{
+
+                uint16_t threads_build; 
+                int64_t fragIdx;
+                int64_t fragstart;
+                uint64_t fragend;
+            } test_func1;
         
 
     };

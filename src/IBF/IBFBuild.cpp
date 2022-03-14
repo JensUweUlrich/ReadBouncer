@@ -152,6 +152,9 @@ namespace interleave
         sstr << "Maximum fragment size stored in each bin : " << config.fragment_length;
         this->ibf_logger->info(sstr.str());
         this->ibf_logger->flush();
+
+        interleave::IBF::test_func1.threads_build = config.threads_build;// g-test
+
         for ( uint16_t taskNo = 0; taskNo < config.threads_build; ++taskNo )
         {
             tasks.emplace_back( std::async( std::launch::async, [=, &queue_refs, &binid] {
@@ -201,7 +204,12 @@ namespace interleave
                             }
                             fragIdx++;
                             fragstart = fragIdx * config.fragment_length - config.kmer_size + 1;
+
+                            interleave::IBF::test_func1.fragend = fragend;// g-test
                         }
+                        interleave::IBF::test_func1.fragIdx = fragIdx; // g-test
+                        interleave::IBF::test_func1.fragstart = fragstart;// g-test
+
                     }
                     else
                     {

@@ -6,6 +6,8 @@
 
 class IBFTest: public ::testing::Test
 {
+	//MockIBF mock_ibf_;
+	
 	protected:
 
 		interleave::IBF *ibf;
@@ -24,7 +26,8 @@ class IBFTest: public ::testing::Test
 			delete ibf;
 		}
 
-    public:
+    public:// mocking
+	   // IBFTest(interleave::IBF *_ibf) : ibf(_ibf) {}
 
 
 
@@ -47,9 +50,9 @@ inline bool operator==(const TIbf & filter_1, const TIbf & filter_2)
     return filter_1 == filter_2;
 }
 
+// Test create_filter method with all steps from parse_ref_seqs(), cutOutNNNs() and add_sequences_to_filter() by mocking!
 TEST_F (IBFTest, CreateFilterTest){
 
-	MockIBF mock_ibf;
 	interleave::IBFConfig config{};
 	int testCounter
 	{0};
@@ -163,9 +166,83 @@ TEST_F (IBFTest, CreateFilterTest){
 		EXPECT_EQ(seqan::getNumberOfBins(testFilter), seqan::getNumberOfBins(ibf->getFilter_()));
 		testCounter++;
 
-		// Test: add_sequences_to_filter(tasks, config, binid, queue_refs);
+		EXPECT_EQ(3, config.hash_functions);//Number of hash functions
+		testCounter++;
+
+		// Test: add_sequences_to_filter(tasks, config, binid, queue_refs); here we use mocking, because this method is a private method! 
+		testing::NiceMock<MockIBF> mock_ibf;
+		uint64_t binid = 0; // reference to a binid counter that is incremented for every new fragment
+		std::vector< std::future< void > > tasks; //empty vector of tasks, which needs to be fuilt 
+		SafeQueue< Seqs > queue_refs(config.n_batches ); //thread safe queue that stores reference sequences to put in the ibf
+		//config: is the settings used to build the IBF, already defined 
+		mock_ibf.add_sequences_to_filter(tasks, config, binid, queue_refs);
+
+		EXPECT_EQ(1, ibf->test_func1.threads_build);
+		EXPECT_EQ(1, ibf->test_func1.fragIdx);
+		EXPECT_EQ(99988, ibf->test_func1.fragstart); //fragstart = fragIdx * config.fragment_length - config.kmer_size + 1 = 1 * 100000 - 13 + 1 = 99988
+		EXPECT_EQ(72, ibf->test_func1.fragend);/* uint64_t fragend = (fragIdx+1) * config.fragment_length = 200000
+                                                * make sure that last fragment ends at last position of the reference sequence
+                                                * if (fragend > length(val.seq)) fragend = length(val.seq); --> fragend = 72 */
+	    testCounter += 4; 
+
+		for ( auto& task : tasks )
+        {
+            EXPECT_EQ(true, task.valid());// as we defined a valid IBFConfig config object
+	        testCounter++;
+        }
 
 		std::cout << "'\n' Total number of Tests for creating filter is: "<< testCounter << '\n';
+}
+
+// Test create_filter stats after creating the filter! 
+TEST_F (IBFTest, FilterStatsTest){
+
+	interleave::IBFConfig config{};
+	config.reference_files.emplace_back("test.fasta");
+	config.output_filter_file = "test.ibf";
+	config.kmer_size = 13;
+	config.threads_build = 1;
+	config.fragment_length = 100000;
+	
+	FilterStats stats = ibf->create_filter(config);
+
+
+}
+
+
+TEST_F (IBFTest, mockTest){
+
+	// arrange
+	interleave::IBFConfig config{};
+	MockIBF mock_ibf;
+
+	config.reference_files.emplace_back("test.fasta");
+	config.output_filter_file = "test.ibf";
+	config.kmer_size = 13;
+	config.threads_build = 1;
+	config.fragment_length = 100000;
+
+	//mock_ibf.create_filter(config);
+	
+	/*add_sequences_to_filter(tasks, config, binid, queue_refs);
+            for ( auto& task : tasks )
+            {
+                task.get();
+            }*/
+	std::vector< std::future< void > > tasks;
+	SafeQueue< Seqs > queue_refs(config.n_batches ); 
+	uint64_t binid = 0;
+	//mock_ibf.add_sequences_to_filter(tasks, config, binid, queue_refs);
+	
+
+	//EXPECT_EQ(true, config.validate());// as we defined a valid IBFConfig config object
+	//testCounter++;
+	//FilterStats stats = ibf->create_filter(config);// first call
+
+	
+
+
+
 }
 
 int main(int argc, char** argv)
