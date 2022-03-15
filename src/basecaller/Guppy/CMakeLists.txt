@@ -30,10 +30,21 @@ elseif(ARM_BUILD)
       IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/libGuppyCppClient.a"
    )
 else()
-  execute_process(COMMAND "${CMAKE_COMMAND}" "-E" "tar" "xvzf" "${CMAKE_CURRENT_SOURCE_DIR}/libGuppyCppClient_linux_x86_64.tar.gz" WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})  
-  set_target_properties(GuppyClient PROPERTIES 
-      IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/libGuppyCppClient.a"
-   )
+  
+  execute_process(COMMAND "${CMAKE_COMMAND}" "-E" "tar" "xvzf" "${CMAKE_CURRENT_SOURCE_DIR}/libGuppyCppClient_linux_x86_64.tar.gz" WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0)
+      set_target_properties(GuppyClient PROPERTIES 
+        IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/libGuppyCppClient_gcc-8.a"
+      )
+  elseif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 10.0)
+      set_target_properties(GuppyClient PROPERTIES 
+        IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/libGuppyCppClient_gcc-9.a"
+      )
+  else()
+      set_target_properties(GuppyClient PROPERTIES 
+        IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/libGuppyCppClient_gcc-10.a"
+      )
+  endif()
 endif()
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../../util" "${CMAKE_CURRENT_SOURCE_DIR}/../../interfaces" ${CMAKE_CURRENT_SOURCE_DIR} "${CMAKE_CURRENT_SOURCE_DIR}/..")
