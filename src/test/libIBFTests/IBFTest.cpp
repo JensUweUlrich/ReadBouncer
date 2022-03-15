@@ -4,6 +4,10 @@
 #include "mockIBF.hpp"
 
 
+/*
+* Test method interleave::TIbf buildIBF(ibf_build_parser & parser) for building IBF in src/main/ibfbuild.hpp
+*
+*/
 class IBFTest: public ::testing::Test
 {
 	//MockIBF mock_ibf_;
@@ -27,30 +31,16 @@ class IBFTest: public ::testing::Test
 		}
 
     public:// mocking
-	   // IBFTest(interleave::IBF *_ibf) : ibf(_ibf) {}
-
-
 
 };
 
+/*
+* Test create_filter
+* @TEST_F writing two or more tests that operate on similar data
+* @ 15 Tests with the methods: parse_ref_seqs(), add_seq_to_filter(), cutOutNNNs(), calculate_filter_size()
+* @ MockIBF simulate the private methods of interleave::IBF 
+*/
 
-
-inline bool operator==(const std::future <void> & future_1, const std::future <void> & future_2)
-{
-    return future_1 == future_2;
-}
-
-inline bool operator!=(const std::future <void> & future_1, const std::future <void> & future_2)
-{
-    return future_1 != future_2;
-}
-
-inline bool operator==(const TIbf & filter_1, const TIbf & filter_2)
-{
-    return filter_1 == filter_2;
-}
-
-// Test create_filter method with all steps from parse_ref_seqs(), cutOutNNNs() and add_sequences_to_filter() by mocking!
 TEST_F (IBFTest, CreateFilterTest){
 
 	interleave::IBFConfig config{};
@@ -65,7 +55,6 @@ TEST_F (IBFTest, CreateFilterTest){
 
 	EXPECT_EQ(true, config.validate());// as we defined a valid IBFConfig config object
 	testCounter++;
-
 	
 	FilterStats stats = ibf->create_filter(config);// first call
 
@@ -105,7 +94,6 @@ TEST_F (IBFTest, CreateFilterTest){
 				 // read current input file
                 while ( !seqan::atEnd( seqFileIn ) )
                 {
-
                     seqan::StringSet< seqan::CharString > ids;
                     seqan::StringSet< seqan::CharString > seqs;
 					seqan::Dna5String seq; 
@@ -114,6 +102,7 @@ TEST_F (IBFTest, CreateFilterTest){
 					
                     // read all sequences from the current file
                     seqan::readRecords( ids, seqs, seqFileIn, config.n_refs );
+
 					for(auto i : seqs){
 
 						seq += i;
@@ -139,7 +128,6 @@ TEST_F (IBFTest, CreateFilterTest){
 						testCounter++;
 					}
 					
-				
                 }
 				
 			}
@@ -162,19 +150,19 @@ TEST_F (IBFTest, CreateFilterTest){
 
 		TIbf testFilter = TIbf(2, 3, 13, 79121216);
 
-		//EXPECT_EQ(testFilter, ibf->getFilter_());
 		EXPECT_EQ(seqan::getNumberOfBins(testFilter), seqan::getNumberOfBins(ibf->getFilter_()));
 		testCounter++;
 
 		EXPECT_EQ(3, config.hash_functions);//Number of hash functions
 		testCounter++;
 
-		// Test: add_sequences_to_filter(tasks, config, binid, queue_refs); here we use mocking, because this method is a private method! 
+		// Test: add_sequences_to_filter(tasks, config, binid, queue_refs); --> Mocking! 
 		testing::NiceMock<MockIBF> mock_ibf;
 		uint64_t binid = 0; // reference to a binid counter that is incremented for every new fragment
 		std::vector< std::future< void > > tasks; //empty vector of tasks, which needs to be fuilt 
 		SafeQueue< Seqs > queue_refs(config.n_batches ); //thread safe queue that stores reference sequences to put in the ibf
 		//config: is the settings used to build the IBF, already defined 
+
 		mock_ibf.add_sequences_to_filter(tasks, config, binid, queue_refs);
 
 		EXPECT_EQ(1, ibf->test_func1.threads_build);
@@ -194,21 +182,42 @@ TEST_F (IBFTest, CreateFilterTest){
 		std::cout << "'\n' Total number of Tests for creating filter is: "<< testCounter << '\n';
 }
 
-// Test create_filter stats after creating the filter! 
+/*
+* Test stats of create_filter on two reference sequences 
+* @TEST_F writing two or more tests that operate on similar data
+*/
 TEST_F (IBFTest, FilterStatsTest){
 
 	interleave::IBFConfig config{};
-	config.reference_files.emplace_back("test.fasta");
-	config.output_filter_file = "test.ibf";
+	config.reference_files.emplace_back("test1.fasta");
+	config.output_filter_file = "test1.ibf";
 	config.kmer_size = 13;
 	config.threads_build = 1;
 	config.fragment_length = 100000;
 	
 	FilterStats stats = ibf->create_filter(config);
 
+	if(std::filesystem::exists("/mnt/c/bug29/ReadBouncer/build/test/libIBFTests/test1.ibf")){
+
+        SUCCEED();
+    }
+    else{
+
+        FAIL();
+    }
+
+	EXPECT_EQ(2432, stats.sumSeqLen);
+	EXPECT_EQ(0, stats.totalSeqsBinId);
+	EXPECT_EQ(4, stats.totalBinsBinId);
+	EXPECT_EQ(4, stats.totalSeqsFile);
+	EXPECT_EQ(4, stats.totalBinsFile);
+	EXPECT_EQ(0, stats.invalidSeqs);
+	EXPECT_EQ(0, stats.newBins);
+	
 
 }
 
+/*
 
 TEST_F (IBFTest, mockTest){
 
@@ -224,11 +233,6 @@ TEST_F (IBFTest, mockTest){
 
 	//mock_ibf.create_filter(config);
 	
-	/*add_sequences_to_filter(tasks, config, binid, queue_refs);
-            for ( auto& task : tasks )
-            {
-                task.get();
-            }*/
 	std::vector< std::future< void > > tasks;
 	SafeQueue< Seqs > queue_refs(config.n_batches ); 
 	uint64_t binid = 0;
@@ -243,7 +247,7 @@ TEST_F (IBFTest, mockTest){
 
 
 
-}
+}*/
 
 int main(int argc, char** argv)
 {
