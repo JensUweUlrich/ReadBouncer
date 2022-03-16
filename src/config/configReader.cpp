@@ -277,6 +277,7 @@ void ConfigReader::readIBF(){
     }
     catch (std::out_of_range& e)
     {
+
         // Do nothing
         // sometimes we only want to specify target files
     }
@@ -326,6 +327,7 @@ void ConfigReader::readIBF(){
     for (std::string file : rf_tmp)
     {
         std::filesystem::path rf(file);
+
         rf = rf.make_preferred();
 
         if (!std::filesystem::exists(rf))
@@ -400,6 +402,7 @@ void ConfigReader::readBasecaller(){
         return;
     }
 
+
     try
     {
         Basecaller_Parsed.caller = toml::find_or<std::string>(basecaller, "caller", "DeepNano");
@@ -413,7 +416,6 @@ void ConfigReader::readBasecaller(){
         // TODO: write message in log file
         throw ConfigReaderException(e.what());
     }
-
 }
 
 /**

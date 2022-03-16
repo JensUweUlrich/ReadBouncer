@@ -34,6 +34,7 @@ class IBFTest: public ::testing::Test
 
 };
 
+
 /*
 * Test create_filter
 * @TEST_F writing two or more tests that operate on similar data
@@ -252,5 +253,6 @@ TEST_F (IBFTest, mockTest){
 int main(int argc, char** argv)
 {
 	testing::InitGoogleTest(&argc, argv);
+	
 	return RUN_ALL_TESTS();
 }
