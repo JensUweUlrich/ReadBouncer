@@ -85,6 +85,7 @@ namespace interleave
                             buf << seq;			   
                         }
 			std::string newseq = buf.str();
+            interleave::IBF::cutOutNNNsTest = buf.str();// for getest
 			queue_refs.push(Seqs{ seqid, ((seqan::Dna5String) newseq) });
 			// calculate bins needed for that sequence
 	                stats.totalBinsBinId += ( newseq.length() / config.fragment_length) + 1;
@@ -152,6 +153,7 @@ namespace interleave
         this->ibf_logger->flush();
         for ( uint16_t taskNo = 0; taskNo < config.threads_build; ++taskNo )
         {
+            interleave::IBF::test_func1.threads_build = config.threads_build;// g-test
             tasks.emplace_back( std::async( std::launch::async, [=, &queue_refs, &binid] {
                 std::shared_ptr<spdlog::logger> logger = spdlog::get("IbfLog");
                 while ( true )
@@ -199,7 +201,10 @@ namespace interleave
                             }
                             fragIdx++;
                             fragstart = fragIdx * config.fragment_length - config.kmer_size + 1;
+                            interleave::IBF::test_func1.fragend = fragend;// g-test
                         }
+                         interleave::IBF::test_func1.fragIdx = fragIdx; // g-test
+                         interleave::IBF::test_func1.fragstart = fragstart;// g-test
                     }
                     else
                     {
@@ -436,6 +441,7 @@ namespace interleave
         try{
             stats.timeLoadSeq.start();
             std::future< void > read_task = parse_ref_seqs(queue_refs, config, stats);
+            interleave::IBF::test_read_task = parse_ref_seqs(queue_refs, config, stats); // for gtest
             read_task.get();
             stats.timeLoadSeq.stop();
         }
@@ -458,6 +464,7 @@ namespace interleave
         {
             this->filter = TIbf(stats.totalBinsBinId, config.hash_functions, config.kmer_size, config.filter_size_bits);
             stats.totalBinsFile = seqan::getNumberOfBins(this->filter);
+            this->filter_ = TIbf(stats.totalBinsBinId, config.hash_functions, config.kmer_size, config.filter_size_bits); // for gtest
         }
         catch (seqan::Exception const& e)
         {
