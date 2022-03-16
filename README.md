@@ -1,5 +1,9 @@
 # ReadBouncer
 
+**ReadBouncer: Precise and Scalable Adaptive Sampling for Nanopore Sequencing**<br>
+Jens-Uwe Ulrich, Ahmad Lutfi, Kilian Rutzen, Bernhard Y. Renard<br>
+bioRxiv 2022.02.01.478636; doi: https://doi.org/10.1101/2022.02.01.478636
+
 ## Table of Contents
 
 - [Overview](#started)
@@ -30,14 +34,14 @@ ReadBouncer is a nanopore adaptive sampling tool for Windows and Linux (x64 or A
 
 ### <a name="install"></a>Installation
 
-The easiest way is to download the provided installer files for [Windows](https://github.com/JensUweUlrich/ReadBouncer/releases/download/v1.1.0/ReadBouncer-1.1.0-win64.exe), [Linux x86_64](https://github.com/JensUweUlrich/ReadBouncer/releases/download/v1.1.0/ReadBouncer-1.1.0-Linux_x86_64.tar.gz) or [Linux arm64](https://github.com/JensUweUlrich/ReadBouncer/releases/download/v1.1.0/ReadBouncer-1.1.0-Linux_arm64.tar.gz) and simply click through the installation process. 
+The easiest way is to download the provided installer files for [Windows](https://github.com/JensUweUlrich/ReadBouncer/releases/download/v1.1.0/ReadBouncer-1.1.0-win64.exe), [Linux x86_64](https://github.com/JensUweUlrich/ReadBouncer/releases/download/v1.1.0/ReadBouncer-1.1.0-Linux.tar.gz) or [Linux arm64](https://github.com/JensUweUlrich/ReadBouncer/releases/download/v1.1.0/ReadBouncer-1.1.0-Linux_arm64.tar.gz) and simply click through the installation process. 
 
 ### <a name="compile"></a>Compilation From Source
 
 ReadBouncer has the following dependencies that should be installed before compiling the source code
 
 * [CMake](https://cmake.org/) for building
-* [C++ Compiler](https://visualstudio.microsoft.com/) Currently we support MSVC (on Windows) and GCC (on Linux)
+* [C++ Compiler](https://visualstudio.microsoft.com/) Currently we support MSVC (on Windows) and GCC-8 or later (on Linux)
 * [Perl](http://strawberryperl.com/releases.html)
 * [Go](https://golang.org/dl/)
 * [NASM Compiler](https://www.nasm.us/)
@@ -243,9 +247,9 @@ Finally, you will get some stats printed to the command line, as the one below:
 Number of classified reads                         :   47874
 Number of of too short reads (len < 250)           :   0
 Number of all reads                                :   100000
-Bacillus_subtilis_complete_genome        : 14409                0.14409
-Enterococcus_faecalis_complete_genome    : 13553                0.13553
-Escherichia_coli_complete_genome         : 19912                0.19912
+Bacillus_subtilis_complete_genome                  :   14409  
+Enterococcus_faecalis_complete_genome              :   13553            
+Escherichia_coli_complete_genome                   :   19912            
 Average Processing Time Read Classification        :   0.00197617
 -----------------------------------------------------------------------------------
 ```

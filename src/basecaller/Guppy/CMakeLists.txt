@@ -36,6 +36,7 @@ else()
       set_target_properties(GuppyClient PROPERTIES 
         IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/libGuppyCppClient_gcc-8.a"
       )
+<<<<<<< HEAD
   elseif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 10.0)
       set_target_properties(GuppyClient PROPERTIES 
         IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/libGuppyCppClient_gcc-9.a"
@@ -43,6 +44,11 @@ else()
   else()
       set_target_properties(GuppyClient PROPERTIES 
         IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/libGuppyCppClient_gcc-10.a"
+=======
+  else()
+      set_target_properties(GuppyClient PROPERTIES 
+        IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/libGuppyCppClient_gcc-9.a"
+>>>>>>> master
       )
   endif()
 endif()
