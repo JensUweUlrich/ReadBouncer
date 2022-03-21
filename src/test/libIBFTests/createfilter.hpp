@@ -27,6 +27,8 @@ class IBFTest: public ::testing::Test
 		}
 
     public:// mocking
+       int testCounter
+	   {0};
 
 };
 
@@ -39,10 +41,11 @@ class IBFTest: public ::testing::Test
 */
 
 TEST_F (IBFTest, CreateFilterTest){
-
+    
+    std::cout << "\n ########################################## " << '\n';
+    std::cout << "\n Testing Class Interleave::IBF! " << '\n';
 	interleave::IBFConfig config{};
-	int testCounter
-	{0};
+	
 
 	config.reference_files.emplace_back("test.fasta");
 	config.output_filter_file = "test.ibf";
@@ -210,14 +213,7 @@ TEST_F (IBFTest, FilterStatsTest){
 	
 	FilterStats stats = ibf->create_filter(config);
 
-	if(std::filesystem::exists("/mnt/c/bug29/ReadBouncer/build/test/libIBFTests/test1.ibf")){
-
-        SUCCEED();
-    }
-    else{
-
-        FAIL();
-    }
+    ASSERT_TRUE(std::filesystem::exists("/mnt/c/bug29/ReadBouncer/build/test/libIBFTests/test1.ibf"));
 
 	EXPECT_EQ(2432, stats.sumSeqLen);
 	EXPECT_EQ(0, stats.totalSeqsBinId);
@@ -226,6 +222,10 @@ TEST_F (IBFTest, FilterStatsTest){
 	EXPECT_EQ(4, stats.totalBinsFile);
 	EXPECT_EQ(0, stats.invalidSeqs);
 	EXPECT_EQ(0, stats.newBins);
+
+    testCounter += 8;
+
+    std::cout << "'\n' Total number of Tests for FilterStats: "<< testCounter << '\n';
 
 }
 

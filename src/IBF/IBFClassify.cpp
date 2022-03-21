@@ -79,6 +79,7 @@ namespace interleave
     bool Read::find_matches(std::vector< TIbf >& filters, 
                                 ClassifyConfig& config )
     {
+
         std::shared_ptr<spdlog::logger> logger = config.classification_logger;
         // iterate over all ibfs
         bool found = false;
@@ -95,14 +96,18 @@ namespace interleave
                 // get calculated threshold for minimum number of kmers needed to report a match
                 // this is based on the confidence interval for mutated kmers in a read with expected error rate, kmer size
                 TInterval ci = calculateCI(config.error_rate, filter.kmerSize, seqan::length(this->sequence), config.significance);
+
                 //std::cout << "CI = [" << ci.first << " , " << ci.second << "]" << std::endl;
                 uint16_t readlen = seqan::length(this->sequence);
+
                 // minimum number of kmers = max number of kmer in read - upper bound of the CI
                 //std::cout << seqan::length(this->seq) << " " << filter.kmerSize << std::endl;
                 int16_t threshold = readlen - filter.kmerSize + 1 - ci.second;
+ 
                 //uint16_t threshold = seqan::length(this->seq) - filter.kmerSize + 1 - (floor((ci.second - ci.first) / 2) + ci.first);
                 // select matches above chosen threshold
                 found = select_matches( selectedBins, selectedBinsRev, filter, threshold);
+
                 if (found)
                     break;
             }
