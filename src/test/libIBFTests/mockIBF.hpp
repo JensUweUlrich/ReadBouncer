@@ -49,3 +49,5 @@ class MockRead : public interleave::Read {
 
 
 };
+
+//class MockConfig  : public interleave::ClassifyConfig {};

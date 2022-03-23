@@ -167,8 +167,8 @@ namespace interleave
 
     class Read
     {
+
         private:
-            
             std::vector< ReadMatch > matches;
             uint16_t max_kmer_count = 0;
           
@@ -182,6 +182,7 @@ namespace interleave
                 TIbf& filter, uint16_t threshold);
 
         public:
+
             seqan::Dna5String sequence{};
             std::string id{};
 
@@ -209,6 +210,16 @@ namespace interleave
             bool classify(std::vector< TIbf >& filters, ClassifyConfig& config);
             int classify(std::vector< IBFMeta >& filters, ClassifyConfig& config);
             std::pair<int, int> classify(std::vector< IBFMeta >& filt1, std::vector< IBFMeta >& filt2, ClassifyConfig& config);
+
+            // gtest
+            bool select_matches_test(std::vector< uint16_t >& selectedBins,
+                                std::vector< uint16_t >& selectedBinsRev,
+                                TIbf&                    filter,
+                                uint16_t                 threshold);
+            
+            uint64_t count_matches_test(IBFMeta& filter, ClassifyConfig& config);
+            uint64_t max_matches_test(std::vector< uint16_t >& selectedBins, std::vector< uint16_t >& selectedBinsRev,
+                TIbf& filter, uint16_t threshold);
         
     };
     

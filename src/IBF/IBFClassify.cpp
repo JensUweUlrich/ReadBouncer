@@ -18,6 +18,7 @@ namespace interleave
                         TIbf&                    filter,
                         uint16_t                 threshold )
     {
+        
         // for each bin
         // for ( uint32_t binNo = 0; binNo < filter.ibf.noOfBins; ++binNo )
         // loop in map structure to avoid extra validations when map.size() < filter.ibf.noOfBins when ibf is updated and
@@ -132,6 +133,7 @@ namespace interleave
     */
     uint64_t Read::count_matches(IBFMeta& filter, ClassifyConfig& config)
     {
+        
          std::shared_ptr<spdlog::logger> logger = config.classification_logger;
         // iterate over all ibfs
 
@@ -352,5 +354,32 @@ namespace interleave
 
         return result;
     }
+
+
+//gtest
+
+bool Read::select_matches_test(std::vector< uint16_t >& selectedBins,
+                                std::vector< uint16_t >& selectedBinsRev,
+                                TIbf&                    filter,
+                                uint16_t                 threshold)
+{
+
+    return select_matches(selectedBins,  selectedBinsRev, filter, threshold);
+
+
+}
+
+uint64_t Read::count_matches_test(IBFMeta& filter, ClassifyConfig& config){
+
+    return count_matches(filter, config);
+}
+
+uint64_t  Read::max_matches_test(std::vector< uint16_t >& selectedBins, std::vector< uint16_t >& selectedBinsRev,
+                 TIbf& filter, uint16_t threshold){
+
+     max_matches(selectedBins, selectedBinsRev, filter, threshold);               
+
+
+                }
 
 } // end namespace interleave
