@@ -1,6 +1,7 @@
 
 
-
+// Note that mocking the interleave calsses won't be nice test in our context as we are testing many private methods and special cases. 
+// so we test the methods line by line and then we call the final results!  
 
 /* Submethods
 1- get_threshold_kmers( uint16_t readLen, uint16_t kmerSize, float min_kmers )
@@ -11,8 +12,6 @@
 6- TInterval calculateCI(const double r, const uint8_t kmer_size, const uint32_t readlen, const double confidence) --> Done
 */
 
-
-
 class ReadTest: public ::testing::Test
 {
 	//MockIBF mock_ibf_;
@@ -20,7 +19,7 @@ class ReadTest: public ::testing::Test
 	protected:
 
 		interleave::Read *read;
-        //interleave::ClassifyConfig *config;
+        //interleave::ClassifyConfig *configTest;
 		typedef seqan::BinningDirectory< seqan::InterleavedBloomFilter,
                                     seqan::BDConfig< seqan::Dna5, seqan::Normal, seqan::Uncompressed > >
         TIbf;
@@ -31,7 +30,10 @@ class ReadTest: public ::testing::Test
 		void SetUp() override
 		{
 			read = new interleave::Read();
-            //config = new interleave::ClassifyConfig();
+            read->sequence = "AAAAAAAACCCCCCCCCGAGAGAGGAGAGAGGAGAGAGAGAGCCCCAAAAGAGAGGAGAAAAAAAAACCCCCCCCCGAGAGAGGAGAGAGGAGAGAGAGAGCCCCAAAAGAGAGGAGAAAAAAAAACCCCCCCCCGAGAGAGGAGAGAGGAGAGAGAGAGCCCCAAAAGAGAGGAGAAAAAAAAACCCCCCCCCGAGAGAGGAGAGAGGAGAGAGAGAGCCCCAAAAGAGAGGAGAAAAAAAAACCCCCCCCCGAGAGAGGAGAGAGGAGAGAGAGAGCCCCAAAAGAGAGGAGAAAAAAAAACCCCCCCCCGAGAGAGGAGAGAGGAGAGAGAGAGCCCCAAAAGAGAGGAGA";
+            
+            
+            
 		}
         // release any resources we allocated in SetUp()
 		void TearDown() override
@@ -40,16 +42,12 @@ class ReadTest: public ::testing::Test
 		}
 
     public:// mocking
-
+    
         
-        
-        
-        
-        
-
         
 
 };
+
 
 //bool find_matches(std::vector< TIbf >& filters, ClassifyConfig&  config );
 /**
@@ -87,9 +85,13 @@ AAAAAAAACCCCCCCCCGAGAGAGGAGAGAGGAGAGAGAAAAAAAAACCCCCCCCCGAGAGAGGAGAGAGGAGAGAGAAA
 TEST_F (ReadTest, FindMatchesTest){
 
     std::cout << "\n ########################################## " << '\n';
-    std::cout << "\n Testing Class Interleave::Read! " << '\n';
+    std::cout << "Testing Class Interleave::Read! " << '\n';
+
+    const testing::TestInfo* const test_info = testing::UnitTest::GetInstance()->current_test_info();
+    printf("We are in test %s of test suite %s.\n", test_info->name(), test_info->test_suite_name());
+
 	std::vector<interleave::IBFMeta> filters {};
-    
+
     interleave::ClassifyConfig config{};
     config.error_rate = 0.1;
     config.significance = 0.95;
@@ -140,8 +142,7 @@ TEST_F (ReadTest, FindMatchesTest){
                     //std::cout << "selectedBinsRev: " << i << std::endl; // found at 0 bins ---> correct! 
                 }
 
-                // get calculated threshold for minimum number of kmers needed to report a match
-                // this is based on the confidence interval for mutated kmers in a read with expected error rate, kmer size
+                
                 TInterval ci = calculateCI(config.error_rate, filter.kmerSize, seqan::length(Mock_Read.sequence), config.significance);
                 
                 EXPECT_EQ(5, ci.first); // see calculation steps below! 
@@ -162,8 +163,6 @@ TEST_F (ReadTest, FindMatchesTest){
                 
                 for ( uint32_t binNo = 0; binNo < filter.noOfBins; ++binNo ) // select_matches! 
                 {
-                    //std::cout << "selectedBins[binNo]: " << selectedBins[binNo] << std::endl;
-                    //std::cout << "selectedBinsRev[binNo]: " << selectedBinsRev[binNo] << std::endl;
 
                     if ( selectedBins[binNo] >= threshold || selectedBinsRev[binNo] >= threshold )
                     {
@@ -239,7 +238,26 @@ TEST_F (ReadTest, FindMatchesTest){
    // std::cout << "Matches: " <<read->count_matches_test(filter_, config) << std::endl;
 
 
+   //testing::StaticAssertTypeEq(bool, read->classify( IBFs, config));
+   //std::cout << "Classify results: " << read->classify( IBFs, config) << std::endl;
+   
+   std::cout << "Start classify test .....          "<< std::endl;
+   std::cout << "Testing bool Read::classify() ....." << std::endl;
 
+   //read->sequence = "AAAAAAAACCCCCCCCCGAGAGAGGAGAGAGGAGAGAGAGAGCCCCAAAAGAGAGGAGA";
+   //interleave::Read readTest("testID", "AAAAAAAACCCCCCCCCGAGAGAGGAGAGAGGAGAGAGAGAGCCCCAAAAGAGAGGAGA");
+
+   std::vector <TIbf> emptyVector;
+   if (emptyVector.empty())// test exception
+    {
+       EXPECT_THROW(read->classify(emptyVector, config), NullFilterException);
+    }
+
+    EXPECT_EQ(13, IBFs[0].kmerSize);
+    EXPECT_EQ(354, read->getReadLength());
+    EXPECT_EQ(1,  read->find_matches_test(IBFs, config));// already tested with short read and we had a very big threshold --> fixed
+    //EXPECT_THROW(read->getReadLength() < IBFs[0].kmerSize, ShortReadException);
+    EXPECT_EQ(1,  read->classify(IBFs, config));
 
     
     
@@ -251,15 +269,15 @@ TEST_F (ReadTest, FindMatchesTest){
 //uint64_t count_matches(IBFMeta& filter, ClassifyConfig& config);
 TEST_F (ReadTest, CountMatchesTest){
 
-    //testing::NiceMock<MockRead> Mock_Read ;
+    testing::NiceMock<MockRead> Mock_Read ;
 
+    const testing::TestInfo* const test_info = testing::UnitTest::GetInstance()->current_test_info();
+    printf("We are in test %s of test suite %s.\n", test_info->name(), test_info->test_suite_name());
 
     std::string file = "/mnt/c/bug29/ReadBouncer/build/test/libIBFTests/test.ibf"; 
 
     //Mock_Read.sequence = "AAAAAAACCCCCCCCCGAGAGAGGAGAGAGGAGAG";
     seqan::Dna5String RevCom = "CTCTCCTCTCTCCTCTCTCGGGGGGGGGTTTTTTT"; 
-
-    
 
     interleave::IBFMeta filter{};
     interleave::IBF f{};
@@ -286,7 +304,7 @@ TEST_F (ReadTest, CountMatchesTest){
     }
 
     TInterval ci = calculateCI(0.1, 13, seqan::length(RevCom), 0.95);
-    EXPECT_EQ(5, ci.first); // see calculation steps below! 
+    EXPECT_EQ(5, ci.first); 
     EXPECT_EQ(30, ci.second);
 
     uint16_t readlen = seqan::length(RevCom);
@@ -299,8 +317,7 @@ TEST_F (ReadTest, CountMatchesTest){
 
         for (uint32_t binNo = 0; binNo < filter.filter.noOfBins; ++binNo)
         {
-            //std::cout<<selectedBins[binNo] << " , " << selectedBinsRev[binNo] <<std::endl;
-            // if kmer count is higher than threshold
+
             if (selectedBins[binNo] >= threshold || selectedBinsRev[binNo] >= threshold)
             {
                 if (selectedBins[binNo] > max_kmer_count)
@@ -314,4 +331,21 @@ TEST_F (ReadTest, CountMatchesTest){
     
 
     
+}
+
+
+/**
+        find matches of kmers from the read within the bins of the IBFs
+        if certain number of kmers within one bin were found, read is classified as host read
+        @filters: vector of IBFs used to filter out reads
+        @config: configuration settings needed
+        @return: true, if at least one specific match was found, false otherwise 
+        @throws: NullFilterException, ShortReadException, CountKmerException
+    */
+// bool classify(std::vector< TIbf >& filters, ClassifyConfig& config);
+TEST_F (ReadTest, BoolClassifyTest){// step by step test --> general results is tested in the first test
+    
+    const testing::TestInfo* const test_info = testing::UnitTest::GetInstance()->current_test_info();
+    printf("We are in test %s of test suite %s.\n", test_info->name(), test_info->test_suite_name());
+
 }

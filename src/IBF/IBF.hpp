@@ -153,7 +153,7 @@ namespace interleave
                 int64_t fragstart;
                 uint64_t fragend;
             } test_func1;
-        
+    
 
     };
 
@@ -220,6 +220,7 @@ namespace interleave
             uint64_t count_matches_test(IBFMeta& filter, ClassifyConfig& config);
             uint64_t max_matches_test(std::vector< uint16_t >& selectedBins, std::vector< uint16_t >& selectedBinsRev,
                 TIbf& filter, uint16_t threshold);
+            bool find_matches_test(std::vector<interleave::TIbf> &filters, interleave::ClassifyConfig &config);
         
     };
     

@@ -4,6 +4,7 @@
 #include "mockIBF.hpp"
 #include "read.hpp"
 #include "createfilter.hpp"
+#include "IBFConfig.hpp"
 
 
 

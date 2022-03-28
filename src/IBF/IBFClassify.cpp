@@ -23,13 +23,18 @@ namespace interleave
         // for ( uint32_t binNo = 0; binNo < filter.ibf.noOfBins; ++binNo )
         // loop in map structure to avoid extra validations when map.size() < filter.ibf.noOfBins when ibf is updated and
         // sequences removed also avoid the error of spurius results from empty bins (bug reported)
+        
+        std::cout << "threshold " << threshold << '\n';
+        std::cout << "filter.noOfBins " << filter.noOfBins << '\n';
        
         for ( uint32_t binNo = 0; binNo < filter.noOfBins; ++binNo ) 
         {
+            
             //std::cout<<selectedBins[binNo] << " , " << selectedBinsRev[binNo] <<std::endl;
             // if kmer count is higher than threshold
             if ( selectedBins[binNo] >= threshold || selectedBinsRev[binNo] >= threshold )
             {
+                std::cout << "selectedBins[binNo] " << selectedBins[binNo] << '\n';
                 return true;
             }
         }
@@ -80,10 +85,11 @@ namespace interleave
     bool Read::find_matches(std::vector< TIbf >& filters, 
                                 ClassifyConfig& config )
     {
-
+        
         std::shared_ptr<spdlog::logger> logger = config.classification_logger;
         // iterate over all ibfs
         bool found = false;
+         
         for ( TIbf& filter : filters )
         {
             try
@@ -91,6 +97,7 @@ namespace interleave
                 // IBF count
                 // find all bins that have at least 1 kmer in common with read_seq
                 // selectedBins[binNo] = # of kmer matches for this bin
+               
                 std::vector< uint16_t > selectedBins    = seqan::count( filter, this->sequence );
                 std::vector< uint16_t > selectedBinsRev = seqan::count( filter, TSeqRevComp( this->sequence ) );
 
@@ -107,10 +114,11 @@ namespace interleave
  
                 //uint16_t threshold = seqan::length(this->seq) - filter.kmerSize + 1 - (floor((ci.second - ci.first) / 2) + ci.first);
                 // select matches above chosen threshold
-                found = select_matches( selectedBins, selectedBinsRev, filter, threshold);
 
+                found = select_matches( selectedBins, selectedBinsRev, filter, threshold);
                 if (found)
                     break;
+
             }
             catch (seqan::Exception const& e)
             {
@@ -176,7 +184,9 @@ namespace interleave
     */
     bool Read::classify(  std::vector< TIbf >& filters, ClassifyConfig& config)
     {
+        
         std::shared_ptr<spdlog::logger> logger = config.classification_logger;
+        
         if (filters.empty())
         {
             logger->error("No IBF provided to classify the read!");
@@ -185,17 +195,20 @@ namespace interleave
         // k-mer sizes should be the same among filters
         uint16_t kmer_size = filters[0].kmerSize;
         TMatches matches;
+        
         if ( getReadLength() >= kmer_size )
         {
             // try to find kmer matches between read and ibfs
             try
             {
                 return find_matches(filters, config );
+                
             }
             catch (const CountKmerException& e)
             {
                 throw;
             }
+            
             // not needed anymore
             /* 
             if ( this->max_kmer_count > 0 )
@@ -367,6 +380,11 @@ bool Read::select_matches_test(std::vector< uint16_t >& selectedBins,
     return select_matches(selectedBins,  selectedBinsRev, filter, threshold);
 
 
+}
+
+bool Read::find_matches_test(std::vector<interleave::TIbf> &filters, interleave::ClassifyConfig &config){
+
+    return find_matches(filters, config);
 }
 
 uint64_t Read::count_matches_test(IBFMeta& filter, ClassifyConfig& config){
