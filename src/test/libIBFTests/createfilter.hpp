@@ -65,7 +65,7 @@ TEST_F (IBFTest, CreateFilterTest){
 	}
 	else{
 
-		FAIL();
+		//FAIL();
 		EXPECT_THROW(ibf->create_filter(config), InvalidConfigException);
 		testCounter++;
 	}
@@ -124,7 +124,7 @@ TEST_F (IBFTest, CreateFilterTest){
 					}
 					else{
 
-						EXPECT_EQ(0, stats.invalidSeqs);
+						ASSERT_EQ(0, stats.invalidSeqs);
 						testCounter++;
 					}
 					
@@ -175,7 +175,7 @@ TEST_F (IBFTest, CreateFilterTest){
 
 		for ( auto& task : tasks )
         {
-            EXPECT_EQ(true, task.valid());// as we defined a valid IBFConfig config object
+            ASSERT_EQ(true, task.valid());// as we defined a valid IBFConfig config object
 	        testCounter++;
         }
 
@@ -247,7 +247,7 @@ TEST_F (IBFTest, mockTest){
 	
 	std::vector< std::future< void > > tasks;
 	SafeQueue< Seqs > queue_refs(config.n_batches ); 
-	uint64_t binid = 0;
+
 	//mock_ibf.add_sequences_to_filter(tasks, config, binid, queue_refs);
 	
 

@@ -208,7 +208,7 @@ namespace interleave
     
     inline void logIBFConfig(const IBFConfig& config)
     {
-        constexpr auto newl{ "\n" };
+        //constexpr auto newl{ "\n" }; //@warning: unused variable
         constexpr auto separator{ "----------------------------------------------------------------------" };
 
         std::shared_ptr<spdlog::logger> logger = spdlog::get("IbfLog");

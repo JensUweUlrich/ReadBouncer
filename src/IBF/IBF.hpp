@@ -322,7 +322,7 @@ namespace interleave
         // number of kmers in sequence of length readlen
         double L = ((double)readlen - (double)kmer_size + 1.0);
         // expected number of errorneous/mutated kmers in sequence of length readlen
-        double Nmut = L * q;
+        //double Nmut = L * q; //@warning: unused variable
         // compute variance
         double varN = L * (1.0 - q) * (q * (2.0 * (double)kmer_size + (2.0 / r) - 1.0) - 2.0 * (double)kmer_size)
                         + (double)kmer_size * ((double)kmer_size - 1.0) * pow((1.0 - q), 2.0)

@@ -41,23 +41,18 @@ class ReadTest: public ::testing::Test
 			delete read;
 		}
 
+        template <typename T>
+        bool pairEq(std::pair<T, T> , std::pair<T, T>);
+
+
+
+
     public:// mocking
     
         
         
 
 };
-
-
-//bool find_matches(std::vector< TIbf >& filters, ClassifyConfig&  config );
-/**
-        find matches of kmers in ibfs
-        return true if read matches at least one bin of a given IBF
-        @matches:   unordered map to store matches 
-        @filters:   vector of IBFs
-        @config:    configuration settings needed
-        @throws:    CountKmerException
-    */
 
 /**
  * test.ibf: AAAAAAAACCCCCCCCCGAGAGAGGAGAGAGGAGAGAGAGAGCCCCAAAAGAGAGGAGATTTTANNNNNNNNTATATTATA
@@ -80,7 +75,20 @@ AAAAAAAACCCCCCCCCGAGAGAGGAGAGAGGAGAGAGAAAAAAAAACCCCCCCCCGAGAGAGGAGAGAGGAGAGAGAAA
  * 
  */
 
+template <typename T>
+bool ReadTest::pairEq(std::pair<T, T> p1, std::pair<T, T> p2){
 
+    if((p1.first == p2.first) && (p1.second == p2.second)){
+
+        return true;
+    }
+
+    else{
+
+        return false; 
+    }
+
+}
 
 TEST_F (ReadTest, FindMatchesTest){
 
@@ -99,7 +107,7 @@ TEST_F (ReadTest, FindMatchesTest){
 
     testing::NiceMock<MockRead> Mock_Read ;
     
-    bool found = false;
+    bool found, found_ = false;
     std::vector<std::filesystem::path> filters_files = {"/mnt/c/bug29/ReadBouncer/build/test/libIBFTests/test.ibf", "/mnt/c/bug29/ReadBouncer/build/test/libIBFTests/test1.ibf"}; 
 
     Mock_Read.sequence = "AAAAAAACCCCCCCCCGAGAGAGGAGAGAGGAGAG";
@@ -118,7 +126,6 @@ TEST_F (ReadTest, FindMatchesTest){
 			filter.filter = std::move(f.getFilter());
 			filters.emplace_back(std::move(filter));
 
-            TIbf & holder = filter.filter;
             IBFs.emplace_back(std::move(f.getFilter()));
             
         }
@@ -126,21 +133,21 @@ TEST_F (ReadTest, FindMatchesTest){
     EXPECT_EQ(2, IBFs.size());
     ASSERT_TRUE(std::filesystem::exists("IbfClassificationLog.txt"));
 
-    //Due to private method we test each step of the method then mock the results! 
     for ( TIbf& filter : IBFs )
         {
                 std::vector< uint16_t > selectedBins    = seqan::count( filter, Mock_Read.sequence );
                 std::vector< uint16_t > selectedBinsRev = seqan::count( filter, TSeqRevComp( Mock_Read.sequence ) );
 
-                for(auto i: selectedBins){
+                /*for(auto i: selectedBins){
 
                     //std::cout << "selectBins: " << i << std::endl; // found at 23 bins! 
-                }
+                }*/
 
+                /*
                 for(auto i: selectedBinsRev){
 
-                    //std::cout << "selectedBinsRev: " << i << std::endl; // found at 0 bins ---> correct! 
-                }
+                    std::cout << "selectedBinsRev: " << i << std::endl; // found at 0 bins ---> correct! 
+                }*/
 
                 
                 TInterval ci = calculateCI(config.error_rate, filter.kmerSize, seqan::length(Mock_Read.sequence), config.significance);
@@ -154,12 +161,10 @@ TEST_F (ReadTest, FindMatchesTest){
                 int16_t threshold = readlen - filter.kmerSize + 1 - ci.second;
                 EXPECT_EQ(-7, threshold);
 
-                //found = select_matches( selectedBins, selectedBinsRev, filter, threshold);
+                found =  Mock_Read.select_matches ( selectedBins, selectedBinsRev, filter, threshold);
+                found_ = read->select_matches_test( selectedBins, selectedBinsRev, filter, threshold);
 
-        
-                found = Mock_Read.select_matches( selectedBins, selectedBinsRev, filter, threshold);
-                //read->select_matches_test(selectedBins, selectedBinsRev, filter, threshold);
-                //EXPECT_TRUE(read->select_matches_test(selectedBins, selectedBinsRev, filter, threshold));// TODO fix bug
+                EXPECT_EQ(found, found_);
                 
                 for ( uint32_t binNo = 0; binNo < filter.noOfBins; ++binNo ) // select_matches! 
                 {
@@ -174,7 +179,8 @@ TEST_F (ReadTest, FindMatchesTest){
 
 
     /*
-    {
+    { @calculations: 
+
          calculateCI(config.error_rate, filter.kmerSize, seqan::length(Mock_Read.sequence), config.significance);
          r = error_rate = 0.1 
          kmer_size = 13
@@ -233,17 +239,6 @@ TEST_F (ReadTest, FindMatchesTest){
 
         */
 
-    //std::cout << "Matches: " <<read->max_matches_test(selectedBins, selectedBinsRev, filter.filter, threshold) << std::endl;
-
-   // std::cout << "Matches: " <<read->count_matches_test(filter_, config) << std::endl;
-
-
-   //testing::StaticAssertTypeEq(bool, read->classify( IBFs, config));
-   //std::cout << "Classify results: " << read->classify( IBFs, config) << std::endl;
-   
-   std::cout << "Start classify test .....          "<< std::endl;
-   std::cout << "Testing bool Read::classify() ....." << std::endl;
-
    //read->sequence = "AAAAAAAACCCCCCCCCGAGAGAGGAGAGAGGAGAGAGAGAGCCCCAAAAGAGAGGAGA";
    //interleave::Read readTest("testID", "AAAAAAAACCCCCCCCCGAGAGAGGAGAGAGGAGAGAGAGAGCCCCAAAAGAGAGGAGA");
 
@@ -253,14 +248,60 @@ TEST_F (ReadTest, FindMatchesTest){
        EXPECT_THROW(read->classify(emptyVector, config), NullFilterException);
     }
 
+    if (read->getReadLength() < IBFs[0].kmerSize)
+    {
+       EXPECT_THROW(read->classify(emptyVector, config), CountKmerException);
+       EXPECT_THROW(read->classify(emptyVector, config), ShortReadException);
+    }
+
     EXPECT_EQ(13, IBFs[0].kmerSize);
     EXPECT_EQ(354, read->getReadLength());
     EXPECT_EQ(1,  read->find_matches_test(IBFs, config));// already tested with short read and we had a very big threshold --> fixed
-    //EXPECT_THROW(read->getReadLength() < IBFs[0].kmerSize, ShortReadException);
-    EXPECT_EQ(1,  read->classify(IBFs, config));
+    EXPECT_EQ(true,  read->classify(IBFs, config));
+
+    std::vector<interleave::IBFMeta> emptyVectorMeta;
+    if (emptyVectorMeta.empty())// test exception
+    {
+        EXPECT_THROW(read->classify(emptyVectorMeta, config), NullFilterException);
+    }
+
+    if (read->getReadLength() < IBFs[0].kmerSize)// smaller than the k-mer size! 
+    {
+       EXPECT_THROW(read->classify(emptyVectorMeta, config), CountKmerException);
+       EXPECT_THROW(read->classify(emptyVectorMeta, config), ShortReadException);
+    }
 
     
+
+    //int classifyReturnValue = read->classify(filters, config);
+
+    std::vector<int> matchingResults= {282, 182};
+
+    ASSERT_EQ(filters.size(), matchingResults.size());
+    for (uint8_t ind = 0; ind < filters.size(); ++ind)
+        {
+            ASSERT_EQ(matchingResults[ind], read->count_matches_test(filters[ind], config));
+        }
     
+    ASSERT_EQ(0, read->classify(filters, config));
+    EXPECT_EQ(282, read->count_matches_test(filters[read->classify(filters, config)], config));
+
+    //std::pair<int, int> Read::classify(std::vector< IBFMeta >& filt1, std::vector< IBFMeta >& filt2, ClassifyConfig& config)
+
+    std::vector<interleave::IBFMeta> emptyM1;
+    std::vector<interleave::IBFMeta> emptyM2;
+    if (emptyM1.empty() || emptyM2.empty())// test exception
+    {
+        EXPECT_THROW(read->classify(emptyM1, emptyM2, config), NullFilterException);
+    }
+
+    std::vector<interleave::IBFMeta> v1 {};
+    std::vector<interleave::IBFMeta> v2 {};
+    v1.emplace_back(filters[0]);
+    v2.emplace_back(filters[1]);
+    
+    std::pair <int, int> p1  (282, 182);
+    ASSERT_EQ(true, pairEq(p1, read->classify(v1,v2, config)));
 
 };
 
@@ -272,7 +313,7 @@ TEST_F (ReadTest, CountMatchesTest){
     testing::NiceMock<MockRead> Mock_Read ;
 
     const testing::TestInfo* const test_info = testing::UnitTest::GetInstance()->current_test_info();
-    printf("We are in test %s of test suite %s.\n", test_info->name(), test_info->test_suite_name());
+    printf("\n We are in test %s of test suite %s.\n", test_info->name(), test_info->test_suite_name());
 
     std::string file = "/mnt/c/bug29/ReadBouncer/build/test/libIBFTests/test.ibf"; 
 
@@ -293,6 +334,7 @@ TEST_F (ReadTest, CountMatchesTest){
     std::vector< uint16_t > selectedBins = seqan::count(filter.filter, RevCom);
     std::vector< uint16_t > selectedBinsRev = seqan::count(filter.filter, TSeqRevComp(RevCom));
 
+    /*
     for(auto i: selectedBins){
 
           //std::cout << "selectBins: " << i << std::endl; // found at 0 bins! 
@@ -301,7 +343,7 @@ TEST_F (ReadTest, CountMatchesTest){
     for(auto i: selectedBinsRev){
 
         //std::cout << "selectedBinsRev: " << i << std::endl; // found at 23 bins ---> correct! 
-    }
+    }*/
 
     TInterval ci = calculateCI(0.1, 13, seqan::length(RevCom), 0.95);
     EXPECT_EQ(5, ci.first); 
@@ -334,18 +376,9 @@ TEST_F (ReadTest, CountMatchesTest){
 }
 
 
-/**
-        find matches of kmers from the read within the bins of the IBFs
-        if certain number of kmers within one bin were found, read is classified as host read
-        @filters: vector of IBFs used to filter out reads
-        @config: configuration settings needed
-        @return: true, if at least one specific match was found, false otherwise 
-        @throws: NullFilterException, ShortReadException, CountKmerException
-    */
-// bool classify(std::vector< TIbf >& filters, ClassifyConfig& config);
 TEST_F (ReadTest, BoolClassifyTest){// step by step test --> general results is tested in the first test
     
-    const testing::TestInfo* const test_info = testing::UnitTest::GetInstance()->current_test_info();
-    printf("We are in test %s of test suite %s.\n", test_info->name(), test_info->test_suite_name());
+    //const testing::TestInfo* const test_info = testing::UnitTest::GetInstance()->current_test_info();
+    //printf("We are in test %s of test suite %s.\n", test_info->name(), test_info->test_suite_name());
 
 }
