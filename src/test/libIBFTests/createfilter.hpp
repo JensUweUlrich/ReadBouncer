@@ -222,6 +222,7 @@ TEST_F (IBFTest, FilterStatsTest){
 	EXPECT_EQ(4, stats.totalBinsFile);
 	EXPECT_EQ(0, stats.invalidSeqs);
 	EXPECT_EQ(0, stats.newBins);
+	
 
     testCounter += 8;
 

@@ -24,10 +24,6 @@ class MockRead : public interleave::Read {
 
  public:
 
-
- // override only if we overriding a virtual method
- // MOCK_METHOD(return value, methods general name, (parameters), (override)); or (const) instead of override or if both (const, override)
-
  // Private Methods: 
   MOCK_METHOD(bool, find_matches, (std::vector< TIbf >& filters, ClassifyConfig&  config ));
   MOCK_METHOD(uint64_t, count_matches, (IBFMeta& filter, ClassifyConfig& config));
@@ -40,7 +36,6 @@ class MockRead : public interleave::Read {
                 TIbf& filter, uint16_t threshold));
 
   // Public Methods: 
-
   MOCK_METHOD(uint32_t, getReadLength, ());
   MOCK_METHOD(bool, classify, (std::vector< TIbf >& filters, ClassifyConfig& config));
   MOCK_METHOD(int, classify, (std::vector< IBFMeta >& filters, ClassifyConfig& config));

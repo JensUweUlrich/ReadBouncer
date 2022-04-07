@@ -1,10 +1,17 @@
-#include "IBF.hpp"
 #include "gtest/gtest.h"
 
+// IBF headers
+#include "IBF.hpp"
+#include "IBFConfig.hpp"
+
+// Testing methods
 #include "mockIBF.hpp"
 #include "read.hpp"
 #include "createfilter.hpp"
-#include "IBFConfig.hpp"
+#include "ibfconfigtest.hpp"
+
+
+
 
 
 

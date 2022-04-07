@@ -95,39 +95,6 @@ namespace interleave
 
             bool validate()
             {
-            // both are not mandatory anymore
-            /*if ( seqid_bin_file.empty() || output_filter_file.empty() )
-                {
-                    std::cerr << "--seqid-bin-file and --output-filter-file are mandatory" << std::endl;
-                    return false;
-                }
-            */
-                // add references from folder
-                // TODO: move this part to global config
-            /*    if ( !directory_reference_files.empty() && !extension.empty() )
-                {
-                    struct dirent* entry = nullptr;
-                    DIR*           dp    = nullptr;
-                    dp                   = opendir( directory_reference_files.c_str() );
-                    if ( dp != nullptr )
-                    {
-                        while ( ( entry = readdir( dp ) ) )
-                        {
-                            if ( hasEnding( entry->d_name, extension ) )
-                                reference_files.push_back( directory_reference_files + "/" + entry->d_name );
-                        }
-                    }
-                    closedir( dp );
-                }
-            
-                if ( reference_files.empty() )
-                {
-                    std::cerr << "Please provide reference sequence files with the parameters --reference-files or/and with "
-                                "--directory-reference-files and --extension"
-                            << std::endl;
-                    return false;
-                }
-            */
                 if ( threads <= 2 )
                 {
                     threads_build = 1;
@@ -208,7 +175,6 @@ namespace interleave
     
     inline void logIBFConfig(const IBFConfig& config)
     {
-        //constexpr auto newl{ "\n" }; //@warning: unused variable
         constexpr auto separator{ "----------------------------------------------------------------------" };
 
         std::shared_ptr<spdlog::logger> logger = spdlog::get("IbfLog");

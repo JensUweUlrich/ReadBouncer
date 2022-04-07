@@ -76,7 +76,6 @@ namespace interleave
                         // delete everything after first space in seq identifier
                         std::string seqid = cid.substr( 0, cid.find( ' ' ) );
                         // add reference sequences to the queue
-                        int counter = 1;
                         std::string seq = std::string(seqan::toCString(seqs[i]));
 			// remove all Ns from the sequence
 			std::stringstream buf; 
