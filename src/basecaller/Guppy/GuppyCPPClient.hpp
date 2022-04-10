@@ -109,7 +109,7 @@ namespace guppy_cpp_client
 			 *  @remarks Default is zero, which means that if pass_read is called without a wait duration it will not wait
 			 *  i.e. it will be non-blocking.
 			 */
-			Result set_default_pass_read_timeout_ms(uint64_t default_pass_read_timeout_ms);
+			Result set_default_pass_read_timeout_ms(uint32_t default_pass_read_timeout_ms);
 
 			/** Specify the timeout (in seconds) for connecting to the server, or reconnecting in the event of a lost
 			*  connection.
@@ -203,7 +203,7 @@ namespace guppy_cpp_client
 			*
 			*  @@returns Any return code other than success means the read has not been accepted.
 			*/
-			PassReadResult pass_read(GuppyRead& read, uint64_t wait_duration_ms = 0);
+			PassReadResult pass_read(GuppyRead& read, uint32_t wait_duration_ms = 0);
 
 
 			/** Get completed reads.

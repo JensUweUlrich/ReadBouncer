@@ -608,6 +608,12 @@ void adaptive_sampling(ConfigReader config, std::vector<interleave::IBFMeta> Dep
 #endif
 	{
 		std::string basecall_host = config.Basecaller_Parsed.guppy_host + ":" + config.Basecaller_Parsed.guppy_port;
+		
+		if (strcasecmp(config.Basecaller_Parsed.guppy_host.substr(0,3).c_str(), "ipc") == 0)
+		{
+			basecall_host = config.Basecaller_Parsed.guppy_host + "/" + config.Basecaller_Parsed.guppy_port;
+		}
+		std::cout << "Connecting to Guppy basecall server on address : " << basecall_host << std::endl;
 		try
 		{
 			caller = new basecall::GuppyBasecaller(basecall_host, config.Basecaller_Parsed.guppy_config);
