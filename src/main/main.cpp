@@ -16,6 +16,11 @@
 #include <StopClock.hpp>
 #include <NanoLiveExceptions.hpp>
 
+// Qt
+#include <QApplication>
+#include <QDebug>
+#include <QGuiApplication>
+#include <QQmlApplicationEngine>
 
 // spdlog library
 #include "spdlog/spdlog.h"
@@ -40,6 +45,7 @@
 
 // command line parser
 #include "parser.hpp"
+
 
 // subcommand related functions
 #include "ibfbuild.hpp"
@@ -557,9 +563,20 @@ void run_program(ConfigReader config){
 	}
 
 }
+
+int main(int argc, char *argv[])
+{
+    QGuiApplication app(argc, argv);
+    QQmlApplicationEngine engine;
+    //const QUrl url(u"qrc:/hello/main.qml"_qs);
+    //engine.load(url);
+    return app.exec();
+    }
+
+
+/*
 int main(int argc, char const **argv)
 {
-
 	StopClock NanoLiveTime;
 	NanoLiveTime.start();
 
@@ -592,8 +609,8 @@ int main(int argc, char const **argv)
 
 	std::cout << "Real time : " << NanoLiveTime.elapsed() << " sec" << std::endl;
 	std::cout << "CPU time  : " << cputime() << " sec" << std::endl;
-	std::cout << "Peak RSS  : " << peakSizeMByte << " MByte" << std::endl;
+    std::cout << "Peak RSS  : " << peakSizeMByte << " MByte" << std::endl;
 
 	return 0;
-}
+}*/
 

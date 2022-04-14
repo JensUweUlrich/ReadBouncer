@@ -1,3 +1,4 @@
+
 set(Main_SRC "main.cpp")
 file(GLOB MAIN_HDRS "*.hpp")
 add_executable (${PROJECT_NAME} ${MAIN_HDRS} ${Main_SRC})
@@ -27,9 +28,9 @@ endif()
 # using seqan
 if (WIN32)
 	add_definitions(-DMSVC_COMPILER)
-	target_link_libraries (${PROJECT_NAME} IBF config ReadUntil mklcore mklseq mkllp64 deepnano2 DeepNano Guppy spdlog::spdlog_header_only)
+        target_link_libraries (${PROJECT_NAME}  gui IBF config ReadUntil mklcore mklseq mkllp64 deepnano2 DeepNano Guppy spdlog::spdlog_header_only)
 else()
-	target_link_libraries (${PROJECT_NAME} IBF config ReadUntil Guppy spdlog::spdlog_header_only)
+        target_link_libraries (${PROJECT_NAME}  gui IBF config ReadUntil Guppy spdlog::spdlog_header_only)
 	if (NOT ARM_BUILD)
 		target_link_libraries(${PROJECT_NAME} DeepNano deepnano2 mkllp64 mklseq mklcore)
 	endif()
