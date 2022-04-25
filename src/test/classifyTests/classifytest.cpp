@@ -1,6 +1,27 @@
+
+// ReadUntil library
+#include "ReadUntilClient.hpp"
+#include "Data.hpp"
+// IBF library
+#include "IBF.hpp"
+
+// tomel parser
+#include "configReader.hpp"
+
+//include google tests library 
 #include "gtest/gtest.h"
 
+//classify library to be tested
+#include "../main/classify.hpp"
+
+// command line parser
+#include "../main/parser.hpp"
+
+// subcommand related function
+#include "../main/ibfbuild.hpp"
+
 #include "classifygtests.hpp"
+
 
 
 int main(int argc, char** argv)

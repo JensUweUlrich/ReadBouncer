@@ -507,6 +507,7 @@ void run_program(ConfigReader config){
 			//std::vector<interleave::IBFMeta> DepletionFilters = getIBF(config, false, true);// avoid copying the IBF's 
 			//std::vector<interleave::IBFMeta> TargetFilters = getIBF(config, true, false);// avoid copying the IBF's 
 			classify_reads(config, getIBF(config, false, true), getIBF(config, true, false));
+			
 		}
 		catch(std::exception& e)
 		{
