@@ -7,7 +7,7 @@
 
 
 
-//test vorher und nachher ob die file da ist
+//TODO: Function definition and test
 std::ofstream writeClassifed (ConfigReader config, interleave::IBFMeta filter){
 
 	std::filesystem::path outfile(config.output_dir);
@@ -19,7 +19,7 @@ std::ofstream writeClassifed (ConfigReader config, interleave::IBFMeta filter){
 
 }
 
-//test vorher und nachher ob die file da ist
+//TODO: Function definition and test
 std::filesystem::path writeUnclassifed (ConfigReader config){
 
 	std::filesystem::path outfile(config.output_dir);
@@ -29,12 +29,9 @@ std::filesystem::path writeUnclassifed (ConfigReader config){
 	
 }
 
-
-
-void classify_deplete_target(std::vector<interleave::IBFMeta> DepletionFilters, std::vector<interleave::IBFMeta> TargetFilters,
-                             interleave::ClassifyConfig Conf, interleave::Read r, int best_filter_index, bool classified, 
-							 std::vector< std::ofstream> targetFastas, seqan::CharString id, seqan::CharString seq, seqan::SeqFileOut &UnclassifiedOut){
-
+//TODO: Function definition and test
+void classify_deplete_target(std::vector<interleave::IBFMeta>& DepletionFilters, std::vector<interleave::IBFMeta>& TargetFilters, interleave::ClassifyConfig Conf, interleave::Read r, int best_filter_index, bool classified, std::vector< std::ofstream>& targetFastas,
+                            seqan::CharString id, seqan::CharString seq, seqan::SeqFileOut &UnclassifiedOut){
 	std::pair<uint64_t, uint64_t> p = r.classify(TargetFilters, DepletionFilters, Conf);
 	if (p.first > 0)
 	{
@@ -88,6 +85,21 @@ void classify_deplete_target(std::vector<interleave::IBFMeta> DepletionFilters, 
 					
 }
 	
+
+
+//TODO: Define function and test
+
+/*
+void get_results (){
+
+// Input: 
+found = 0;
+failed = 0;
+too_short = 0;
+readCounter = 0;
+avgClassifyduration = 0;
+
+}*/
 
 /**
 *	classify reads from an input file based on given depletion and/or target filters
@@ -240,66 +252,8 @@ void classify_reads(ConfigReader config, std::vector<interleave::IBFMeta> Deplet
 					r = interleave::Read(id, fr);
 					if (deplete && target)
 					{
-						classify_deplete_target(DepletionFilters, TargetFilters, Conf, r, best_filter_index,
-                        classified, targetFastas, id, seq, UnclassifiedOut);
-						/*
-						//if (r.classify(DepletionFilters, Conf) > -1 )
-						//classified = r.classify(DepletionFilters, Conf) > -1 && r.classify(TargetFilters, Conf) == -1;
-						std::pair<uint64_t, uint64_t> p = r.classify(TargetFilters, DepletionFilters, Conf);
-						if (p.first > 0)
-						{
-							if (p.second > 0)
-							{
-								Conf.error_rate -= 0.02;
-								p = r.classify(TargetFilters, DepletionFilters, Conf);
-								Conf.error_rate += 0.02;
-								//std::vector<interleave::TIbf> t;
-								//t.emplace_back(DepletionFilters[0].filter);
-								//r.classify(t, Conf);
-
-								if (p.first > 0 && p.second > 0)
-								{
-									// do nothing
-								}
-								else if (p.first > 0)
-								{
-									classified = true;
-									best_filter_index = r.classify(TargetFilters, Conf);
-									if (best_filter_index != -1)
-									{
-										TargetFilters[best_filter_index].classified += 1;
-										
-										//seqan::writeRecord(outfiles[best_filter_index], id, (seqan::Dna5String) seq);
-										targetFastas[best_filter_index] << ">" << id << std::endl;
-										targetFastas[best_filter_index] << seq << std::endl;
-										
-									}
-								}
-								else
-								{
-									classified = false;
-									seqan::writeRecord(UnclassifiedOut, id, (seqan::Dna5String)seq);
-									break;
-								}
-							}
-							else
-							{
-								classified = true;
-								best_filter_index = r.classify(TargetFilters, Conf);
-								if (best_filter_index != -1)
-								{
-									TargetFilters[best_filter_index].classified += 1;
-									//seqan::writeRecord(outfiles[best_filter_index], id, seq);
-									targetFastas[best_filter_index] << ">" << id << std::endl;
-									targetFastas[best_filter_index] << seq << std::endl;
-								}
-							}
-						}
-						else
-						{
-							classified = false;
-							seqan::writeRecord(UnclassifiedOut, id, (seqan::Dna5String)seq);
-						}*/
+						classify_deplete_target(DepletionFilters, TargetFilters, Conf, r, best_filter_index,classified,targetFastas, id, seq, UnclassifiedOut);
+						
 					}
 					else if (deplete)
 						classified = r.classify(DepletionFilters, Conf) > -1;

@@ -189,5 +189,6 @@ TEST_F(ClassifyTest, ClassifyReadsTest){
 	
 	classify_reads(config,getIBF_(config, true, false),getIBF_(config, false, true));
 
-    std::cout<< "Classify Tests! " << '\n';
+
+    //std::cout<< "Classify Tests! " << '\n';
 }
