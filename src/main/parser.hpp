@@ -116,6 +116,7 @@ struct ibf_build_parser
 /**
 	class for generating the IBF build parser group
 */
+/*
 struct read_classify_parser
 {
 	std::string ibf_deplete_file{ };
@@ -130,7 +131,7 @@ struct read_classify_parser
 	int preLen = 360;
 	int max_chunks = 1;
 	bool verbose = false;
-};
+};*/
 	/**
 		parser constructor
 		creates the classify group and adds it to the lyra cli
@@ -249,6 +250,7 @@ struct read_classify_parser
 };
 */
 
+/*
 struct live_parser
 {
 	std::string host = "127.0.0.1";
@@ -267,13 +269,14 @@ struct live_parser
 	bool command = false;
 	bool show_help = false;
 	bool verbose = false;
-};
+};*/
 
 /**
 	class for generating the IBF build parser group
 */
+/*
 struct target_parser : live_parser
-{};
+{};*/
 	
 	/**
 		parser constructor
@@ -420,6 +423,8 @@ struct target_parser : live_parser
 /**
 	class for generating the IBF build parser group
 */
+
+/*
 struct connection_test_parser
 {
 	// default host & port to communicate with MinKNOW
@@ -430,7 +435,7 @@ struct connection_test_parser
 	bool show_help = false;
 	bool verbose = false;
 	bool unblock_all = false;
-};
+};*/
 
 	/**
 		parser constructor

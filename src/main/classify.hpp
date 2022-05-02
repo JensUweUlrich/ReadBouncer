@@ -7,7 +7,13 @@
 
 
 
-//TODO: Function definition and test
+/**
+ * Write classified reads to file: reference_name + _classified.fasta 
+ * @param  config ConfigReader object 
+ * @param  filter IBF
+ * @return std::ofstream of the output file  
+ */
+
 std::ofstream writeClassifed (ConfigReader config, interleave::IBFMeta filter){
 
 	std::filesystem::path outfile(config.output_dir);
@@ -19,7 +25,12 @@ std::ofstream writeClassifed (ConfigReader config, interleave::IBFMeta filter){
 
 }
 
-//TODO: Function definition and test
+/**
+ * Write unclassified reads to file unclassified.fasta 
+ * @param  config ConfigReader object 
+ * @return path to the output file  
+ */
+
 std::filesystem::path writeUnclassifed (ConfigReader config){
 
 	std::filesystem::path outfile(config.output_dir);
@@ -29,9 +40,24 @@ std::filesystem::path writeUnclassifed (ConfigReader config){
 	
 }
 
-//TODO: Function definition and test
-void classify_deplete_target(std::vector<interleave::IBFMeta>& DepletionFilters, std::vector<interleave::IBFMeta>& TargetFilters, interleave::ClassifyConfig Conf, interleave::Read r, int best_filter_index, bool classified, std::vector< std::ofstream>& targetFastas,
-                            seqan::CharString id, seqan::CharString seq, seqan::SeqFileOut &UnclassifiedOut){
+/**
+ * Classify reads against deplete and target filters
+ * @param  DepletionFilters vector of one or more than one depletion interleaved bloom filter(s)
+ * @param  TargetFilters vector of one or more than one target interleaved bloom filter(s)
+ * @param  Conf classification config object
+ * @param  r read's object (sequence and id)
+ * @param  best_filter_index index of best matched filter
+ * @param  classified bool classification result
+ * @param  targetFastas vector of output files of classified reads
+ * @param  id read's id
+ * @param  seq read's sequence
+ * @param  UnclassifiedOut output file of unclassifed reads
+ */
+
+void classify_deplete_target(std::vector<interleave::IBFMeta>& DepletionFilters, std::vector<interleave::IBFMeta>& TargetFilters,
+                             interleave::ClassifyConfig Conf, interleave::Read r, int best_filter_index, bool classified,
+							std::vector< std::ofstream>& targetFastas, seqan::CharString id, seqan::CharString seq, seqan::SeqFileOut &UnclassifiedOut){
+
 	std::pair<uint64_t, uint64_t> p = r.classify(TargetFilters, DepletionFilters, Conf);
 	if (p.first > 0)
 	{
@@ -82,24 +108,34 @@ void classify_deplete_target(std::vector<interleave::IBFMeta>& DepletionFilters,
 		classified = false;
 		seqan::writeRecord(UnclassifiedOut, id, (seqan::Dna5String)seq);
 	}
+
+	
 					
 }
 	
 
+// Get fragment start 
+uint64_t fragment_start(int chunk_length, uint8_t i){
 
-//TODO: Define function and test
+	return (i) * chunk_length;
+}
 
-/*
-void get_results (){
+// Get fragment end
+uint64_t fragment_end(int chunk_length, uint8_t i){
 
-// Input: 
-found = 0;
-failed = 0;
-too_short = 0;
-readCounter = 0;
-avgClassifyduration = 0;
+	return (i+1) * chunk_length;
+}
 
-}*/
+// Get classification results for testing 
+struct ClassificationResults{
+
+	uint64_t found = 0;
+	uint16_t failed = 0;
+	uint64_t too_short = 0;
+	uint64_t readCounter = 0;
+
+}ClassificationResults_;
+
 
 /**
 *	classify reads from an input file based on given depletion and/or target filters
@@ -115,20 +151,20 @@ void classify_reads(ConfigReader config, std::vector<interleave::IBFMeta> Deplet
 	bool deplete = false;
 	bool target = false;
 
+
 	if(DepletionFilters.size() >= 1){
 
 		deplete = true;
-	}
-	else if(TargetFilters.size() >= 1){
+
+	} else if(TargetFilters.size() >= 1){
 
 		target = true;
-	}
-	else{
+
+	} else {
 
 		std::cerr<<"No depletion or target filters have been provided! "<<'\n';
 		exit(1);
 	}
-
 
 	//std::cout<< "Size of depletion filters: "<< DepletionFilters.size() << '\n';
 	//std::cout<< "Size of target filters: "<< TargetFilters.size() << '\n';
@@ -158,49 +194,25 @@ void classify_reads(ConfigReader config, std::vector<interleave::IBFMeta> Deplet
 		}
 
 
-
-		/**3**/
 		// initialize classification output files
 		seqan::SeqFileOut UnclassifiedOut;
-		/**3**/
 
 		// only print classified reads to file if option given via command line
 		std::vector< std::ofstream> targetFastas{};
 
 		for (interleave::IBFMeta f : TargetFilters)
 		{
-			/**2**/
-			/*
-			
-			
-			std::filesystem::path outfile(config.output_dir);
-			outfile /= f.name + "_classfied.fasta";
-			std::ofstream outf;
-			outf.open(outfile, std::ios::out);
-			*/
-			/**2**/
 			std::ofstream outf = writeClassifed(config, f);
 			targetFastas.emplace_back(std::move(outf));
 		}
 
-
-		/**3**/
-		/*std::filesystem::path outfile(config.output_dir);
-		outfile /= "unclassified.fasta";
-		if (!seqan::open(UnclassifiedOut, seqan::toCString(outfile.string())))
-		{
-			std::cerr << "ERROR: Unable to open the file: " << outfile.string() << std::endl;
-			return;
-		}*/
-
 		std::filesystem::path outfile = writeUnclassifed(config);
+
 		if (!seqan::open(UnclassifiedOut, seqan::toCString(outfile.string())))
 		{
 			std::cerr << "ERROR: Unable to open the file: " << outfile.string() << std::endl;
 			return;
 		}
-		
-		/**3**/
 
 		std::cout << '\n';
 		std::cout << "Classification results of: " << read_file.string() << '\n';
@@ -209,7 +221,6 @@ void classify_reads(ConfigReader config, std::vector<interleave::IBFMeta> Deplet
 		while (!seqan::atEnd(seqFileIn))
 		{
 			interleave::Read r;
-			/**4**/
 			seqan::CharString id;
 			seqan::CharString seq;
 		
@@ -224,7 +235,6 @@ void classify_reads(ConfigReader config, std::vector<interleave::IBFMeta> Deplet
 				continue;
 			}
 
-			/**4**/
 			// read length has to be at least the size of the prefix used for read classification
 			if (seqan::length(seq) < config.IBF_Parsed.chunk_length){
 				too_short++;
@@ -243,17 +253,20 @@ void classify_reads(ConfigReader config, std::vector<interleave::IBFMeta> Deplet
 				// try to classify read parser.max_chunks times
 				while (i < config.IBF_Parsed.max_chunks)
 				{
-					uint64_t fragend = (i+1) * config.IBF_Parsed.chunk_length;
-					uint64_t fragstart = i * config.IBF_Parsed.chunk_length;
+					uint64_t fragend = fragment_end(config.IBF_Parsed.chunk_length, i);
+					uint64_t fragstart = fragment_start(config.IBF_Parsed.chunk_length, i);
+					
 					// make sure that last fragment ends at last position of the reference sequence
 					if (fragend > length(seq)) fragend = length(seq);
+
 					seqan::Infix< seqan::CharString >::Type fragment = seqan::infix(seq, fragstart, fragend);
 					seqan::Dna5String fr = (seqan::Dna5String) fragment;
 					r = interleave::Read(id, fr);
-					if (deplete && target)
+
+					if (deplete && target) // [?] Is it actualy used? see lines 123-134! 
 					{
 						classify_deplete_target(DepletionFilters, TargetFilters, Conf, r, best_filter_index,classified,targetFastas, id, seq, UnclassifiedOut);
-						
+
 					}
 					else if (deplete)
 						classified = r.classify(DepletionFilters, Conf) > -1;
@@ -273,6 +286,11 @@ void classify_reads(ConfigReader config, std::vector<interleave::IBFMeta> Deplet
 						found++;
 						break;
 					}
+					/*
+					else if (parser.unclassified_file.length() > 0)
+					{
+						seqan::writeRecord(UnclassifiedOut, id, seq);
+					}*/
 					i++;
 				}
 				classifyRead.stop();
@@ -337,6 +355,12 @@ void classify_reads(ConfigReader config, std::vector<interleave::IBFMeta> Deplet
 		}
 		std::cout << "Average Processing Time Read Classification        :   " << avgClassifyduration << std::endl;
 		std::cout << "-----------------------------------------------------------------------------------" << std::endl;
+
+		// Testing struct
+		ClassificationResults_.found = found;
+		ClassificationResults_.failed = failed;
+		ClassificationResults_.too_short = too_short;
+		ClassificationResults_.readCounter = readCounter;
 
 		found = 0;
 		failed = 0;
