@@ -16,7 +16,7 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../util")
 
 # using seqan
 target_include_directories (config PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} )
-target_link_libraries (config IBF sdsl seqan spdlog::spdlog_header_only)
+target_link_libraries (config gui IBF sdsl seqan spdlog::spdlog_header_only)
 
 install(TARGETS config DESTINATION lib COMPONENT libraries)
 

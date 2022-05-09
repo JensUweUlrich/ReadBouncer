@@ -53,7 +53,7 @@ find_package( SeqAn CONFIG REQUIRED PATHS ${SeqAn_DIR} )
 
 add_library( seqan INTERFACE )
 target_include_directories( seqan SYSTEM INTERFACE ${SEQAN_INCLUDE_DIRS} )
-target_link_libraries( seqan INTERFACE ${SEQAN_LIBRARIES} )
+target_link_libraries( seqan INTERFACE ${SEQAN_LIBRARIES} gui)
 
 # Add include directories.
 

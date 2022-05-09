@@ -11,6 +11,9 @@
 //#include <dirent.h>
 #include <stdio.h>
 
+// Qt exceptions
+#include <QMessageBox>
+
 // spdlog
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/rotating_file_sink.h"

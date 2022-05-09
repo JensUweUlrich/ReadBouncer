@@ -26,6 +26,9 @@
 #include <vector>
 #include <filesystem>
 
+// Qt exceptions
+#include <QMessageBox>
+
 using namespace interfaces;
 
 #ifndef INTERLEAVE_IBFBUILD_HPP_

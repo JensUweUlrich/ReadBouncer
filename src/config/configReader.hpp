@@ -9,6 +9,9 @@
 #include <exception>
 #include "../toml11/toml.hpp"
 
+// Qt exceptions
+#include <QMessageBox>
+
 
 
 

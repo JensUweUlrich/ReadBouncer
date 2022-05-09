@@ -10,6 +10,10 @@
 #include <exception>
 #include <string>
 
+// Qt exceptions
+#include <QMessageBox>
+
+
 namespace interleave
 {
 

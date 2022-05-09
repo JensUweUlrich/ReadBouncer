@@ -22,6 +22,9 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 
+// Qt local
+#include "mainwindow.h"
+
 // spdlog library
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/rotating_file_sink.h"
@@ -566,13 +569,21 @@ void run_program(ConfigReader config){
 
 int main(int argc, char *argv[])
 {
-    QGuiApplication app(argc, argv);
-    QQmlApplicationEngine engine;
-    //const QUrl url(u"qrc:/hello/main.qml"_qs);
-    //engine.load(url);
-    return app.exec();
-    }
+    QApplication app(argc, argv);
+    MainWindow mw;
 
+    /*QGuiApplication app(argc, argv);
+
+    QCoreApplication::addLibraryPath("./gui/");
+
+    QQmlApplicationEngine engine;
+    engine.load(QUrl(QStringLiteral("qrc:/main.qml")));*/
+
+
+    mw.show();
+
+    return app.exec();
+}
 
 /*
 int main(int argc, char const **argv)
