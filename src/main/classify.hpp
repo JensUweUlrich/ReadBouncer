@@ -156,18 +156,18 @@ void classify_reads(ConfigReader config, std::vector<interleave::IBFMeta> Deplet
 
 		deplete = true;
 
-	} else if(TargetFilters.size() >= 1){
+	} if(TargetFilters.size() >= 1){ 
 
 		target = true;
 
-	} else {
+	} if(!deplete && !target) {
 
-		std::cerr<<"No depletion or target filters have been provided! "<<'\n';
+		std::cerr<<"[Error] No depletion or target filters have been provided for classification! "<<'\n';
 		exit(1);
 	}
 
-	//std::cout<< "Size of depletion filters: "<< DepletionFilters.size() << '\n';
-	//std::cout<< "Size of target filters: "<< TargetFilters.size() << '\n';
+	//std::cout<< "Size of depletion filters: "<< deplete << '\n';
+	//std::cout<< "Size of target filters: "<< target << '\n';
 
 	for (std::filesystem::path read_file : config.IBF_Parsed.read_files)
 	{
@@ -263,7 +263,7 @@ void classify_reads(ConfigReader config, std::vector<interleave::IBFMeta> Deplet
 					seqan::Dna5String fr = (seqan::Dna5String) fragment;
 					r = interleave::Read(id, fr);
 
-					if (deplete && target) // [?] Is it actualy used? see lines 123-134! 
+					if (deplete && target) 
 					{
 						classify_deplete_target(DepletionFilters, TargetFilters, Conf, r, best_filter_index,classified,targetFastas, id, seq, UnclassifiedOut);
 

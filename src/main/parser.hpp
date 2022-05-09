@@ -1,15 +1,45 @@
 #pragma once
 
-//#include <lyra/lyra.hpp>
+#include <lyra/lyra.hpp>
 
 #ifndef PARSER_HPP_
 #define PARSER_HPP_
 
+/**
+*	Read input configuration file 
+*	@return name of toml configuration file 
+*/
+
+std::string parse_config( int argc, char const **argv){
+
+	std::string tomlFile;
+
+	bool show_help = false; 
+	auto cli = lyra::cli() 
+	| lyra::help(show_help)
+	| lyra::opt( tomlFile, "Toml File" )["--config"].help("Path to toml configuration file");
+	
+    lyra::parse_result result = cli.parse({ argc, argv });
+	
+    if (!result)
+    {
+        std::cerr << "Error in command line! " << std::endl;
+    }
+
+    if (show_help) 
+    {
+        std::cout << cli << "\n";
+    }
+
+	return tomlFile;
+
+}
 //command line parser
 //--------------------------------------------------------------------
 /**
 	class for generating the IBF build parser group
 */
+/*
 struct ibf_build_parser
 {
 	std::string bloom_filter_output_path{ };
@@ -24,7 +54,7 @@ struct ibf_build_parser
 	int filter_size = 0;
 	bool verbose = false;
 };
-
+*/
 	/**
 		parser constructor
 		creates the ibfbuild group and adds it to the lyra cli

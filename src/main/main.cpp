@@ -338,10 +338,8 @@ void run_program(ConfigReader config){
 				std::filesystem::path out = std::filesystem::path(config.output_dir);
 				out /= file.filename();
 				out.replace_extension("ibf");
-				
-				ibf_build_parser params = { out.string(), file.string(), false, false, config.IBF_Parsed.size_k, config.IBF_Parsed.threads, config.IBF_Parsed.fragment_size, 0, true };
-				buildIBF(params);
-				//buildIBF(config, out, file.string());
+
+				buildIBF(config, file.string(), out.string());
 				std::cout <<'\n';
 			}
 
@@ -368,9 +366,7 @@ void run_program(ConfigReader config){
 				out /= file.filename();
 				out.replace_extension("ibf");
 
-				ibf_build_parser params = { out.string(), file.string(), false, false, config.IBF_Parsed.size_k, config.IBF_Parsed.threads, config.IBF_Parsed.fragment_size, 0, true };
-				buildIBF(params);
-				//buildIBF(config, out, file.string());
+				buildIBF(config, file.string(), out.string());
 				std::cout <<'\n';
 			}
 			else 
@@ -452,7 +448,9 @@ int main(int argc, char const **argv)
 	std::string binPath = argv[0];
 	NanoLiveRoot = binPath.substr(0, binPath.find("bin"));
 
-	std::string const tomlFile = argv[1];
+	// parse configuration file 
+	std::string const tomlFile = parse_config(argc, argv);
+
 	ConfigReader config{};
 	try
 	{

@@ -18,19 +18,19 @@ std::shared_ptr<spdlog::logger> nanolive_logger;
  * @todo change the input parameters to build ibf to ConfigReader config, input reference, output ibf
  * 
  */
-interleave::TIbf buildIBF(ibf_build_parser & parser)
+interleave::TIbf buildIBF(ConfigReader config_reader, const std::string reference_file, const std::string bloom_filter_output_path)
 {
 	std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("ReadBouncerLog");
 	
 	interleave::IBFConfig config{};
 
-	config.reference_files.emplace_back(parser.reference_file);
-	config.output_filter_file = parser.bloom_filter_output_path;
-	config.kmer_size = parser.size_k;
-	config.threads_build = parser.threads;
-	config.fragment_length = parser.fragment_size;
-	config.filter_size = parser.filter_size;
-	config.verbose = parser.verbose;
+	config.reference_files.emplace_back(reference_file);
+	config.output_filter_file = bloom_filter_output_path;
+	config.kmer_size = config_reader.IBF_Parsed.size_k;
+	config.threads_build = config_reader.IBF_Parsed.threads;
+	config.fragment_length = config_reader.IBF_Parsed.fragment_size;
+	//config.filter_size = parser.filter_size;
+	//config.verbose = parser.verbose;
 
 	interleave::IBF filter{};
 	//interleave::TIbf filter_out;
@@ -42,12 +42,12 @@ interleave::TIbf buildIBF(ibf_build_parser & parser)
 	catch (const interleave::IBFBuildException& e)
 	{
 		nanolive_logger->error("Error building IBF using the following parameters");
-		nanolive_logger->error("Input reference file                : " + parser.reference_file);
-		nanolive_logger->error("Output IBF file                     : " + parser.bloom_filter_output_path);
-		nanolive_logger->error("Kmer size                           : " + parser.size_k);
-		nanolive_logger->error("Size of reference fragments per bin : " + parser.fragment_size);
-		nanolive_logger->error("IBF file size in MegaBytes          : " + parser.filter_size);
-		nanolive_logger->error("Building threads                    : " + parser.threads);
+		nanolive_logger->error("Input reference file                : " + reference_file);
+		nanolive_logger->error("Output IBF file                     : " + bloom_filter_output_path);
+		nanolive_logger->error("Kmer size                           : " + config_reader.IBF_Parsed.size_k);
+		nanolive_logger->error("Size of reference fragments per bin : " + config_reader.IBF_Parsed.fragment_size);
+		nanolive_logger->error("IBF file size in MegaBytes          : " + config.filter_size);
+		nanolive_logger->error("Building threads                    : " + config_reader.IBF_Parsed.threads);
 		nanolive_logger->error("Error message : " + std::string(e.what()));
 		nanolive_logger->error("---------------------------------------------------------------------------------------------------");
 		nanolive_logger->flush();
@@ -109,8 +109,7 @@ std::vector<interleave::IBFMeta> getIBF (ConfigReader config, bool depleteFilter
 					out /= deplete_file.filename();
 					out.replace_extension("ibf");
 					
-					ibf_build_parser params = { out.string(), deplete_file.string(), false, false, config.IBF_Parsed.size_k, config.IBF_Parsed.threads, config.IBF_Parsed.fragment_size, 0, true };
-					filter.filter = buildIBF(params);
+					filter.filter = buildIBF(config, deplete_file.string(), out.string());
 					}
 
 				catch (std::out_of_range& e)
@@ -161,8 +160,8 @@ std::vector<interleave::IBFMeta> getIBF (ConfigReader config, bool depleteFilter
 					std::filesystem::path out = std::filesystem::path(config.output_dir);
 					out /= target_file.filename();
 					out.replace_extension("ibf");
-					ibf_build_parser params = { out.string(), target_file.string(), false, false, config.IBF_Parsed.size_k, config.IBF_Parsed.threads, config.IBF_Parsed.fragment_size, 0, true };
-					filter.filter = buildIBF(params);
+
+					filter.filter = buildIBF(config, target_file.string(), out.string());
 				}
 
 				catch (std::out_of_range& e)

@@ -15,7 +15,8 @@
 #include "../main/classify.hpp"
 
 // command line parser
-#include "../main/parser.hpp"
+//#include "../main/parser.hpp"
+
 
 // subcommand related function
 #include "../main/ibfbuild.hpp"
@@ -26,6 +27,9 @@
 
 int main(int argc, char** argv)
 {
+	// parse configuration file 
+	// tomlFile = parse_config(argc, argv);
+
 	testing::InitGoogleTest(&argc, argv);
 	
 	return RUN_ALL_TESTS();
