@@ -85,7 +85,7 @@ The last step creates the <b>ReadBouncer-1.1.0-Linux.sh</b> within the build dir
 ### <a name="general"></a>General usage
 ReadBouncer can simply be called from the command line by providing a TOML configuration file. 
 ```
-full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe full\path\to\ReadBouncer\config.toml 
+full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe --config full\path\to\ReadBouncer\config.toml 
 ```
 All parameters, input and output files and the usage are specified within the configuration file. First, there are three different modes for using ReadBouncer (build, target and classify). The <b>build</b> usage is specified when the goal is to create an Interleaved Bloom Filter index file. The <b>classify</b> usage is specified when only a read classification with based on ReadBouncer's IBF-based classifier shall be tested, and the The <b>target</b> usage is specified when ReadBouncer shall be used in an adaptive sampling experiment. You can also specify an output and a log directory.
 
@@ -238,7 +238,7 @@ read_files    = ['path/to/read/file/SampleZMCDataSet.fasta']
 ```
 In this example, we would try to find all reads that match to <i>B.subtilis</i>, <i>E.faecalis</i> and <i>E.coli</i>, but not to <i>S.cerevisiae</i>. You can easily add the other fasta files as well. Now we can start ReadBouncer from the command line using the config.toml file. For testing purposes, you can download a small set of sequenced Zymo Mock community nanopore reads that were basecalled with DeepNano ([sample read set](https://owncloud.hpi.de/s/HFFYsDhbukXBsu4))
 ```
-full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe  full\path\to\ReadBouncer\config.toml 
+full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe  --config full\path\to\ReadBouncer\config.toml 
 ```
 Finally, you will get some stats printed to the command line, as the one below:
 
@@ -309,7 +309,7 @@ threads            = 3
 Using command line: 
 
  ```
-full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe  full\path\to\ReadBouncer\config.toml 
+full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe  --config full\path\to\ReadBouncer\config.toml 
 ```
 6. Now ReadBouncer will construct Interleaved Bloom Filters for both reference files. After finishing the construction, IBF files are stored in the output directory for for further use. ReadBouncer will tell you if the connection to the MinKNOW host has been successfully established and that you can start sequencing now.
 7. Start a sequencing run on the simulated device from within the MinKNOW-GUI. Open the read length histogram after 15 minutes and have a look at the read counts plot. When you zoom into the region for reads up to 5kb length, you should see a plot like this:
