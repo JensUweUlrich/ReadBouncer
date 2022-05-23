@@ -6,34 +6,26 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1231</width>
+    <width>1360</width>
     <height>685</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>ReadBouncer 1.1.1</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(1, 1, 1, 255), stop:1 rgba(93, 152, 165, 214));
+</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QPushButton" name="pushButton">
-    <property name="geometry">
-     <rect>
-      <x>480</x>
-      <y>310</y>
-      <width>211</width>
-      <height>61</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>ReadBouncer</string>
-    </property>
-   </widget>
+   <layout class="QFormLayout" name="formLayout"/>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1231</width>
+     <width>1360</width>
      <height>22</height>
     </rect>
    </property>

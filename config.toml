@@ -1,4 +1,4 @@
-usage              = "classify"  #["build", "target", "classify", "test"] 
+usage              = "test"  #["build", "target", "classify", "test"] 
 output_directory   = 'RB_out'
 log_directory      = 'RB_out/logs'
 
