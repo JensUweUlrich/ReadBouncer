@@ -271,11 +271,15 @@ add a field:
 .\config_editor.exe --conf application --filename ..\conf\app_conf --set data_generation.simulated_device=1
 .\config_editor.exe --conf application --filename ..\conf\app_conf --set device.simulator_device_count=1
 ```
-On Linux, open a terminal and change to the MinKNOW binary directory, located in `/opt/ont/minknow/bin`, and call the config editor with the following two commands:
+Linux, open a terminal and change to the MinKNOW binary directory, located in `/opt/ont/minknow/bin`, and call the config editor with the following two commands:
 ```
 sudo ./config_editor --conf application --filename ../conf/app_conf --set data_generation.simulated_device=1
 sudo ./config_editor --conf application --filename ../conf/app_conf --set device.simulator_device_count=1
 ```
+Ubuntu Focal with MinKNOW 5.1   
+Only add the the path to the bulk file in sequencing_MIN106_DNA.toml and change the file `/lib/systemd/system/minknow.service` by adding the line:  
+`[Service]`  
+`ExecStart=/opt/ont/minknow/bin/mk_manager_svc --simulated-integrated-devices 1`
 
 4. In the MinKNOW GUI, right click on a sequencing position and select `Reload Scripts` (In some cases you need to reboot your operating system). Your MinKNOW instance will now show a simulated device named `MS00000` that will playback the bulkfile rather than live sequencing.
 5. Open a Windows Power Shell (or terminal) and go to your working directory where ReadBouncer result files shall be stored. Then provide the necessary parameters in the config.toml file for the test. ReadBouncer will test the conncetion to MinKNOW automatically and tell you when to start the experiment from within MinKNOW. You can download two fasta files that include reference sequences for human [chromosomes 21 & 22](https://owncloud.hpi.de/s/yHX0REdcTqZ784p) as well as the [remaining chromsome reference sequences](https://owncloud.hpi.de/s/MWPHCT0RBOhrrik) from the [Telomere-to-telomere consortium](https://github.com/marbl/CHM13). You should unzip them and use the following example toml file to test an experiment that targets the sequencing of reads that belong to chromosomes 21 & 22. All other reads shall be rejected/unblocked.
