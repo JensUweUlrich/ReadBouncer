@@ -25,16 +25,24 @@ namespace readuntil
 	{
 		FlowCellPositionsRequest request;
 		FlowCellPositionsResponse response;
+	
 		std::unique_ptr<grpc::ClientReader<FlowCellPositionsResponse>> reader(stub->flow_cell_positions(&context, request));
 		std::vector<FlowCellPosition> cells{ };
+
 		while (reader->Read(&response))
 		{
 			cells.assign(response.positions().begin(), response.positions().end());
 
 		}
+		
+		//std::cout << cells.size() << 'n';
+
 		grpc::Status status = reader->Finish();
+
+		
 		if(!status.ok())
 		{
+			
 			throw ReadUntilClientException(status.error_message());
 		}
 		return cells;
@@ -49,14 +57,15 @@ namespace readuntil
 	{
 		if (this->secure_connect)
 			return dev.rpc_ports().secure();
-		else
-			return dev.rpc_ports().insecure();
+		//else // return no secure as minknow 5.0.0 has no insecure connection! 
+			//return dev.rpc_ports().insecure();
 	}
 
 	uint32_t Manager::resolveRpcPort(std::string &deviceName)
 	{
 		for(FlowCellPosition fp : getFlowCells())
 		{
+			
 			if(deviceName == getFlowCellName(fp))
 			{
 				return getRpcPort(fp);
@@ -68,7 +77,8 @@ namespace readuntil
 	std::string Manager::getGuppyVersion()
 	{
 		GetVersionInfoRequest request;
-		GetVersionInfoResponse response;
+		//GetVersionInfoResponse response; // minknow_api 4.5.0
+		minknow_api::instance::GetVersionInfoResponse response;
 		grpc::ClientContext c;
 		::grpc::Status status = stub->get_version_info(&c, request, &response);
 		if (status.ok())

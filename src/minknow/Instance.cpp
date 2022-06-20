@@ -16,7 +16,9 @@ namespace readuntil
 
 	std::string Instance::get_version_info()
 	{
+		
 		GetVersionInfoRequest request;
+		//std::cout << request.SerializeAsString() << std::endl; 
 		GetVersionInfoResponse response;
 		::grpc::ClientContext context;
 		::grpc::Status status = stub->get_version_info(&context, request, &response);
@@ -26,6 +28,7 @@ namespace readuntil
 		}
 		else
 		{
+			
 			throw ReadUntilClientException(status.error_message());
 		}
 	}

@@ -19,6 +19,8 @@
 #include "Data.hpp"
 #include "Device.hpp"
 #include "Manager.hpp"
+#include "json.hpp"
+
 
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/rotating_file_sink.h"
@@ -38,7 +40,7 @@ namespace readuntil
 			std::shared_ptr<::grpc::Channel> channel;
 			std::string mk_host{ "127.0.0.1" };
 			std::filesystem::path NanoLiveRoot{};
-			std::string mk_port{"9501"};
+			std::string mk_port;
 			bool connected{false};
 			//std::shared_ptr<spdlog::sinks::daily_file_sink_mt> daily_sink = std::make_shared<spdlog::sinks::daily_file_sink_mt>("RUClientLog", 23, 59);
 			std::shared_ptr<spdlog::logger> connection_logger;
