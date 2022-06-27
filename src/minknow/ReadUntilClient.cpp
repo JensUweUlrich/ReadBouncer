@@ -77,11 +77,12 @@ namespace readuntil
 			connection_logger->info(info_str.str());
 			connection_logger->flush();
 		
-			//std::filesystem::path cert_file = "ca.crt";
+			std::filesystem::path cert_file = "ca.crt";
+			/*
 			std::filesystem::path cert_file = NanoLiveRoot;
 			cert_file.append("rpc-certs");
 			cert_file /= "ca.crt";
-			
+			*/
 			if (!std::filesystem::exists(cert_file))
 			{
 				connection_logger->error("Could not find SSL/TLS certificate file : " + cert_file.string());
@@ -117,7 +118,7 @@ namespace readuntil
 			std::string token_auth = options["token"];
 
 
-			
+			std::cout << "Connecting to MinKNOW using the token: "<< token_auth << std::endl;
 
 			Authentication *SSLConnection = new Authentication(token_auth);
 			channel_creds = grpc::CompositeChannelCredentials(channel_creds,

@@ -23,9 +23,9 @@ add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
 # include SafeQueue and StopClock
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../util" "${CMAKE_CURRENT_SOURCE_DIR}/../interfaces")
 # add test directories for own tests
-#add_subdirectory(libMinimizerTests)
 add_subdirectory(libConfigReaderTests)
 add_subdirectory(libIBFTests)
 add_subdirectory(classifyTests)
+add_subdirectory(MinKNOWTests)
 
 
