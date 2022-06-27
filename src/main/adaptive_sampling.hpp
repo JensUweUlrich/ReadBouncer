@@ -553,7 +553,7 @@ void adaptive_sampling(ConfigReader config, std::vector<interleave::IBFMeta> Dep
 	client.setRootPath(NanoLiveRoot);
 
 	// TODO: throw exception if connection could not be established
-	if (client.connect(config.MinKNOW_Parsed.flowcell))
+	if (client.connect(config.MinKNOW_Parsed.flowcell, config))
 	{
 		//if (params.verbose)
 		std::cout << "Connection successfully established!" << ::std::endl;

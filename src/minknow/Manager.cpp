@@ -91,4 +91,14 @@ namespace readuntil
 		}
 	}
 
+	std::string Manager::getTokenFilePath()
+	{
+		minknow_api::manager::LocalAuthenticationTokenPathRequest request;
+		minknow_api::manager::LocalAuthenticationTokenPathResponse response;
+		grpc::ClientContext c;
+		::grpc::Status status = stub->local_authentication_token_path(&c, request, &response);
+
+		return response.path();
+	}
+
 }

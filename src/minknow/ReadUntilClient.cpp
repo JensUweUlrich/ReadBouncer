@@ -40,7 +40,7 @@ namespace readuntil
 	*	@return: true if connection was sucessfully established, false otherwise
 	*	@throws: DeviceServiceException, ReadUntilClientException
 	*/
-	bool ReadUntilClient::connect(std::string device)
+	bool ReadUntilClient::connect(std::string device, ConfigReader config)
 	{
 		ReadUntilClientLog /= "ReadUntilClientLog.txt";
 		try
@@ -62,7 +62,7 @@ namespace readuntil
 
 		std::stringstream info_str;
 		bool secure_connect = false;
-
+		
 		if (mk_port == "9501")
 		{
 			info_str << "Connect to MinKNOW instance via unsecure connection to " << mk_host << " on port " << mk_port;
@@ -89,6 +89,7 @@ namespace readuntil
 				connection_logger->flush();
 				throw MissingCertificateException("Could not find SSL/TLS certificate file : " + cert_file.string());
 			}
+
 			std::ifstream ca(cert_file);
 			std::string root_cert((std::istreambuf_iterator<char>(ca)),
 			std::istreambuf_iterator<char>());
@@ -98,11 +99,24 @@ namespace readuntil
 			channel_creds = grpc::SslCredentials(opt); // for using with crt
 			secure_connect = true;
 			
-			//LocalAuthenticationTokenPathResponse *path = new LocalAuthenticationTokenPathResponse();
-			//std::cout<< "Path " << path->path() << std::endl;
-			
-			//[TODO] use gRPC function to find path of json file 
-			std::filesystem::path token_file = "/tmp/minknow-auth-token.json";
+			std::filesystem::path token_file;
+
+			if (mk_host == "127.0.0.1"|| mk_host == "localhost"){
+
+			std::stringstream s_1;
+		 	s_1 << mk_host << ":" << mk_port;
+			std::shared_ptr<::grpc::Channel> mgrCh_ = grpc::CreateCustomChannel(s_1.str(), channel_creds, channel_args);
+			readuntil::Manager *mgr_ = new Manager(mgrCh_, secure_connect);
+			token_file = mgr_->getTokenFilePath();
+
+			}
+
+			else{
+
+				token_file = config.MinKNOW_Parsed.token_path;
+				
+			}
+
 			if (!std::filesystem::exists(token_file))
 			{
 				connection_logger->error("Could not find token file : " + token_file.string());

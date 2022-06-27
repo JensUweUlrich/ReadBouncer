@@ -109,7 +109,7 @@ void test_connection(ConfigReader config)
 	// TODO: throw exception if connection could not be established
 	try
 	{
-		if (client.connect(config.MinKNOW_Parsed.flowcell))
+		if (client.connect(config.MinKNOW_Parsed.flowcell, config))
 		{
 			std::cout << "Connection successfully established!" << std::endl;
 			std::cout << "You can start live-depletion using these settings." << std::endl;
@@ -212,6 +212,7 @@ void test_connection(ConfigReader config)
 	
 }
 
+//CTrl C
 void signalHandler(int signum)
 {
 	//TODO: shutdown the gRPC stream smoothly

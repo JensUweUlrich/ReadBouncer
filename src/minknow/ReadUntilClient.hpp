@@ -20,6 +20,8 @@
 #include "Device.hpp"
 #include "Manager.hpp"
 #include "json.hpp"
+// tomel parser
+#include "configReader.hpp"
 
 
 #include "spdlog/spdlog.h"
@@ -77,7 +79,7 @@ namespace readuntil
 				NanoLiveRoot = path;
 			}
 
-			bool connect(std::string device);
+			bool connect(std::string device, ConfigReader config);
 
 			MinKnowService* getMinKnowService(const MinKnowServiceType type);
 
