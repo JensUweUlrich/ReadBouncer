@@ -102,7 +102,7 @@ Before using ReadBouncer for adaptive sampling, you may want to create the refer
 
 ```
 usage         = "build"
-output_dir    = 'path/to/write/output/files/to'         #all generated output files will be stored here
+output_directory    = 'path/to/write/output/files/to'         #all generated output files will be stored here
 log_directory = 'path/to/write/log/files/to'            #all generated log files will be stored here
 
 [IBF]
