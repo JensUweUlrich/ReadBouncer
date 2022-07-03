@@ -530,7 +530,7 @@ struct connection_test_parser
 			if (verbose)
 			{
 				std::cout << "---------------------------------------------------------------------------------------------------" << std::endl;
-				std::cout << "NanoLIVE to MinKNOW connection test          : " << "verbose=" << (verbose ? "true" : "false") << std::endl;
+				std::cout << "ReadBouncer to MinKNOW connection test          : " << "verbose=" << (verbose ? "true" : "false") << std::endl;
 				std::cout << "Host IP address                              : " << host << std::endl;
 				std::cout << "MinKNOW communication port                   : " << port << std::endl;
 				std::cout << "Device or Flowcell name                      : " << device << std::endl;

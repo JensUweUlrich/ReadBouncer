@@ -6,7 +6,7 @@
  */
 
 
-std::shared_ptr<spdlog::logger> nanolive_logger;
+std::shared_ptr<spdlog::logger> readbouncer_logger;
 
 /**
 * initialize config forand build IBF
@@ -20,7 +20,7 @@ std::shared_ptr<spdlog::logger> nanolive_logger;
  */
 interleave::TIbf buildIBF(ConfigReader config_reader, const std::string reference_file, const std::string bloom_filter_output_path)
 {
-	std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("ReadBouncerLog");
+	std::shared_ptr<spdlog::logger> readbouncer_logger = spdlog::get("ReadBouncerLog");
 	
 	interleave::IBFConfig config{};
 
@@ -41,16 +41,16 @@ interleave::TIbf buildIBF(ConfigReader config_reader, const std::string referenc
 	}
 	catch (const interleave::IBFBuildException& e)
 	{
-		nanolive_logger->error("Error building IBF using the following parameters");
-		nanolive_logger->error("Input reference file                : " + reference_file);
-		nanolive_logger->error("Output IBF file                     : " + bloom_filter_output_path);
-		nanolive_logger->error("Kmer size                           : " + config_reader.IBF_Parsed.size_k);
-		nanolive_logger->error("Size of reference fragments per bin : " + config_reader.IBF_Parsed.fragment_size);
-		nanolive_logger->error("IBF file size in MegaBytes          : " + config.filter_size);
-		nanolive_logger->error("Building threads                    : " + config_reader.IBF_Parsed.threads);
-		nanolive_logger->error("Error message : " + std::string(e.what()));
-		nanolive_logger->error("---------------------------------------------------------------------------------------------------");
-		nanolive_logger->flush();
+		readbouncer_logger->error("Error building IBF using the following parameters");
+		readbouncer_logger->error("Input reference file                : " + reference_file);
+		readbouncer_logger->error("Output IBF file                     : " + bloom_filter_output_path);
+		readbouncer_logger->error("Kmer size                           : " + config_reader.IBF_Parsed.size_k);
+		readbouncer_logger->error("Size of reference fragments per bin : " + config_reader.IBF_Parsed.fragment_size);
+		readbouncer_logger->error("IBF file size in MegaBytes          : " + config.filter_size);
+		readbouncer_logger->error("Building threads                    : " + config_reader.IBF_Parsed.threads);
+		readbouncer_logger->error("Error message : " + std::string(e.what()));
+		readbouncer_logger->error("---------------------------------------------------------------------------------------------------");
+		readbouncer_logger->flush();
 		throw;
 	}
 
@@ -90,10 +90,10 @@ std::vector<interleave::IBFMeta> getIBF (ConfigReader config, bool depleteFilter
 				}
 				catch (interleave::ParseIBFFileException& e)
 				{
-					nanolive_logger->error("Error parsing depletion IBF using the following parameters");
-					nanolive_logger->error("Depletion IBF file                : " + deplete_file.string());
-					nanolive_logger->error("Error message : " + std::string(e.what()));
-					nanolive_logger->flush();
+					readbouncer_logger->error("Error parsing depletion IBF using the following parameters");
+					readbouncer_logger->error("Depletion IBF file                : " + deplete_file.string());
+					readbouncer_logger->error("Error message : " + std::string(e.what()));
+					readbouncer_logger->flush();
 					throw;
 				}
 
@@ -142,10 +142,10 @@ std::vector<interleave::IBFMeta> getIBF (ConfigReader config, bool depleteFilter
 				}
 				catch (interleave::ParseIBFFileException& e)
 				{
-					nanolive_logger->error("Error building IBF for target file using the following parameters");
-					nanolive_logger->error("Depletion IBF file                : " + target_file.string());
-					nanolive_logger->error("Error message : " + std::string(e.what()));
-					nanolive_logger->flush();
+					readbouncer_logger->error("Error building IBF for target file using the following parameters");
+					readbouncer_logger->error("Depletion IBF file                : " + target_file.string());
+					readbouncer_logger->error("Error message : " + std::string(e.what()));
+					readbouncer_logger->flush();
 					throw;
 				}
 

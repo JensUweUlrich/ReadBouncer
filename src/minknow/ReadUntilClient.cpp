@@ -58,7 +58,7 @@ namespace readuntil
 		channel_args = grpc::ChannelArguments();
 		channel_args.SetMaxSendMessageSize(16 * 1024 * 1024);
 		channel_args.SetMaxReceiveMessageSize(16 * 1024 * 1024);
-		channel_args.SetSslTargetNameOverride("localhost");
+		//channel_args.SetSslTargetNameOverride("localhost");
 
 		std::stringstream info_str;
 		bool secure_connect = false;
@@ -79,10 +79,10 @@ namespace readuntil
 		
 			//std::filesystem::path cert_file = "ca.crt";
 			
-			std::filesystem::path cert_file = NanoLiveRoot;
+			std::filesystem::path cert_file = ReadBouncerRoot;
 			cert_file.append("rpc-certs");
 			cert_file /= "ca.crt";
-			
+		
 			if (!std::filesystem::exists(cert_file))
 			{
 				connection_logger->error("Could not find SSL/TLS certificate file : " + cert_file.string());
@@ -123,6 +123,7 @@ namespace readuntil
 				connection_logger->flush();
 				throw MissingCertificateException("Could not find token file : " + token_file.string());
 			}
+
 			std::ifstream token_(token_file.string());
 			std::string root_token((std::istreambuf_iterator<char>(token_)),
 			std::istreambuf_iterator<char>());
