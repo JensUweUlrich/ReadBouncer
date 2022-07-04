@@ -59,7 +59,6 @@ namespace readuntil
 		channel_args.SetMaxSendMessageSize(16 * 1024 * 1024);
 		channel_args.SetMaxReceiveMessageSize(16 * 1024 * 1024);
 		//channel_args.SetSslTargetNameOverride("localhost");
-		uint32_t rpcPort{};
 
 		std::stringstream info_str;
 		bool secure_connect = false;
@@ -70,7 +69,6 @@ namespace readuntil
 			connection_logger->info(info_str.str());
 			connection_logger->flush();
 			channel_creds = grpc::InsecureChannelCredentials();
-			rpcPort = 8000;
 		 }
 
 		else // secure connection && mk_port = 9502;
@@ -79,7 +77,7 @@ namespace readuntil
 			connection_logger->info(info_str.str());
 			connection_logger->flush();
 		
-			//std::filesystem::path cert_file = "C:/ReadBouncer/src/rpc-certs/ca.crt";
+			//std::filesystem::path cert_file = "ca.crt";
 			
 			std::filesystem::path cert_file = ReadBouncerRoot;
 			cert_file.append("rpc-certs");
@@ -110,6 +108,7 @@ namespace readuntil
 			std::shared_ptr<::grpc::Channel> mgrCh_ = grpc::CreateCustomChannel(s_1.str(), channel_creds, channel_args);
 			readuntil::Manager *mgr_ = new Manager(mgrCh_, secure_connect);
 			token_file = mgr_->getTokenFilePath();
+
 			}
 
 			else{
@@ -139,18 +138,16 @@ namespace readuntil
 			Authentication *SSLConnection = new Authentication(token_auth);
 			channel_creds = grpc::CompositeChannelCredentials(channel_creds,
 		    	            grpc::MetadataCredentialsFromPlugin(std::unique_ptr<grpc::MetadataCredentialsPlugin>(SSLConnection)));
-
-			std::stringstream s;
-			s << mk_host << ":" << mk_port;
-
-			std::shared_ptr<::grpc::Channel> mgrCh = grpc::CreateCustomChannel(s.str(), channel_creds, channel_args);
-			readuntil::Manager* mgr = new Manager(mgrCh, secure_connect);
-
-			// get RPC port for given device
-			rpcPort = mgr->resolveRpcPort(device);
-
 		}
 
+		std::stringstream s;
+		s << mk_host << ":" << mk_port;
+
+		std::shared_ptr<::grpc::Channel> mgrCh = grpc::CreateCustomChannel(s.str(), channel_creds, channel_args);
+		readuntil::Manager *mgr = new Manager(mgrCh, secure_connect);
+		
+		// get RPC port for given device
+		uint32_t rpcPort = mgr->resolveRpcPort(device);
 
 		info_str.str("");
 		info_str << "RPC port for " << device << " resolved";
