@@ -177,6 +177,7 @@ When nanopore reads are not of interest, these reads can be rejected from the po
   host                = "xxx.xxx.xxx"                     #(ip address or name of the computer hosting MinKNOW; default: 127.0.0.1) 
   port                = X                                 #(port number used fo grpc communication by MinKNOW instance; default: 9501)
   flowcell            = "XXX"                             #(name of the flowcell used)
+  token_path          = 'path/to/minknow-auth-token.json' #path to authentication token file (remote file)
   
   [Basecaller]
   
@@ -201,6 +202,10 @@ This is the IP adress and the TCP/IP port on which the MinKNOW software is hoste
 
 <b> [MinKNOW] flowcell</b><br>
 This is the name of the FlowCell for which we want apply adaptive sampling. (Can be found in MinKNOW GUI)
+
+<b> [MinKNOW] token_path</b><br>
+The path to token file for remote connection. ReadBouncer find the path automatically for local connection.    
+Enable guest mode on the sequencer in the minknow user config file, by changing `guest_rpc_enabled` to `enabled`
 
 <b> [Basecaller] caller </b><br>
 Basecaller used during adaptive sampling. For CPU base-calling use "DeepNano", use "Guppy" for GPU base-calling otherwise. Please note that you need to start the Guppy basecall server on a host machine with powerful GPUs that can keep up with the sequencing speed. ReadBouncer will connect to the server via its integrated the guppy basecall client. We recommend read Miles Benton's great [github repository](https://github.com/sirselim/jetson_nanopore_sequencing) on setting up adaptive sampling with NVIDIA AGX/NX. We further recommend testing adaptive sampling with a playback run before starting a real experiment.
@@ -305,6 +310,7 @@ exp_seq_error_rate  = 0.1
 host                = "localhost"
 port                = 9501       
 flowcell            = "MS00000" 
+token_path         = "test/tmp/minknow-auth-token.json"  #path to authentication token file (if not localhost)
 
 [Basecaller]
 
