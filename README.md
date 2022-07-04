@@ -91,7 +91,7 @@ All parameters, input and output files and the usage are specified within the co
 
 ```
 
-usage               = "build", "target", "classify"           #atm only one of those
+usage               = "build", "target", "classify", "test"           #atm only one of those
 output_directory    = 'path/to/write/output/files/to'         #all generated output files will be stored here
 log_directory       = 'path/to/write/log/files/to'            #all generated log files will be stored here
 
