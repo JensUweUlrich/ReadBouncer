@@ -27,8 +27,35 @@ set(gui_SRC )
 #qt5_add_resources(gui_SRC pics.qrc)
 # add the qml.qrc file
 qt5_add_resources(qml_QRC qml.qrc)
-set(gui_HDRS )
 
+
+set(gui_SRC
+    #callGUI.cpp
+    mainwindow.cpp
+    mainwindow.ui
+    ibf_mainwindow.cpp
+    ibf_mainwindow.ui
+    #classify_mainwindow.cpp
+    #classify_mainwindow.ui
+    #live_deplete_mainwindow.cpp
+    #live_deplete_mainwindow.ui
+    #connection_test_mainwindow.cpp
+    #connection_test_mainwindow.ui
+ #   pics.qrc
+    )
+
+
+#qt_add_resources(gui_SRC pics.qrc)
+#qt5_add_resources(gui_SRC pics.qrc)
+
+set(gui_HDRS
+    mainwindow.h
+    ibf_mainwindow.h
+    #classify_mainwindow.h
+    #live_deplete_mainwindow.h
+    #connection_test_mainwindow.h
+    #QDebugStream.h
+    )
 #qt_add_resources(gui_QRC pics.qrc)
 file(GLOB gui_SRC "*.cpp")
 file(GLOB gui_HDRS "*.h")

@@ -24,6 +24,7 @@
 
 // Qt local
 #include "mainwindow.h"
+#include "ibf_mainwindow.h"
 
 // spdlog library
 #include "spdlog/spdlog.h"
@@ -572,6 +573,11 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     MainWindow mw;
 
+    /*
+    int x = mw.width()*0.7;
+    int y = mw.height()*0.7;
+
+    mw.setFixedSize(x, y);*/
     /*QGuiApplication app(argc, argv);
 
     QCoreApplication::addLibraryPath("./gui/");

@@ -20,3 +20,11 @@ void MainWindow::on_pushButton_clicked()
     msgBox.exec();
 }
 
+
+void MainWindow::on_pushButton_10_clicked()
+{
+    hide();
+    ibf_multi_window = new IBF_mainwindow(this); // this: is mainwindow class
+    ibf_multi_window -> show();
+}
+
