@@ -623,9 +623,9 @@ void adaptive_sampling(ConfigReader config, std::vector<interleave::IBFMeta> Dep
 		}
 		catch (basecall::BasecallerException& e)
 		{
-			nanolive_logger->error("Failed establishing connection to Guppy basecall server!");
-			nanolive_logger->error("Error message : " + std::string(e.what()));
-			nanolive_logger->flush();
+			readbouncer_logger->error("Failed establishing connection to Guppy basecall server!");
+			readbouncer_logger->error("Error message : " + std::string(e.what()));
+			readbouncer_logger->flush();
 			throw;
 		}
 	}
