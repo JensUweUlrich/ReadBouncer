@@ -38,7 +38,8 @@
    <bool>false</bool>
   </property>
   <property name="styleSheet">
-   <string notr="true">background-color: rgba(93, 152, 150, 220);</string>
+   <string notr="true">color: rgb(255, 255, 255);
+background-color: rgba(93, 152, 165, 214);</string>
   </property>
   <property name="sizeGripEnabled">
    <bool>true</bool>
@@ -406,18 +407,14 @@ color: rgb(255, 255, 255);</string>
     </item>
    </layout>
   </widget>
-  <widget class="QPlainTextEdit" name="plainTextEdit">
+  <widget class="QTextEdit" name="output_window">
    <property name="geometry">
     <rect>
-     <x>520</x>
-     <y>0</y>
-     <width>381</width>
-     <height>501</height>
+     <x>530</x>
+     <y>10</y>
+     <width>361</width>
+     <height>451</height>
     </rect>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">color: rgb(255, 255, 255);
-background-color: rgba(93, 152, 165, 214);</string>
    </property>
   </widget>
  </widget>

@@ -9,6 +9,7 @@
 #include <QTextEdit>
 #include <fstream>
 #include <QDebug>
+#include <QDebugStream.h>
 #include <iostream>
 
 namespace Ui {
@@ -41,6 +42,10 @@ private slots:
     void on_spinBox_5_valueChanged(int arg1);
 
     void on_spinBox_6_valueChanged(int arg1);
+
+    void slot_control_std();
+
+    void clean_results();
 
 private:
     Ui::IBF_mainwindow *ui;

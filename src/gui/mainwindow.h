@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QMessageBox>
+#include <QPixmap>
 
 #include "ibf_mainwindow.h"
 //#include "ibfmainwindow.h"

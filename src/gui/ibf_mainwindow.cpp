@@ -13,26 +13,6 @@ IBF_mainwindow::~IBF_mainwindow()
     delete ui;
 }
 
-// Build IBF
-void IBF_mainwindow::on_pushButton_clicked()
-{
-    if (IBF_mainwindow::k < 10){
-
-        QMessageBox::warning(this , trUtf8("Warning") ,
-                  "<P><FONT COLOR='#ffffff'>The selcted k-mer size is smaller than 10, we will use the default value 13</FONT>");
-        IBF_mainwindow::k = 13;
-    }
-
-    std::cout<< IBF_mainwindow::output_path << '\n';
-    std::cout<< IBF_mainwindow::reference_file << '\n';
-    std::cout<< IBF_mainwindow::k << '\n';
-    std::cout<< IBF_mainwindow::threads << '\n';
-    std::cout<< IBF_mainwindow::fragment_size << '\n';
-    std::cout<< IBF_mainwindow::filter_size << '\n';
-
-    qDebug() << "C++ Style Debug Message";
-
-}
 
 
 void IBF_mainwindow::on_pushButton_2_clicked()
@@ -105,3 +85,13 @@ void IBF_mainwindow::on_spinBox_6_valueChanged(int arg1)
     IBF_mainwindow::fragment_size = arg1;
 }
 
+
+void IBF_mainwindow::slot_control_std(){
+    QDebugStream* test_1 = new QDebugStream(std::cerr, ui->output_window);
+    QDebugStream* test = new QDebugStream(std::cout, ui->output_window);
+
+}
+
+void IBF_mainwindow::clean_results(){
+    ui->output_window->QTextEdit::clear();
+}

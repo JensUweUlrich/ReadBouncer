@@ -21,7 +21,6 @@
 #include <QDebug>
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
-
 // Qt local
 #include "mainwindow.h"
 #include "ibf_mainwindow.h"
@@ -567,6 +566,41 @@ void run_program(ConfigReader config){
 	}
 
 }
+
+// QT pushes
+// Build IBF
+void IBF_mainwindow::on_pushButton_clicked()
+{
+    slot_control_std();
+    StopClock NanoLiveTime;
+    if (IBF_mainwindow::k < 10){
+
+        std::string warning_kmer = "The selcted k-mer size is smaller than 10, we will use the default value 13";
+        QMessageBox::warning(this , tr("Warning"), QString::fromUtf8(warning_kmer.c_str()));
+        IBF_mainwindow::k = 13;
+    }
+
+    ibf_build_parser params = { IBF_mainwindow::output_path,
+                                IBF_mainwindow::reference_file,
+                                false, false,
+                                IBF_mainwindow::k,
+                                IBF_mainwindow::threads,
+                                IBF_mainwindow::fragment_size,
+                                IBF_mainwindow::filter_size, true };
+    NanoLiveTime.start();
+    buildIBF(params);
+    NanoLiveTime.stop();
+    size_t peakSize = getPeakRSS();
+    int peakSizeMByte = (int)(peakSize / (1024 * 1024));
+
+    std::cout<<"--------------------------------------------------------------"<<std::endl;
+    std::cout << "Real time : " << NanoLiveTime.elapsed() << " sec" << std::endl;
+    std::cout << "CPU time  : " << cputime() << " sec" << std::endl;
+    std::cout << "Peak RSS  : " << peakSizeMByte << " MByte" << std::endl;
+    std::cout<<"--------------------------------------------------------------"<<std::endl;
+
+}
+
 
 int main(int argc, char *argv[])
 {
