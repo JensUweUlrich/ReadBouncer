@@ -602,30 +602,33 @@ void adaptive_sampling(ConfigReader config, std::vector<interleave::IBFMeta> Dep
 	basecall::Basecaller* caller;
 
 #if defined(_WIN32)
-	if (stricmp(config.Basecaller_Parsed.caller.c_str(), "guppy") == 0)
+    if (stricmp(config.Basecaller_Parsed.caller.c_str(), "guppy") == 0)
 #else
-	if (strcasecmp(config.Basecaller_Parsed.caller.c_str(), "guppy") == 0)
+    if (strcasecmp(config.Basecaller_Parsed.caller.c_str(), "guppy") == 0)
 #endif
-	{
-		std::string basecall_host = config.Basecaller_Parsed.guppy_host + ":" + config.Basecaller_Parsed.guppy_port;
-		
-		if (strcasecmp(config.Basecaller_Parsed.guppy_host.substr(0,3).c_str(), "ipc") == 0)
-		{
-			basecall_host = config.Basecaller_Parsed.guppy_host + "/" + config.Basecaller_Parsed.guppy_port;
-		}
-		std::cout << "Connecting to Guppy basecall server on address : " << basecall_host << std::endl;
-		try
-		{
-			caller = new basecall::GuppyBasecaller(basecall_host, config.Basecaller_Parsed.guppy_config);
-		}
-		catch (basecall::BasecallerException& e)
-		{
-			nanolive_logger->error("Failed establishing connection to Guppy basecall server!");
-			nanolive_logger->error("Error message : " + std::string(e.what()));
-			nanolive_logger->flush();
-			throw;
-		}
-	}
+    {
+        std::string basecall_host = config.Basecaller_Parsed.guppy_host + ":" + config.Basecaller_Parsed.guppy_port;
+#if defined(_WIN32)
+        if (stricmp(config.Basecaller_Parsed.guppy_host.substr(0, 3).c_str(), "ipc") == 0)
+#else
+        if (strcasecmp(config.Basecaller_Parsed.guppy_host.substr(0, 3).c_str(), "ipc") == 0)
+#endif
+        {
+            basecall_host = config.Basecaller_Parsed.guppy_host + "/" + config.Basecaller_Parsed.guppy_port;
+        }
+        std::cout << "Connecting to Guppy basecall server on address : " << basecall_host << std::endl;
+        try
+        {
+            caller = new basecall::GuppyBasecaller(basecall_host, config.Basecaller_Parsed.guppy_config);
+        }
+        catch (basecall::BasecallerException& e)
+        {
+            nanolive_logger->error("Failed establishing connection to Guppy basecall server!");
+            nanolive_logger->error("Error message : " + std::string(e.what()));
+            nanolive_logger->flush();
+            throw;
+        }
+    }
 #if !defined(ARM_BUILD)
 	else
 		caller = new basecall::DeepNanoBasecaller(weights_file, config.Basecaller_Parsed.basecall_threads);

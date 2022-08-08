@@ -5,6 +5,7 @@
 #include <QMessageBox>
 
 #include "ibf_mainwindow.h"
+//#include "ibfmainwindow.h"
 
 namespace Ui {
 class MainWindow;
@@ -26,6 +27,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
     IBF_mainwindow *ibf_multi_window;
+    //IBFMainWindow *ibf_main_window;
 };
 
 #endif // MAINWINDOW_H
