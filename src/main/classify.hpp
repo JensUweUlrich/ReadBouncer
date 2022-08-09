@@ -67,17 +67,17 @@ void classify_reads(ConfigReader config, std::vector<interleave::IBFMeta> Deplet
 	bool deplete = false;
 	bool target = false;
 
-	if(DepletionFilters.size() >= 1){
+	if (DepletionFilters.size() >= 1) {
 
 		deplete = true;
-	}
-	else if(TargetFilters.size() >= 1){
+
+	} if (TargetFilters.size() >= 1) {
 
 		target = true;
-	}
-	else{
 
-		std::cerr<<"No depletion or target filters have been provided! "<<'\n';
+	} if (!deplete && !target) {
+
+		std::cerr << "[Error] No depletion or target filters have been provided for classification! " << '\n';
 		exit(1);
 	}
 
@@ -292,7 +292,7 @@ void classify_reads(ConfigReader config, std::vector<interleave::IBFMeta> Deplet
 				sstr << "Number of classified reads                         :   " << found;
 				nanolive_logger->info(sstr.str());
 				sstr.str("");
-				sstr << "Number of of too short reads (len < " << config.IBF_Parsed.chunk_length << ")   :   " << too_short;
+				sstr << "Number of too short reads (len < " << config.IBF_Parsed.chunk_length << ")   :   " << too_short;
 				nanolive_logger->info(sstr.str());
 				sstr.str("");
 				sstr << "Number of all reads                                :   " << readCounter;
