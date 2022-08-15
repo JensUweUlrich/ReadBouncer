@@ -11,7 +11,7 @@
 using namespace interfaces;
 
  // global variables
-std::filesystem::path NanoLiveRoot;
+std::filesystem::path ReadBouncerRoot;
 
 readuntil::Data* data;
 Runner runner{};
@@ -201,7 +201,7 @@ void classify_live_reads(SafeQueue<RTPair>& classification_queue,
 	interleave::ClassifyConfig& conf,
 	readuntil::Acquisition* acq)
 {
-	std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("ReadBouncerLog");
+	std::shared_ptr<spdlog::logger> readbouncer_logger = spdlog::get("ReadBouncerLog");
 	
 	bool target_only = !(TargetFilters.empty()) && DepletionFilters.empty();
 	uint64_t read_counter = 0;
@@ -301,11 +301,11 @@ void classify_live_reads(SafeQueue<RTPair>& classification_queue,
 			{
 				std::stringstream estr;
 				estr << "Error classifying Read : " << rp.first.id << "(Len=" << read.getReadLength() << ")";
-				nanolive_logger->error(estr.str());
+				readbouncer_logger->error(estr.str());
 				estr.str("");
 				estr << "Error message          : " << e.what();
-				nanolive_logger->error(estr.str());
-				nanolive_logger->flush();
+				readbouncer_logger->error(estr.str());
+				readbouncer_logger->flush();
 			}
 		}
 
@@ -331,7 +331,7 @@ void compute_average_durations(SafeQueue<Durations>& duration_queue,
 	                           SafeMap<uint16_t, uint32_t>& channel_stats,
 	                           readuntil::Acquisition* acq)
 {
-	std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("ReadBouncerLog");
+	std::shared_ptr<spdlog::logger> readbouncer_logger = spdlog::get("ReadBouncerLog");
 	uint64_t totalClassifiedReadCounter = 0;
 	uint64_t totalUnclassifiedReadCounter = 0;
 	uint64_t currentClassifiedReadCounter = 0;
@@ -393,47 +393,47 @@ void compute_average_durations(SafeQueue<Durations>& duration_queue,
 				}
 				totalClassifiedReadCounter += currentClassifiedReadCounter;
 				totalUnclassifiedReadCounter += currentUnclassifiedReadCounter;
-				nanolive_logger->info("----------------------------- Intermediate Results -------------------------------------------------------");
+				readbouncer_logger->info("----------------------------- Intermediate Results -------------------------------------------------------");
 				std::stringstream sstr;
 				sstr << "Total Number of classified reads                            :	" << totalClassifiedReadCounter;
-				nanolive_logger->info(sstr.str());
+				readbouncer_logger->info(sstr.str());
 				sstr.str("");
 				sstr << "Total Number of unclassified reads                          :	" << totalUnclassifiedReadCounter;
-				nanolive_logger->info(sstr.str());
+				readbouncer_logger->info(sstr.str());
 				sstr.str("");
 				sstr << "Number of active sequencing channels                        :	" << activeChannels;
-				nanolive_logger->info(sstr.str());
+				readbouncer_logger->info(sstr.str());
 				sstr.str("");
 				sstr << "Number of classified reads during last interval             :	" << currentClassifiedReadCounter;
-				nanolive_logger->info(sstr.str());
+				readbouncer_logger->info(sstr.str());
 				sstr.str("");
 				sstr << "Number of unclassified reads during last interval           :	" << currentUnclassifiedReadCounter;
-				nanolive_logger->info(sstr.str());
+				readbouncer_logger->info(sstr.str());
 				sstr.str("");
 				avgReadLenMutex.lock();
 				sstr << "Total Average Read Length                                   :	" << avgReadLen;
 				avgReadLenMutex.unlock();
-				nanolive_logger->info(sstr.str());
+				readbouncer_logger->info(sstr.str());
 				sstr.str("");
 				sstr << "Average Processing Time for classified Reads (interval)     :	" << currentAvgDurCompleteClassifiedReads;
-				nanolive_logger->info(sstr.str());
+				readbouncer_logger->info(sstr.str());
 				sstr.str("");
 				sstr << "Average Processing Time for unclassified Reads (interval)   :	" << currentAvgDurCompleteUnClassifiedRead;
-				nanolive_logger->info(sstr.str());
+				readbouncer_logger->info(sstr.str());
 				sstr.str("");
 				sstr << "Average Processing Time Read Basecalling (interval)         :	" << currentAvgDurationBasecallRead;
-				nanolive_logger->info(sstr.str());
+				readbouncer_logger->info(sstr.str());
 				sstr.str("");
 				sstr << "Average Processing Time Read Classification (interval)      :	" << currentAvgDurationClassifyRead;
-				nanolive_logger->info(sstr.str());
+				readbouncer_logger->info(sstr.str());
 				sstr.str("");
 				sstr << "Size of Basecall Queue                            :	" << basecall_queue.size();
-				nanolive_logger->debug(sstr.str());
+				readbouncer_logger->debug(sstr.str());
 				sstr.str("");
 				sstr << "Size of Classification Queue                      :	" << classification_queue.size();
-				nanolive_logger->debug(sstr.str());
-				nanolive_logger->info("----------------------------------------------------------------------------------------------------------");
-				nanolive_logger->flush();
+				readbouncer_logger->debug(sstr.str());
+				readbouncer_logger->info("----------------------------------------------------------------------------------------------------------");
+				readbouncer_logger->flush();
 				begin = end;
 				currentClassifiedReadCounter = 0;
 				currentUnclassifiedReadCounter = 0;
@@ -514,18 +514,18 @@ void checkRunning(Runner& runner, readuntil::Acquisition* acq)
  */
 void adaptive_sampling(ConfigReader config, std::vector<interleave::IBFMeta> DepletionFilters, std::vector<interleave::IBFMeta> TargetFilters)
 {
-	std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("ReadBouncerLog");
+	std::shared_ptr<spdlog::logger> readbouncer_logger = spdlog::get("ReadBouncerLog");
 	bool withTarget = false;
 #if !defined(ARM_BUILD)
 	// first check if basecalling file exists
-	std::filesystem::path weights_file = NanoLiveRoot;
+	std::filesystem::path weights_file = ReadBouncerRoot;
 	weights_file.append("data");
 	weights_file /= "rnn48.txt";
 	//weights_file = "rnn48.txt";
 	if (!std::filesystem::exists(weights_file))
 	{
-		nanolive_logger->error("Could not find DeepNano weights file : " + weights_file.string());
-		nanolive_logger->flush();
+		readbouncer_logger->error("Could not find DeepNano weights file : " + weights_file.string());
+		readbouncer_logger->flush();
 		std::stringstream estr;
 		estr << "[Error] Could not find DeepNano weights file : " << weights_file.string();
 		throw basecall::BasecallerException(estr.str());
@@ -536,13 +536,13 @@ void adaptive_sampling(ConfigReader config, std::vector<interleave::IBFMeta> Dep
 	std::cout << "Host : " << config.MinKNOW_Parsed.host << std::endl;
 	std::cout << "Port : " <<  config.MinKNOW_Parsed.port << std::endl;
 
-	//nanolive_logger->info("Successfully loaded Interleaved Bloom Filter(s)!");
-	nanolive_logger->info("Trying to connect to MinKNOW");
-	nanolive_logger->info("Host : " + config.MinKNOW_Parsed.host);
+	//readbouncer_logger->info("Successfully loaded Interleaved Bloom Filter(s)!");
+	readbouncer_logger->info("Trying to connect to MinKNOW");
+	readbouncer_logger->info("Host : " + config.MinKNOW_Parsed.host);
 	std::stringstream sstr;
 	sstr << "Port : " << config.MinKNOW_Parsed.port;
-	nanolive_logger->info(sstr.str());
-	nanolive_logger->flush();
+	readbouncer_logger->info(sstr.str());
+	readbouncer_logger->flush();
 
 
 
@@ -550,24 +550,24 @@ void adaptive_sampling(ConfigReader config, std::vector<interleave::IBFMeta> Dep
 	readuntil::ReadUntilClient& client = readuntil::ReadUntilClient::getClient();
 	client.setHost(config.MinKNOW_Parsed.host);
 	client.setPort(config.MinKNOW_Parsed.port);
-	client.setRootPath(NanoLiveRoot);
+	client.setRootPath(ReadBouncerRoot);
 
 	// TODO: throw exception if connection could not be established
-	if (client.connect(config.MinKNOW_Parsed.flowcell))
+	if (client.connect(config.MinKNOW_Parsed.flowcell, config))
 	{
 		//if (params.verbose)
 		std::cout << "Connection successfully established!" << ::std::endl;
 		//else
 		//{
-		nanolive_logger->info("Connection successfully established!");
-		nanolive_logger->flush();
+		readbouncer_logger->info("Connection successfully established!");
+		readbouncer_logger->flush();
 		//}
 	}
 	else
 	{
 		std::cerr << "Could not establish connection to MinKNOW or MinION device" << std::endl;
-		nanolive_logger->error("Could not establish connection to MinKNOW or MinION device (" + config.MinKNOW_Parsed.flowcell + ")");
-		nanolive_logger->flush();
+		readbouncer_logger->error("Could not establish connection to MinKNOW or MinION device (" + config.MinKNOW_Parsed.flowcell + ")");
+		readbouncer_logger->flush();
 	}
 
 	// wait until sequencing run has been started
@@ -583,8 +583,8 @@ void adaptive_sampling(ConfigReader config, std::vector<interleave::IBFMeta> Dep
 		//if (params.verbose)
 		std::cout << "Sequencing has begun. Starting live signal processing!" << ::std::endl;
 
-		nanolive_logger->info("Sequencing has begun. Starting live signal processing!");
-		nanolive_logger->flush();
+		readbouncer_logger->info("Sequencing has begun. Starting live signal processing!");
+		readbouncer_logger->flush();
 
 	}
 
@@ -594,8 +594,8 @@ void adaptive_sampling(ConfigReader config, std::vector<interleave::IBFMeta> Dep
 	ana_conf->set_break_reads_after_seconds(0.4);
 	//if (params.verbose)
 	//{
-	nanolive_logger->info("Set break_reads_after_seconds = 0.4");
-	nanolive_logger->flush();
+	readbouncer_logger->info("Set break_reads_after_seconds = 0.4");
+	readbouncer_logger->flush();
 	//}
 
 	//setup basecalling
@@ -608,8 +608,13 @@ void adaptive_sampling(ConfigReader config, std::vector<interleave::IBFMeta> Dep
 #endif
 	{
 		std::string basecall_host = config.Basecaller_Parsed.guppy_host + ":" + config.Basecaller_Parsed.guppy_port;
-		
-		if (strcasecmp(config.Basecaller_Parsed.guppy_host.substr(0,3).c_str(), "ipc") == 0)
+
+#if defined(_WIN32)
+		if (stricmp(config.Basecaller_Parsed.guppy_host.substr(0, 3).c_str(), "ipc") == 0)
+#else
+		if (strcasecmp(config.Basecaller_Parsed.guppy_host.substr(0, 3).c_str(), "ipc") == 0)
+#endif
+
 		{
 			basecall_host = config.Basecaller_Parsed.guppy_host + "/" + config.Basecaller_Parsed.guppy_port;
 		}
@@ -620,9 +625,9 @@ void adaptive_sampling(ConfigReader config, std::vector<interleave::IBFMeta> Dep
 		}
 		catch (basecall::BasecallerException& e)
 		{
-			nanolive_logger->error("Failed establishing connection to Guppy basecall server!");
-			nanolive_logger->error("Error message : " + std::string(e.what()));
-			nanolive_logger->flush();
+			readbouncer_logger->error("Failed establishing connection to Guppy basecall server!");
+			readbouncer_logger->error("Error message : " + std::string(e.what()));
+			readbouncer_logger->flush();
 			throw;
 		}
 	}
@@ -643,9 +648,9 @@ void adaptive_sampling(ConfigReader config, std::vector<interleave::IBFMeta> Dep
 	}
 	catch (readuntil::DataServiceException& e)
 	{
-		nanolive_logger->error("Could not start streaming signals from device (" + config.MinKNOW_Parsed.flowcell + ")");
-		nanolive_logger->error("Error message : " + std::string(e.what()));
-		nanolive_logger->flush();
+		readbouncer_logger->error("Could not start streaming signals from device (" + config.MinKNOW_Parsed.flowcell + ")");
+		readbouncer_logger->error("Error message : " + std::string(e.what()));
+		readbouncer_logger->flush();
 		throw;
 	}
 

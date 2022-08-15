@@ -72,6 +72,7 @@ public:
         std::string flowcell{};
         uint16_t minChannel = 1;
         uint16_t maxChannel = 512;
+        std::filesystem::path token_path {}; 
     }MinKNOW_Parsed;
 
     struct Basecaller_Params 

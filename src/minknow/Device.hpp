@@ -83,4 +83,5 @@ namespace readuntil
 
 } //namespace
 
+
 #endif /* LIBREADUNTIL_DEVICE_HPP_ */

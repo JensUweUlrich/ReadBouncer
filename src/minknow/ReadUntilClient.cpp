@@ -7,6 +7,30 @@
 
 #include "ReadUntilClient.hpp"
 
+
+using json = nlohmann::json;
+
+
+
+class Authentication : public grpc::MetadataCredentialsPlugin {
+public:
+    Authentication(const grpc::string& token) : m_token(token) {}
+
+    grpc::Status GetMetadata(
+        grpc::string_ref service_url, grpc::string_ref method_name,
+        const grpc::AuthContext& channel_auth_context,
+        std::multimap<grpc::string, grpc::string>* metadata
+    ) override {
+        metadata->insert(std::make_pair("local-auth", m_token));
+        return grpc::Status::OK;
+    }
+
+private:
+    grpc::string m_token;
+
+	
+};
+
 namespace readuntil
 {
 	std::filesystem::path ReadUntilClientLog{};
@@ -16,7 +40,7 @@ namespace readuntil
 	*	@return: true if connection was sucessfully established, false otherwise
 	*	@throws: DeviceServiceException, ReadUntilClientException
 	*/
-	bool ReadUntilClient::connect(std::string device)
+	bool ReadUntilClient::connect(std::string device, ConfigReader config)
 	{
 		ReadUntilClientLog /= "ReadUntilClientLog.txt";
 		try
@@ -32,51 +56,96 @@ namespace readuntil
 		connection_logger->set_level(spdlog::level::debug);
 
 		channel_args = grpc::ChannelArguments();
-		channel_args.SetSslTargetNameOverride("localhost");
 		channel_args.SetMaxSendMessageSize(16 * 1024 * 1024);
 		channel_args.SetMaxReceiveMessageSize(16 * 1024 * 1024);
+		//channel_args.SetSslTargetNameOverride("localhost");
 
-		// connect with MinKNOW Manager to get FlowCell Connection
-		
 		std::stringstream info_str;
 		bool secure_connect = false;
-		// actually only unsecure connection works
-		//if (mk_host.compare("127.0.0.1") == 0 || mk_host.compare("localhost") == 0) || mk_host.compare("xavier") == 0)
-		//{
+		
+		if (mk_port == "9501")
+		{
 			info_str << "Connect to MinKNOW instance via unsecure connection to " << mk_host << " on port " << mk_port;
 			connection_logger->info(info_str.str());
 			connection_logger->flush();
 			channel_creds = grpc::InsecureChannelCredentials();
-		/* }
-		else
+		 }
+
+		else // secure connection && mk_port = 9502;
 		{
-			mk_port = 9502;
 			info_str << "Connect to MinKNOW instance via secure SSL/TLS connection to " << mk_host << " on port " << mk_port;
 			connection_logger->info(info_str.str());
 			connection_logger->flush();
-			std::filesystem::path cert_file = NanoLiveRoot;
+		
+			//std::filesystem::path cert_file = "ca.crt";
+			
+			std::filesystem::path cert_file = ReadBouncerRoot;
 			cert_file.append("rpc-certs");
 			cert_file /= "ca.crt";
+		
 			if (!std::filesystem::exists(cert_file))
 			{
 				connection_logger->error("Could not find SSL/TLS certificate file : " + cert_file.string());
 				connection_logger->flush();
 				throw MissingCertificateException("Could not find SSL/TLS certificate file : " + cert_file.string());
 			}
+
 			std::ifstream ca(cert_file);
 			std::string root_cert((std::istreambuf_iterator<char>(ca)),
-				std::istreambuf_iterator<char>());
-			grpc::SslCredentialsOptions opt = grpc::SslCredentialsOptions();
+			std::istreambuf_iterator<char>());
+ 
+			grpc::SslCredentialsOptions opt;
 			opt.pem_root_certs = root_cert;
-			channel_creds = grpc::SslCredentials(opt);
+			channel_creds = grpc::SslCredentials(opt); // for using with crt
 			secure_connect = true;
-		}*/
+			
+			std::filesystem::path token_file;
+
+			if (mk_host == "127.0.0.1"|| mk_host == "localhost"){
+
+			std::stringstream s_1;
+		 	s_1 << mk_host << ":" << mk_port;
+			std::shared_ptr<::grpc::Channel> mgrCh_ = grpc::CreateCustomChannel(s_1.str(), channel_creds, channel_args);
+			readuntil::Manager *mgr_ = new Manager(mgrCh_, secure_connect);
+			token_file = mgr_->getTokenFilePath();
+
+			}
+
+			else{
+
+				token_file = config.MinKNOW_Parsed.token_path;
+				
+			}
+
+			if (!std::filesystem::exists(token_file))
+			{
+				connection_logger->error("Could not find token file : " + token_file.string());
+				connection_logger->flush();
+				throw MissingCertificateException("Could not find token file : " + token_file.string());
+			}
+
+			std::ifstream token_(token_file.string());
+			std::string root_token((std::istreambuf_iterator<char>(token_)),
+			std::istreambuf_iterator<char>());
+
+			// read token from json file instead of substr()
+			json options = json::parse(root_token);
+			std::string token_auth = options["token"];
+
+
+			std::cout << "Connecting to MinKNOW using the token: "<< token_auth << std::endl;
+
+			Authentication *SSLConnection = new Authentication(token_auth);
+			channel_creds = grpc::CompositeChannelCredentials(channel_creds,
+		    	            grpc::MetadataCredentialsFromPlugin(std::unique_ptr<grpc::MetadataCredentialsPlugin>(SSLConnection)));
+		}
 
 		std::stringstream s;
 		s << mk_host << ":" << mk_port;
 
 		std::shared_ptr<::grpc::Channel> mgrCh = grpc::CreateCustomChannel(s.str(), channel_creds, channel_args);
 		readuntil::Manager *mgr = new Manager(mgrCh, secure_connect);
+		
 		// get RPC port for given device
 		uint32_t rpcPort = mgr->resolveRpcPort(device);
 
@@ -92,8 +161,7 @@ namespace readuntil
 		connection_logger->info(info_str.str());
 		connection_logger->flush();
 		int retry_count = 5;
-		
-		
+
 		for (int i = 1; i <= 5; ++i)
 		{
 			try
@@ -101,6 +169,7 @@ namespace readuntil
 				channel = grpc::CreateCustomChannel(connect_str.str(), channel_creds, channel_args);
 				Instance* inst = (Instance*)getMinKnowService(MinKnowServiceType::INSTANCE);
 				std::stringstream dm;
+				 
 				dm << "Sucessfully connected to minknow instance (version " << (*inst).get_version_info() << ")";
 				connection_logger->info(dm.str());
 				connected = true;

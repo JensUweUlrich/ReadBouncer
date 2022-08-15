@@ -20,6 +20,13 @@
 #include "Device.hpp"
 #include "Manager.hpp"
 
+// json parser for token file 
+#include "json.hpp"
+
+// toml parser
+#include "configReader.hpp"
+
+
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/rotating_file_sink.h"
 
@@ -37,8 +44,8 @@ namespace readuntil
 
 			std::shared_ptr<::grpc::Channel> channel;
 			std::string mk_host{ "127.0.0.1" };
-			std::filesystem::path NanoLiveRoot{};
-			std::string mk_port{"9501"};
+			std::filesystem::path ReadBouncerRoot{};
+			std::string mk_port;
 			bool connected{false};
 			//std::shared_ptr<spdlog::sinks::daily_file_sink_mt> daily_sink = std::make_shared<spdlog::sinks::daily_file_sink_mt>("RUClientLog", 23, 59);
 			std::shared_ptr<spdlog::logger> connection_logger;
@@ -72,10 +79,10 @@ namespace readuntil
 
 			inline void setRootPath(std::filesystem::path& path)
 			{
-				NanoLiveRoot = path;
+				ReadBouncerRoot = path;
 			}
 
-			bool connect(std::string device);
+			bool connect(std::string device, ConfigReader config);
 
 			MinKnowService* getMinKnowService(const MinKnowServiceType type);
 

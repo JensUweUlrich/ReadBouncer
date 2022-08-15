@@ -14,8 +14,7 @@
 #include <SafeMap.hpp>
 #include <SafeSet.hpp>
 #include <StopClock.hpp>
-#include <NanoLiveExceptions.hpp>
-
+#include <ReadBouncerExceptions.hpp>
 
 // spdlog library
 #include "spdlog/spdlog.h"
@@ -45,6 +44,7 @@
 #include "ibfbuild.hpp"
 #include "classify.hpp"
 #include "adaptive_sampling.hpp"
+#include "connection_test.hpp"
 
 #if defined(_WIN32)
 	#include <windows.h>
@@ -57,160 +57,14 @@
 	#include <sys/time.h>
 #endif
 
-std::shared_ptr<spdlog::logger> nanolive_logger;
-//std::filesystem::path NanoLiveRoot;
+
+//std::filesystem::path ReadBouncerRoot;
 //readuntil::Data* data;
 
-/**
-*	shift incoming signals directly as unblock response to action queue
-*	needed only for unblock all
-*	@signal_queue	:	thread safe queue with signal-only reads coming in from the sequencer
-*	@action_queue	:	thread safe queue with unblock actions
-*	@acq			:	Acquisition service checking if sequencing run is already finished
-*/
-void fill_action_queue(SafeQueue<RTPair>& signal_queue,
-	SafeQueue<RTPair>& action_queue,
-	readuntil::Acquisition* acq)
-{
-	while (true)
-	{
-		if (!signal_queue.empty())
-		{
-			RTPair rp = std::move(signal_queue.pop());
-			rp.first.unblock = true;
-			action_queue.push(std::move(rp));
-		}
-
-		if (acq->isFinished())
-			break;
-	}
-}
 
 /**
-*	core function for testing connection to MinKNOW software and testing unblock all reads
-*	@parser : input from the command line
-*/
-void test_connection(ConfigReader config)
-{
-
-	std::cout << "Trying to connect to MinKNOW" << std::endl;
-	std::cout << "Host : " << config.MinKNOW_Parsed.host << std::endl;
-	std::cout << "Port : " << config.MinKNOW_Parsed.port << std::endl;
-
-	std::stringstream sstr;
-	sstr << "Port : " << config.MinKNOW_Parsed.port;
-
-	// create ReadUntilClient object and connect to specified device
-	readuntil::ReadUntilClient& client = readuntil::ReadUntilClient::getClient();
-	client.setHost(config.MinKNOW_Parsed.host);
-	client.setPort(config.MinKNOW_Parsed.port); 
-	client.setRootPath(NanoLiveRoot);
-
-	// TODO: throw exception if connection could not be established
-	try
-	{
-		if (client.connect(config.MinKNOW_Parsed.flowcell))
-		{
-			std::cout << "Connection successfully established!" << std::endl;
-			std::cout << "You can start live-depletion using these settings." << std::endl;
-		}
-	}
-	catch (readuntil::DeviceServiceException& e)
-	{
-		std::cerr << "Connection to MinKNOW successfully established." << std::endl;
-		std::cerr << "But could not detect given device/flowcell" << std::endl;
-		std::cerr << "Please check whether the Flowcell has already been inserted. " << std::endl;
-		throw;
-	}
-	catch (readuntil::ReadUntilClientException& e)
-	{
-		std::cerr << "Could not establish connection to MinKNOW." << std::endl;
-		std::cerr << "Please check the given host IP address and TCP port. " << std::endl;
-		throw;
-	}
-
-	bool unblock_all = false;// as default and no changes in toml file! 
-
-	if (unblock_all)
-	{
-		
-		readuntil::AnalysisConfiguration* an_conf = (readuntil::AnalysisConfiguration*)client.getMinKnowService(readuntil::MinKnowServiceType::ANALYSIS_CONFIGURATION);
-		an_conf->set_break_reads_after_seconds(0.4);
-		// wait until sequencing run has been started
-		//if (parser.verbose)
-		std::cout << "Waiting for device to start sequencing!" << ::std::endl;
-
-		std::cout << "Please start the sequencing run now!" << ::std::endl;
-
-		readuntil::Acquisition* acq = (readuntil::Acquisition*)client.getMinKnowService(readuntil::MinKnowServiceType::ACQUISITION);
-		if (acq->hasStarted())
-		{
-			//if (parser.verbose)
-			std::cout << "Sequencing has begun. Starting live signal processing!" << ::std::endl;
-
-			nanolive_logger->info("Sequencing has begun. Starting live signal processing!");
-			nanolive_logger->flush();
-
-		}
-
-		// create Data Service object
-		// used for streaming live nanopore signals from MinKNOW and sending action messages back
-		data = (readuntil::Data*)client.getMinKnowService(readuntil::MinKnowServiceType::DATA);
-
-		// set unblock all reads
-
-		//(*data).setUnblockAll(true);
-		nanolive_logger->info("Unblocking all reads without basecalling or classification!");
-		nanolive_logger->flush();
-
-		// start live streaming of data
-		try
-		{
-			data->startLiveStream();
-		}
-		catch (readuntil::DataServiceException& e)
-		{
-			nanolive_logger->error("Could not start streaming signals from device (" + config.MinKNOW_Parsed.flowcell + ")");
-			nanolive_logger->error("Error message : " + std::string(e.what()));
-			nanolive_logger->flush();
-			throw;
-		}
-
-		
-
-		// thread safe queue storing reads ready for basecalling
-		SafeQueue<RTPair> read_queue{};
-		// thread safe queue storing classified reads ready for action creation
-		SafeQueue<RTPair> action_queue{};
-		// thread safe queue storing for every read the duration for the different tasks to complete
-		SafeQueue<Durations> duration_queue{};
-
-		// start live signal streaming from ONT MinKNOW
-		std::vector< std::future< void > > tasks;
-
-		std::cout << "Start receiving live signals thread" << std::endl;
-		std::cout << "Start sending unblock messages thread" << std::endl;
-
-
-		// create thread for receiving signals from MinKNOW
-		tasks.emplace_back(std::async(std::launch::async, &readuntil::Data::getLiveSignals, data, std::ref(read_queue)));
-
-		// create thread for live basecalling
-		tasks.emplace_back(std::async(std::launch::async, &fill_action_queue, std::ref(read_queue),
-			std::ref(action_queue), acq));
-
-		// create thread/task for sending action messages back to MinKNOW
-		tasks.emplace_back(std::async(std::launch::async, &readuntil::Data::sendActions, data, std::ref(action_queue), std::ref(duration_queue)));
-
-		for (auto& task : tasks)
-		{
-			task.get();
-		}
-
-		data->stopLiveStream();
-	}
-	
-}
+ * Close open connection if [ctrl + c] is performed
+ */
 
 void signalHandler(int signum)
 {
@@ -240,8 +94,8 @@ void initializeLogger(ConfigReader config)
 		std::filesystem::path ReadBouncerLog (config.log_dir);
 
 		ReadBouncerLog /= "ReadBouncerLog.txt";
-		nanolive_logger = spdlog::rotating_logger_mt("ReadBouncerLog",  ReadBouncerLog.string() , 1048576 * 5, 100);
-		nanolive_logger->set_level(spdlog::level::debug);
+		readbouncer_logger = spdlog::rotating_logger_mt("ReadBouncerLog",  ReadBouncerLog.string() , 1048576 * 5, 100);
+		readbouncer_logger->set_level(spdlog::level::debug);
 	}
 
 	catch (const spdlog::spdlog_ex& e)
@@ -299,129 +153,10 @@ double cputime()
 #endif
 
 
-/**
- * Build or load target/deplete IBF's for classify or target usage
- * @param  config ConfigReader constructor 
- * @param  targetFilter bool to parse target filters/fasta files
- * @param  depleteFilter bool to parse deplete filters/fasta files
- * @return vector of loaded/constructed IBF's 
- */
-
-std::vector<interleave::IBFMeta> getIBF (ConfigReader config, bool targetFilter, bool depleteFilter){
-
-	std::vector<interleave::IBFMeta> DepletionFilters{};
-	std::vector<interleave::IBFMeta> TargetFilters{};
-
-	if(depleteFilter){
-		// parse depletion IBF if given as parameter
-		for (std::filesystem::path deplete_file : config.IBF_Parsed.deplete_files)
-		{
-			interleave::IBFMeta filter{};
-			filter.name = deplete_file.stem().string();
-			interleave::IBF tf{};
-			interleave::IBFConfig DepleteIBFconfig{};
-
-			if (config.filterException(deplete_file)){
-				try
-				{
-					DepleteIBFconfig.input_filter_file = deplete_file.string();
-					interleave::FilterStats stats = tf.load_filter(DepleteIBFconfig);
-					filter.filter = std::move(tf.getFilter());
-					interleave::print_load_stats(stats);
-				}
-				catch (interleave::ParseIBFFileException& e)
-				{
-					nanolive_logger->error("Error parsing depletion IBF using the following parameters");
-					nanolive_logger->error("Depletion IBF file                : " + deplete_file.string());
-					nanolive_logger->error("Error message : " + std::string(e.what()));
-					nanolive_logger->flush();
-					throw;
-				}
-
-				DepletionFilters.emplace_back(std::move(filter));
-			}
-		
-		    else
-			{
-				try
-				{
-					//ibf_build_parser params;
-					std::filesystem::path out = std::filesystem::path(config.output_dir);
-					out /= deplete_file.filename();
-					out.replace_extension("ibf");
-					ibf_build_parser params = { out.string(), deplete_file.string(), false, false, config.IBF_Parsed.size_k, config.IBF_Parsed.threads, config.IBF_Parsed.fragment_size, 0, true };
-					filter.filter = buildIBF(params);
-					}
-
-				catch (std::out_of_range& e)
-				{
-					throw ConfigReaderException(e.what());
-				}
-			DepletionFilters.emplace_back(std::move(filter));
-			}
-		}
-		return DepletionFilters;
-	}
-
-	if(targetFilter)
-	{
-		for (std::filesystem::path target_file : config.IBF_Parsed.target_files)
-		{
-			interleave::IBFMeta filter{};
-			filter.name = target_file.stem().string();
-			interleave::IBF tf{};
-			interleave::IBFConfig TargetIBFconfig{};
-			if (config.filterException(target_file))
-			{
-				try
-				{
-					TargetIBFconfig.input_filter_file = target_file.string();
-					interleave::FilterStats stats = tf.load_filter(TargetIBFconfig);
-					filter.filter = std::move(tf.getFilter());
-					interleave::print_load_stats(stats);
-
-				}
-				catch (interleave::ParseIBFFileException& e)
-				{
-					nanolive_logger->error("Error building IBF for target file using the following parameters");
-					nanolive_logger->error("Depletion IBF file                : " + target_file.string());
-					nanolive_logger->error("Error message : " + std::string(e.what()));
-					nanolive_logger->flush();
-					throw;
-				}
-
-				TargetFilters.emplace_back(std::move(filter));
-			}
-		
-			else
-			{
-				try
-				{
-					//ibf_build_parser params;
-					std::filesystem::path out = std::filesystem::path(config.output_dir);
-					out /= target_file.filename();
-					out.replace_extension("ibf");
-					ibf_build_parser params = { out.string(), target_file.string(), false, false, config.IBF_Parsed.size_k, config.IBF_Parsed.threads, config.IBF_Parsed.fragment_size, 0, true };
-					filter.filter = buildIBF(params);
-				}
-
-				catch (std::out_of_range& e)
-				{
-					throw ConfigReaderException(e.what());
-				}
-
-				TargetFilters.emplace_back(std::move(filter));
-			}
-		}
-
-		return TargetFilters;
-	}
-
-}
 
 /**
  * Run ReadBouncer using the provided parameters in config.toml file
- * @param  config ConfigReader constructor 
+ * @param  config ConfigReader object 
  */
 
 void run_program(ConfigReader config){
@@ -457,9 +192,8 @@ void run_program(ConfigReader config){
 				std::filesystem::path out = std::filesystem::path(config.output_dir);
 				out /= file.filename();
 				out.replace_extension("ibf");
-				
-				ibf_build_parser params = { out.string(), file.string(), false, false, config.IBF_Parsed.size_k, config.IBF_Parsed.threads, config.IBF_Parsed.fragment_size, 0, true };
-				buildIBF(params);
+
+				buildIBF(config, file.string(), out.string());
 				std::cout <<'\n';
 			}
 
@@ -486,8 +220,7 @@ void run_program(ConfigReader config){
 				out /= file.filename();
 				out.replace_extension("ibf");
 
-				ibf_build_parser params = { out.string(), file.string(), false, false, config.IBF_Parsed.size_k, config.IBF_Parsed.threads, config.IBF_Parsed.fragment_size, 0, true };
-				buildIBF(params);
+				buildIBF(config, file.string(), out.string());
 				std::cout <<'\n';
 			}
 			else 
@@ -505,8 +238,9 @@ void run_program(ConfigReader config){
 			
 			config.createLog(config.usage);
 			//std::vector<interleave::IBFMeta> DepletionFilters = getIBF(config, false, true);// avoid copying the IBF's 
-			//std::vector<interleave::IBFMeta> TargetFilters = getIBF(config, true, false);// avoid copying the IBF's 
-			classify_reads(config, getIBF(config, false, true), getIBF(config, true, false));
+			//std::vector<interleave::IBFMeta> TargetFilters = getIBF(config, true, false);// avoid copying the IBF's
+			classify_reads(config, getIBF(config, true, false), getIBF(config, false, true));
+			
 		}
 		catch(std::exception& e)
 		{
@@ -560,15 +294,17 @@ void run_program(ConfigReader config){
 int main(int argc, char const **argv)
 {
 
-	StopClock NanoLiveTime;
-	NanoLiveTime.start();
+	StopClock ReadBouncerTime;
+	ReadBouncerTime.start();
 
 	std::signal(SIGINT, signalHandler);
 
 	std::string binPath = argv[0];
-	NanoLiveRoot = binPath.substr(0, binPath.find("bin"));
+	ReadBouncerRoot = binPath.substr(0, binPath.find("bin"));
 
-	std::string const tomlFile = argv[1];
+	// parse configuration file 
+	std::string const tomlFile = parse_config(argc, argv);
+
 	ConfigReader config{};
 	try
 	{
@@ -585,12 +321,12 @@ int main(int argc, char const **argv)
 	initializeLogger(config);
 	run_program(config);
 
-	NanoLiveTime.stop();
+	ReadBouncerTime.stop();
 
 	size_t peakSize = getPeakRSS();
 	int peakSizeMByte = (int)(peakSize / (1024 * 1024));
 
-	std::cout << "Real time : " << NanoLiveTime.elapsed() << " sec" << std::endl;
+	std::cout << "Real time : " << ReadBouncerTime.elapsed() << " sec" << std::endl;
 	std::cout << "CPU time  : " << cputime() << " sec" << std::endl;
 	std::cout << "Peak RSS  : " << peakSizeMByte << " MByte" << std::endl;
 

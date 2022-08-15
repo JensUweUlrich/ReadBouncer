@@ -34,6 +34,7 @@ namespace readuntil
 			std::string getFlowCellName(FlowCellPosition &dev);
 			uint32_t getRpcPort(FlowCellPosition &dev);
 			std::string getGuppyVersion();
+			std::string getTokenFilePath();
 			uint32_t resolveRpcPort(std::string &deviceName);
 
 	};

@@ -127,9 +127,9 @@ target_include_directories (ReadUntil PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} "${CMAK
 
 
 if(CMAKE_COMPILER_IS_GNUCXX AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0)
-	target_link_libraries(ReadUntil grpc++ ${_PROTOBUF_LIBPROTOBUF} spdlog::spdlog_header_only interfaces stdc++fs)
+	target_link_libraries(ReadUntil grpc++ ${_PROTOBUF_LIBPROTOBUF} config spdlog::spdlog_header_only interfaces stdc++fs)
 else()
-	target_link_libraries (ReadUntil grpc++ ${_PROTOBUF_LIBPROTOBUF} spdlog::spdlog_header_only interfaces)
+	target_link_libraries (ReadUntil grpc++ ${_PROTOBUF_LIBPROTOBUF} config spdlog::spdlog_header_only interfaces)
 endif()
 install(TARGETS ReadUntil DESTINATION lib COMPONENT libraries)
 

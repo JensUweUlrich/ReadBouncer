@@ -31,6 +31,7 @@ using namespace interfaces;
 #ifndef INTERLEAVE_IBFBUILD_HPP_
 #define INTERLEAVE_IBFBUILD_HPP_
 
+
 namespace interleave
 {
 
@@ -101,6 +102,7 @@ namespace interleave
 
     class IBF
     {
+        friend class IBFTest;
 
         private:
             TIbf filter{};
@@ -111,6 +113,7 @@ namespace interleave
             std::vector<std::string> cutOutNNNs(std::string& seq, uint64_t seqlen);
             uint64_t calculate_filter_size_bits(IBFConfig& config, uint64_t numberOfBins);
             std::shared_ptr<spdlog::logger> ibf_logger;
+            
 
         public:
             IBF()
@@ -138,7 +141,19 @@ namespace interleave
             {
                 return filter;
             }
-        
+
+            std::future< void > test_read_task;// for gtest
+            std::string cutOutNNNsTest; // for gtest
+            TIbf filter_{}; // for gtest
+            TIbf getFilter_() {return this->filter_;}
+            struct test_add_seq_to_filter{
+
+                uint16_t threads_build; 
+                int64_t fragIdx;
+                int64_t fragstart;
+                uint64_t fragend;
+            } test_func1;
+    
 
     };
 
@@ -152,8 +167,8 @@ namespace interleave
 
     class Read
     {
+
         private:
-            
             std::vector< ReadMatch > matches;
             uint16_t max_kmer_count = 0;
           
@@ -167,6 +182,7 @@ namespace interleave
                 TIbf& filter, uint16_t threshold);
 
         public:
+
             seqan::Dna5String sequence{};
             std::string id{};
 
@@ -194,6 +210,17 @@ namespace interleave
             bool classify(std::vector< TIbf >& filters, ClassifyConfig& config);
             int classify(std::vector< IBFMeta >& filters, ClassifyConfig& config);
             std::pair<int, int> classify(std::vector< IBFMeta >& filt1, std::vector< IBFMeta >& filt2, ClassifyConfig& config);
+
+            // gtest
+            bool select_matches_test(std::vector< uint16_t >& selectedBins,
+                                std::vector< uint16_t >& selectedBinsRev,
+                                TIbf&                    filter,
+                                uint16_t                 threshold);
+            
+            uint64_t count_matches_test(IBFMeta& filter, ClassifyConfig& config);
+            uint64_t max_matches_test(std::vector< uint16_t >& selectedBins, std::vector< uint16_t >& selectedBinsRev,
+                TIbf& filter, uint16_t threshold);
+            bool find_matches_test(std::vector<interleave::TIbf> &filters, interleave::ClassifyConfig &config);
         
     };
     
@@ -243,6 +270,7 @@ namespace interleave
         // The absolute value of the error should be less than 4.5 e-4.
         double c[] = { 2.515517, 0.802853, 0.010328 };
         double d[] = { 1.432788, 0.189269, 0.001308 };
+
         return t - ((c[2] * t + c[1]) * t + c[0]) /
             (((d[2] * t + d[1]) * t + d[0]) * t + 1.0);
     }
@@ -254,6 +282,7 @@ namespace interleave
     */
     inline double NormalCDFInverse(double p)
     {
+        
         if (p <= 0.0 || p >= 1.0)
         {
             std::stringstream os;
@@ -271,7 +300,9 @@ namespace interleave
         else
         {
             // F^-1(p) = G^-1(1-p)
+            //std::cout << "RationalApproximation(sqrt(-2.0 * log(1.0 - p))) is: " << RationalApproximation(sqrt(-2.0 * log(1.0 - p))) << std::endl;
             return RationalApproximation(sqrt(-2.0 * log(1.0 - p)));
+            
         }
     }
 
@@ -291,7 +322,7 @@ namespace interleave
         // number of kmers in sequence of length readlen
         double L = ((double)readlen - (double)kmer_size + 1.0);
         // expected number of errorneous/mutated kmers in sequence of length readlen
-        double Nmut = L * q;
+        //double Nmut = L * q; //@warning: unused variable
         // compute variance
         double varN = L * (1.0 - q) * (q * (2.0 * (double)kmer_size + (2.0 / r) - 1.0) - 2.0 * (double)kmer_size)
                         + (double)kmer_size * ((double)kmer_size - 1.0) * pow((1.0 - q), 2.0)

@@ -5,11 +5,41 @@
 #ifndef PARSER_HPP_
 #define PARSER_HPP_
 
+/**
+*	Read input configuration file 
+*	@return name of toml configuration file 
+*/
+
+std::string parse_config( int argc, char const **argv){
+
+	std::string tomlFile;
+
+	bool show_help = false; 
+	auto cli = lyra::cli() 
+	| lyra::help(show_help)
+	| lyra::opt( tomlFile, "Toml File" )["--config"].help("Path to toml configuration file");
+	
+    lyra::parse_result result = cli.parse({ argc, argv });
+	
+    if (!result)
+    {
+        std::cerr << "Error in command line! " << std::endl;
+    }
+
+    if (show_help) 
+    {
+        std::cout << cli << "\n";
+    }
+
+	return tomlFile;
+
+}
 //command line parser
 //--------------------------------------------------------------------
 /**
 	class for generating the IBF build parser group
 */
+/*
 struct ibf_build_parser
 {
 	std::string bloom_filter_output_path{ };
@@ -24,7 +54,7 @@ struct ibf_build_parser
 	int filter_size = 0;
 	bool verbose = false;
 };
-
+*/
 	/**
 		parser constructor
 		creates the ibfbuild group and adds it to the lyra cli
@@ -116,6 +146,7 @@ struct ibf_build_parser
 /**
 	class for generating the IBF build parser group
 */
+/*
 struct read_classify_parser
 {
 	std::string ibf_deplete_file{ };
@@ -130,7 +161,7 @@ struct read_classify_parser
 	int preLen = 360;
 	int max_chunks = 1;
 	bool verbose = false;
-};
+};*/
 	/**
 		parser constructor
 		creates the classify group and adds it to the lyra cli
@@ -249,6 +280,7 @@ struct read_classify_parser
 };
 */
 
+/*
 struct live_parser
 {
 	std::string host = "127.0.0.1";
@@ -267,13 +299,14 @@ struct live_parser
 	bool command = false;
 	bool show_help = false;
 	bool verbose = false;
-};
+};*/
 
 /**
 	class for generating the IBF build parser group
 */
+/*
 struct target_parser : live_parser
-{};
+{};*/
 	
 	/**
 		parser constructor
@@ -420,6 +453,8 @@ struct target_parser : live_parser
 /**
 	class for generating the IBF build parser group
 */
+
+/*
 struct connection_test_parser
 {
 	// default host & port to communicate with MinKNOW
@@ -430,7 +465,7 @@ struct connection_test_parser
 	bool show_help = false;
 	bool verbose = false;
 	bool unblock_all = false;
-};
+};*/
 
 	/**
 		parser constructor
@@ -495,7 +530,7 @@ struct connection_test_parser
 			if (verbose)
 			{
 				std::cout << "---------------------------------------------------------------------------------------------------" << std::endl;
-				std::cout << "NanoLIVE to MinKNOW connection test          : " << "verbose=" << (verbose ? "true" : "false") << std::endl;
+				std::cout << "ReadBouncer to MinKNOW connection test          : " << "verbose=" << (verbose ? "true" : "false") << std::endl;
 				std::cout << "Host IP address                              : " << host << std::endl;
 				std::cout << "MinKNOW communication port                   : " << port << std::endl;
 				std::cout << "Device or Flowcell name                      : " << device << std::endl;

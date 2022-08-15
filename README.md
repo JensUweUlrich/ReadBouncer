@@ -85,13 +85,13 @@ The last step creates the <b>ReadBouncer-1.1.0-Linux.sh</b> within the build dir
 ### <a name="general"></a>General usage
 ReadBouncer can simply be called from the command line by providing a TOML configuration file. 
 ```
-full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe full\path\to\ReadBouncer\config.toml 
+full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe --config full\path\to\ReadBouncer\config.toml 
 ```
 All parameters, input and output files and the usage are specified within the configuration file. First, there are three different modes for using ReadBouncer (build, target and classify). The <b>build</b> usage is specified when the goal is to create an Interleaved Bloom Filter index file. The <b>classify</b> usage is specified when only a read classification with based on ReadBouncer's IBF-based classifier shall be tested, and the The <b>target</b> usage is specified when ReadBouncer shall be used in an adaptive sampling experiment. You can also specify an output and a log directory.
 
 ```
 
-usage               = "build", "target", "classify"           #atm only one of those
+usage               = "build", "target", "classify", "test"           #atm only one of those
 output_directory    = 'path/to/write/output/files/to'         #all generated output files will be stored here
 log_directory       = 'path/to/write/log/files/to'            #all generated log files will be stored here
 
@@ -101,9 +101,11 @@ log_directory       = 'path/to/write/log/files/to'            #all generated log
 Before using ReadBouncer for adaptive sampling, you may want to create the reference database(s) for target and/or depletion reference sequences with the usage <b>build</b> using the config.toml file. In this step you have to provide the reference sequence(s) as a comma-separated list of FASTA files (target/depletion files), the fragment size and the size of the kmers used to build the IBF. The resulting Interleaved Bloom Filter files will be stored in the given output directory.
 
 ```
+
 usage               = "build"
 output_directory    = 'path/to/write/output/files/to'         #all generated output files will be stored here
 log_directory       = 'path/to/write/log/files/to'            #all generated log files will be stored here
+
 
 [IBF]
 
@@ -177,6 +179,7 @@ When nanopore reads are not of interest, these reads can be rejected from the po
   host                = "xxx.xxx.xxx"                     #(ip address or name of the computer hosting MinKNOW; default: 127.0.0.1) 
   port                = X                                 #(port number used fo grpc communication by MinKNOW instance; default: 9501)
   flowcell            = "XXX"                             #(name of the flowcell used)
+  token_path          = 'path/to/minknow-auth-token.json' #path to authentication token file (remote file)
   
   [Basecaller]
   
@@ -201,6 +204,10 @@ This is the IP adress and the TCP/IP port on which the MinKNOW software is hoste
 
 <b> [MinKNOW] flowcell</b><br>
 This is the name of the FlowCell for which we want apply adaptive sampling. (Can be found in MinKNOW GUI)
+
+<b> [MinKNOW] token_path</b><br>
+The path to token file for remote connection. Enable guest mode on the sequencer in the minknow user config file, by changing `guest_rpc_enabled` to `enabled`. 
+ReadBouncer find the path automatically for local connection.    
 
 <b> [Basecaller] caller </b><br>
 Basecaller used during adaptive sampling. For CPU base-calling use "DeepNano", use "Guppy" for GPU base-calling otherwise. Please note that you need to start the Guppy basecall server on a host machine with powerful GPUs that can keep up with the sequencing speed. ReadBouncer will connect to the server via its integrated the guppy basecall client. We recommend read Miles Benton's great [github repository](https://github.com/sirselim/jetson_nanopore_sequencing) on setting up adaptive sampling with NVIDIA AGX/NX. We further recommend testing adaptive sampling with a playback run before starting a real experiment.
@@ -238,7 +245,7 @@ read_files    = ['path/to/read/file/SampleZMCDataSet.fasta']
 ```
 In this example, we would try to find all reads that match to <i>B.subtilis</i>, <i>E.faecalis</i> and <i>E.coli</i>, but not to <i>S.cerevisiae</i>. You can easily add the other fasta files as well. Now we can start ReadBouncer from the command line using the config.toml file. For testing purposes, you can download a small set of sequenced Zymo Mock community nanopore reads that were basecalled with DeepNano ([sample read set](https://owncloud.hpi.de/s/HFFYsDhbukXBsu4))
 ```
-full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe  full\path\to\ReadBouncer\config.toml 
+full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe  --config full\path\to\ReadBouncer\config.toml 
 ```
 Finally, you will get some stats printed to the command line, as the one below:
 
@@ -271,11 +278,16 @@ add a field:
 .\config_editor.exe --conf application --filename ..\conf\app_conf --set data_generation.simulated_device=1
 .\config_editor.exe --conf application --filename ..\conf\app_conf --set device.simulator_device_count=1
 ```
-On Linux, open a terminal and change to the MinKNOW binary directory, located in `/opt/ont/minknow/bin`, and call the config editor with the following two commands:
+Linux, open a terminal and change to the MinKNOW binary directory, located in `/opt/ont/minknow/bin`, and call the config editor with the following two commands:
 ```
 sudo ./config_editor --conf application --filename ../conf/app_conf --set data_generation.simulated_device=1
 sudo ./config_editor --conf application --filename ../conf/app_conf --set device.simulator_device_count=1
 ```
+MinKNOW 5.1   
+Only add the the path to the bulk file in sequencing_MIN106_DNA.toml and change the file `/lib/systemd/system/minknow.service` by adding the line:  
+`[Service]`  
+`ExecStart=/opt/ont/minknow/bin/mk_manager_svc --simulated-integrated-devices 1`   
+Common error: `Invalid local-auth token` can be solved by `export MINKNOW_API_USE_LOCAL_TOKEN=1`     
 
 4. In the MinKNOW GUI, right click on a sequencing position and select `Reload Scripts` (In some cases you need to reboot your operating system). Your MinKNOW instance will now show a simulated device named `MS00000` that will playback the bulkfile rather than live sequencing.
 5. Open a Windows Power Shell (or terminal) and go to your working directory where ReadBouncer result files shall be stored. Then provide the necessary parameters in the config.toml file for the test. ReadBouncer will test the conncetion to MinKNOW automatically and tell you when to start the experiment from within MinKNOW. You can download two fasta files that include reference sequences for human [chromosomes 21 & 22](https://owncloud.hpi.de/s/yHX0REdcTqZ784p) as well as the [remaining chromsome reference sequences](https://owncloud.hpi.de/s/MWPHCT0RBOhrrik) from the [Telomere-to-telomere consortium](https://github.com/marbl/CHM13). You should unzip them and use the following example toml file to test an experiment that targets the sequencing of reads that belong to chromosomes 21 & 22. All other reads shall be rejected/unblocked.
@@ -300,6 +312,7 @@ exp_seq_error_rate  = 0.1
 host                = "localhost"
 port                = 9501       
 flowcell            = "MS00000" 
+token_path         = "test/tmp/minknow-auth-token.json"  #path to authentication token file (if not localhost)
 
 [Basecaller]
 
@@ -309,7 +322,7 @@ threads            = 3
 Using command line: 
 
  ```
-full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe  full\path\to\ReadBouncer\config.toml 
+full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe  --config full\path\to\ReadBouncer\config.toml 
 ```
 6. Now ReadBouncer will construct Interleaved Bloom Filters for both reference files. After finishing the construction, IBF files are stored in the output directory for for further use. ReadBouncer will tell you if the connection to the MinKNOW host has been successfully established and that you can start sequencing now.
 7. Start a sequencing run on the simulated device from within the MinKNOW-GUI. Open the read length histogram after 15 minutes and have a look at the read counts plot. When you zoom into the region for reads up to 5kb length, you should see a plot like this:

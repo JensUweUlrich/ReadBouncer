@@ -46,6 +46,16 @@ add_subdirectory(config)
 add_subdirectory(main)
 #add_subdirectory(test)
 
+# Create the gcov target. Run coverage tests with 'make gcov'
+#add_custom_target(gcov
+#    COMMAND mkdir -p coverage
+#    COMMAND ${CMAKE_MAKE_PROGRAM} test
+#    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+#    )
+
+# Testing
+#enable_testing()
+
 # now pack everything into an installer
 
 set(CPACK_SOURCE_GENERATOR "NSIS")
