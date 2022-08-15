@@ -151,7 +151,6 @@ void classify_reads(ConfigReader config, std::vector<interleave::IBFMeta> Deplet
 	bool deplete = false;
 	bool target = false;
 
-
 	if(DepletionFilters.size() >= 1){
 
 		deplete = true;
@@ -317,6 +316,7 @@ void classify_reads(ConfigReader config, std::vector<interleave::IBFMeta> Deplet
 				sstr << "Number of classified reads                         :   " << found;
 				readbouncer_logger->info(sstr.str());
 				sstr.str("");
+
 				sstr << "Number of of too short reads (len < " << config.IBF_Parsed.chunk_length << ")   :   " << too_short;
 				readbouncer_logger->info(sstr.str());
 				sstr.str("");

@@ -34,7 +34,7 @@ ReadBouncer is a nanopore adaptive sampling tool for Windows and Linux (x64 or A
 
 ### <a name="install"></a>Installation
 
-The easiest way is to download the provided installer files for [Windows](https://github.com/JensUweUlrich/ReadBouncer/releases/download/v1.1.0/ReadBouncer-1.1.0-win64.exe), [Linux x86_64](https://github.com/JensUweUlrich/ReadBouncer/releases/download/v1.1.0/ReadBouncer-1.1.0-Linux_x86_64.tar.gz) or [Linux arm64](https://github.com/JensUweUlrich/ReadBouncer/releases/download/v1.1.0/ReadBouncer-1.1.0-Linux_arm64.tar.gz) and simply click through the installation process. 
+The easiest way is to download the provided installer files for [Windows](https://github.com/JensUweUlrich/ReadBouncer/releases/download/v1.1.1/ReadBouncer-1.1.1-win64.exe), [Linux x86_64](https://github.com/JensUweUlrich/ReadBouncer/releases/download/v1.1.1/ReadBouncer-1.1.1-Linux_x64.tar.gz) or [Linux arm64](https://github.com/JensUweUlrich/ReadBouncer/releases/download/v1.1.1/ReadBouncer-1.1.1-Linux_arm64.tar.gz) and simply click through the installation process. 
 
 ### <a name="compile"></a>Compilation From Source
 
@@ -101,9 +101,11 @@ log_directory       = 'path/to/write/log/files/to'            #all generated log
 Before using ReadBouncer for adaptive sampling, you may want to create the reference database(s) for target and/or depletion reference sequences with the usage <b>build</b> using the config.toml file. In this step you have to provide the reference sequence(s) as a comma-separated list of FASTA files (target/depletion files), the fragment size and the size of the kmers used to build the IBF. The resulting Interleaved Bloom Filter files will be stored in the given output directory.
 
 ```
-usage         = "build"
+
+usage               = "build"
 output_directory    = 'path/to/write/output/files/to'         #all generated output files will be stored here
-log_directory = 'path/to/write/log/files/to'            #all generated log files will be stored here
+log_directory       = 'path/to/write/log/files/to'            #all generated log files will be stored here
+
 
 [IBF]
 
