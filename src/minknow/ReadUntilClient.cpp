@@ -58,7 +58,7 @@ namespace readuntil
 		channel_args = grpc::ChannelArguments();
 		channel_args.SetMaxSendMessageSize(16 * 1024 * 1024);
 		channel_args.SetMaxReceiveMessageSize(16 * 1024 * 1024);
-		//channel_args.SetSslTargetNameOverride("localhost");
+		channel_args.SetSslTargetNameOverride("localhost");
 
 		std::stringstream info_str;
 		bool secure_connect = false;
