@@ -23,12 +23,15 @@ std::string parse_config( int argc, char const **argv){
 	
     if (!result)
     {
-        std::cerr << "Error in command line! " << std::endl;
+		std::cerr << result.errorMessage() << std::endl;
+		std::cerr << cli;
+		exit(1);
     }
 
     if (show_help) 
     {
         std::cout << cli << "\n";
+		exit(0);
     }
 
 	return tomlFile;
