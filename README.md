@@ -2,8 +2,7 @@
 
 **ReadBouncer: Precise and Scalable Adaptive Sampling for Nanopore Sequencing**<br>
 Jens-Uwe Ulrich, Ahmad Lutfi, Kilian Rutzen, Bernhard Y. Renard<br>
-bioRxiv 2022.02.01.478636; doi: https://doi.org/10.1101/2022.02.01.478636
-
+Bioinformatics, Volume 38, Issue Supplement_1, July 2022, Pages i153–i160, https://doi.org/10.1093/bioinformatics/btac223
 ## Table of Contents
 
 - [Overview](#started)
@@ -64,7 +63,7 @@ cmake.exe  ..\src
 cmake.exe --build . --config Release
 cmake.exe --build . --config Release --target package
 ```
-The last step creates the <b>ReadBouncer-1.1.0-win64.exe</b> within the build directory, which is a simple installer for Windows that leads you through the installation process.
+The last step creates the <b>ReadBouncer-1.1.1-win64.exe</b> within the build directory, which is a simple installer for Windows that leads you through the installation process.
 
 #### <a name="linuxcompile"></a>Compilation on Linux
 
@@ -79,7 +78,7 @@ cmake  ../src
 cmake --build . --config Release
 cmake --build . --config Release --target package
 ```
-The last step creates the <b>ReadBouncer-1.1.0-Linux.sh</b> within the build directory, which is a simple command line installer for Linux that leads you through the installation process. You can also skip the last `cmake` step and just call `sudo make install`, which installs ReadBouncer in your `/usr/local/` directory. 
+The last step creates the <b>ReadBouncer-1.1.1-Linux.sh</b> within the build directory, which is a simple command line installer for Linux that leads you through the installation process. You can also skip the last `cmake` step and just call `sudo make install`, which installs ReadBouncer in your `/usr/local/` directory. 
 
 
 ### <a name="general"></a>General usage
@@ -120,7 +119,7 @@ deplete_files = ['xxx.fasta', 'xxx.fasta']
 For every fragment we compute all k-mers of this size, calculate hash values for the k-mers and add those to the Interleaved Bloom Filter like described by [Dadi et. al., 2018](https://academic.oup.com/bioinformatics/article/34/17/i766/5093228). For adaptive sampling experiments using DeepNano for basecalling, we expect the sequencing error rates to be larger than 10%. Here, we recommend using a kmer_size of 13 and fragment_size of 100,000, whereas for experiments with Guppy live-basecalling, a kmer_size of 15 and fragment_size of 200,000 may yield best results.
 
 <b> fragment_size</b><br>
-The reference sequence is fragmented in subsequences of this length, where every fragment is stored in a separate bin of the Interleaved Bloom Filter. Fragments overlap by 1,500 nucleotides because ReadBouncer only tries to classify and unbloc a nanopore read until the first 1,500 nucleotides have been sequenced. The fragmentation leads to better classification specificity when using smaller ```kmer_size``` values. 
+The reference sequence is fragmented in subsequences of this length, where every fragment is stored in a separate bin of the Interleaved Bloom Filter. Fragments overlap by 1,500 nucleotides because ReadBouncer only tries to classify and unblock a nanopore read until the first 1,500 nucleotides have been sequenced. The fragmentation leads to better classification specificity when using smaller ```kmer_size``` values. 
 
 #### <a name="classify"></a>Classify Query Reads
 
@@ -177,14 +176,14 @@ When nanopore reads are not of interest, these reads can be rejected from the po
   [MinKNOW]
   
   host                = "xxx.xxx.xxx"                     #(ip address or name of the computer hosting MinKNOW; default: 127.0.0.1) 
-  port                = X                                 #(port number used fo grpc communication by MinKNOW instance; default: 9501)
+  port                = "XXXX"                            #(port number used fo grpc communication by MinKNOW instance; default: 9502)
   flowcell            = "XXX"                             #(name of the flowcell used)
   token_path          = 'path/to/minknow-auth-token.json' #path to authentication token file (remote file)
   
   [Basecaller]
   
   caller              = "DeepNano" or "Guppy"             #(default: DeepNano)
-  host                = "xxx.xxx.xxx"                     #(ip address or name of the computer hosting Guppy Basecall Server; default: 127.0.0.1)
+  host                = "xxx.xxx.xxx"                     #(ip address or name of the computer hosting Guppy Basecall Server, or ipc path, e.g. ipc:///tmp/.guppy; default: 127.0.0.1)
   port                = X                                 #(port number on which the basecall server is running on the host; default: 5555)
   threads             = X                                 #(unsigned integer; default 3) basecall threads; only required for DeepNano base-calling
   
@@ -212,7 +211,7 @@ The path to the token file for the remote connection. ReadBouncer finds the path
 Basecaller used during adaptive sampling. For CPU base-calling use "DeepNano", use "Guppy" for GPU base-calling otherwise. Please note that you need to start the Guppy basecall server on a host machine with powerful GPUs that can keep up with the sequencing speed. ReadBouncer will connect to the server via its integrated the guppy basecall client. We recommend read Miles Benton's great [github repository](https://github.com/sirselim/jetson_nanopore_sequencing) on setting up adaptive sampling with NVIDIA AGX/NX. We further recommend testing adaptive sampling with a playback run before starting a real experiment.
 
 <b> [Basecaller] host </b><br>
-IP address of guppy basecall server. Only required for Guppy live base-calling. Please use Guppy only in Fast mode in order to keep up with the sequencing pace.
+IP address of guppy basecall server or path to IPC channel. Only required for Guppy live base-calling. Please use Guppy only in Fast mode in order to keep up with the sequencing pace. Since version 6, Guppy by default uses IPC as communication channel, then you need to provide the ipc path (e.g. `ipc:///tmp/.guppy`) as host. However this only works if ReadBouncer and Guppy run on the same machine. If both tools run on different machines, you need to start Guppy with options ´--use_tcp´ and ´--allow_non_local´
 
 <b> [Basecaller] port </b><br>
 TCP/IP port of guppy basecall server. Only required for Guppy live base-calling. By default, MinKNOW starts a Guppy basecall server on port 5555. If you start a different instance on another port, you have to provide the port here.
@@ -272,23 +271,12 @@ add a field:
     ```text
     simulation = "/full/path/to/your_bulk.FAST5"
     ```
-3. On Windows, open a Windows Power Shell with administrator privileges and go to the MinKNOW binary directory, located in `C:\Program Files\OxfordNanopore\MinKNOW\bin`, and call the config editor with the following two commands:
-```
-.\config_editor.exe --conf application --filename ..\conf\app_conf --set data_generation.simulated_device=1
-.\config_editor.exe --conf application --filename ..\conf\app_conf --set device.simulator_device_count=1
-```
-Linux, open a terminal and change to the MinKNOW binary directory, located in `/opt/ont/minknow/bin`, and call the config editor with the following two commands:
-```
-sudo ./config_editor --conf application --filename ../conf/app_conf --set data_generation.simulated_device=1
-sudo ./config_editor --conf application --filename ../conf/app_conf --set device.simulator_device_count=1
-```
-MinKNOW 5.1   
-Only add the the path to the bulk file in sequencing_MIN106_DNA.toml and change the file `/lib/systemd/system/minknow.service` by adding the line:  
+3. Since MinKNOW 5.1, we can only create a simulated device by proving the MinKNOW service executable the corresponding parameter. On Linux this can be done by editing the file `/lib/systemd/system/minknow.service` :  
 `[Service]`  
 `ExecStart=/opt/ont/minknow/bin/mk_manager_svc --simulated-integrated-devices 1`   
 Common error: `Invalid local-auth token` can be solved by `export MINKNOW_API_USE_LOCAL_TOKEN=1`     
 
-4. In the MinKNOW GUI, right click on a sequencing position and select `Reload Scripts` (In some cases you need to reboot your operating system). Your MinKNOW instance will now show a simulated device named `MS00000` that will playback the bulkfile rather than live sequencing.
+4. Then you need to reload the daemon via `sudo systemctl daemon-reload` and restart the MinKNOW service via `sudo service minknow restart` (In some cases you need to reboot your operating system). Your MinKNOW instance will now show a simulated device named `MS00000` that will playback the bulkfile rather than live sequencing.
 5. Open a Windows Power Shell (or terminal) and go to your working directory where ReadBouncer result files shall be stored. Then provide the necessary parameters in the config.toml file for the test. ReadBouncer will test the conncetion to MinKNOW automatically and tell you when to start the experiment from within MinKNOW. You can download two fasta files that include reference sequences for human [chromosomes 21 & 22](https://owncloud.hpi.de/s/yHX0REdcTqZ784p) as well as the [remaining chromsome reference sequences](https://owncloud.hpi.de/s/MWPHCT0RBOhrrik) from the [Telomere-to-telomere consortium](https://github.com/marbl/CHM13). You should unzip them and use the following example toml file to test an experiment that targets the sequencing of reads that belong to chromosomes 21 & 22. All other reads shall be rejected/unblocked.
 
 ```
@@ -309,7 +297,7 @@ exp_seq_error_rate  = 0.1
 [MinKNOW]
 
 host                = "localhost"
-port                = 9501       
+port                = "9502"       
 flowcell            = "MS00000" 
 token_path         = "test/tmp/minknow-auth-token.json"  #path to authentication token file (if not localhost)
 
@@ -335,4 +323,3 @@ full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe  --config full\path\
 
 - ReadBouncer is highly dependent on basecallers and their accuracy. Since the base-calling accuracy of ONT's Guppy (in fast mode) is much higher than that of DeepNano-blitz, we highly recommend to use Guppy if GPUs are available. If you are not sure whether your GPU is powerful enough to perform live-basecalling, you can have a look at Miles Benton's great [github repository](https://github.com/sirselim/jetson_nanopore_sequencing), where he summarizes all his experiences with Adaptive Sampling on different GPUs. 
 - At the moment, CPU base-calling with DeepNano-blitz is not supported on ARM64.
-- We did not test ReadBouncer with Guppy6, but we plan to add support for Guppy6 to the next minor release.
