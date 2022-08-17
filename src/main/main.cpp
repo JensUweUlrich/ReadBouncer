@@ -229,7 +229,7 @@ void run_program(ConfigReader config){
 			}
 		}
 
-}
+	}
 	
 	else if (subcommand == "classify") {
 
@@ -255,7 +255,8 @@ void run_program(ConfigReader config){
 		try
 		{
 		    config.createLog(config.usage);
-			adaptive_sampling(config, getIBF(config, false, true), getIBF(config, true, false));
+			// adaptive_sampling(config, DepletionFilters, TargetFilters)
+			adaptive_sampling(config, getIBF(config, true, false), getIBF(config, false, true));
 		}
 		catch(std::exception& e)
 		{
