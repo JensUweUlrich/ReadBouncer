@@ -19,6 +19,7 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+    IBF_mainwindow *ibf_multi_window;
 
 private slots:
     void on_pushButton_clicked();
@@ -27,7 +28,6 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    IBF_mainwindow *ibf_multi_window;
     //IBFMainWindow *ibf_main_window;
 };
 

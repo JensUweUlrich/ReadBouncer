@@ -111,6 +111,7 @@ namespace interleave
                 std::stringstream sstr;
                 sstr << "Error counting kmers of sequence from " <<this->id << " in IBF bins: " << e.what();
                 logger->error(sstr.str());
+                //QMessageBox::critical(NULL, "Error", QString::fromStdString(sstr.str()));
                 throw CountKmerException(sstr.str());
             }
         }
@@ -155,6 +156,7 @@ namespace interleave
             std::stringstream sstr;
             sstr << "Error counting kmers of sequence from " << this->id << " in IBF bins: " << e.what();
             logger->error(sstr.str());
+            //QMessageBox::critical(NULL, "Error", QString::fromStdString(sstr.str()));
             throw CountKmerException(sstr.str());
         }
     }
@@ -174,6 +176,7 @@ namespace interleave
         {
             logger->error("No IBF provided to classify the read!");
             throw NullFilterException("No IBF provided to classify the read!");
+            //QMessageBox::critical(NULL, "Error", "No IBF provided to classify the read!");
         }
         // k-mer sizes should be the same among filters
         uint16_t kmer_size = filters[0].kmerSize;
@@ -187,6 +190,7 @@ namespace interleave
             }
             catch (const CountKmerException& e)
             {
+                //QMessageBox::critical(NULL, "Error", e.what());
                 throw;
             }
             // not needed anymore
@@ -204,6 +208,9 @@ namespace interleave
             std::stringstream sstr;
             sstr << "Read " << this->id << " shorter than kmer size (" << kmer_size << ")";
             logger->error(sstr.str());
+
+            //QMessageBox::critical(NULL, "Error", QString::fromStdString(sstr.str()));
+
             throw ShortReadException("Read " + this->id + " shorter than kmer size");
         }
         return false;
@@ -226,6 +233,7 @@ namespace interleave
         if (filters.empty())
         {
             logger->error("No IBF provided to classify the read!");
+            //QMessageBox::critical(NULL, "Error", "No IBF provided to classify the read!");
             throw NullFilterException("No IBF provided to classify the read!");
         }
         // k-mer sizes should be the same among filters
@@ -258,6 +266,7 @@ namespace interleave
             }
             catch (const CountKmerException& e)
             {
+                //QMessageBox::critical(NULL, "Error", e.what());
                 throw;
             }
             // not needed anymore
@@ -274,7 +283,9 @@ namespace interleave
         {
             std::stringstream sstr;
             sstr << "Read " << this->id << " shorter than kmer size (" << kmer_size << ")";
-            logger->error(sstr.str());
+            logger->error(sstr.str());//
+
+            //QMessageBox::critical(NULL, "Error", QString::fromStdString(sstr.str()));
             throw ShortReadException("Read " + std::string(seqan::toCString(this->id)) + " shorter than kmer size");
         }
         return -1;
@@ -287,6 +298,7 @@ namespace interleave
         {
             logger->error("No IBF provided to classify the read!");
             throw NullFilterException("No IBF provided to classify the read!");
+            //QMessageBox::critical(NULL, "Error", "No IBF provided to classify the read!");
         }
         // k-mer sizes should be the same among filters
 
@@ -342,6 +354,7 @@ namespace interleave
         }
         catch (const CountKmerException& e)
         {
+            //QMessageBox::critical(NULL, "Error", e.what());
             throw;
         }
 

@@ -28,6 +28,8 @@
 
 // Qt exceptions
 #include <QMessageBox>
+#include <QObject>
+#include <ibf_mainwindow.h>
 
 using namespace interfaces;
 
@@ -128,6 +130,7 @@ namespace interleave
                     catch (const spdlog::spdlog_ex& e)
                     {
                         std::cerr << "IBF Log initialization failed: " << e.what() << std::endl;
+                        //QMessageBox::critical(NULL, "IBF Log initialization failed", e.what());
                     }
                     ibf_logger->set_level(spdlog::level::debug);
                     //ibf_logger->flush_on(spdlog::level::debug);
@@ -262,6 +265,7 @@ namespace interleave
             std::stringstream os;
             os << "Invalid input argument (" << p
                 << "); must be larger than 0 but less than 1.";
+            //QMessageBox::critical(NULL, "Invalid input argument", "Probability must be larger than 0 but less than 1.");
             throw std::invalid_argument(os.str());
         }
 

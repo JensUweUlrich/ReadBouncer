@@ -353,13 +353,13 @@ std::vector<interleave::IBFMeta> getIBF (ConfigReader config, bool targetFilter,
 		    else
 			{
 				try
-				{
+                {
 					//ibf_build_parser params;
 					std::filesystem::path out = std::filesystem::path(config.output_dir);
 					out /= deplete_file.filename();
 					out.replace_extension("ibf");
 					ibf_build_parser params = { out.string(), deplete_file.string(), false, false, config.IBF_Parsed.size_k, config.IBF_Parsed.threads, config.IBF_Parsed.fragment_size, 0, true };
-					filter.filter = buildIBF(params);
+                    filter.filter = buildIBF(params);
 					}
 
 				catch (std::out_of_range& e)
@@ -411,7 +411,7 @@ std::vector<interleave::IBFMeta> getIBF (ConfigReader config, bool targetFilter,
 					out /= target_file.filename();
 					out.replace_extension("ibf");
 					ibf_build_parser params = { out.string(), target_file.string(), false, false, config.IBF_Parsed.size_k, config.IBF_Parsed.threads, config.IBF_Parsed.fragment_size, 0, true };
-					filter.filter = buildIBF(params);
+                    filter.filter = buildIBF(params);
 				}
 
 				catch (std::out_of_range& e)
@@ -468,7 +468,7 @@ void run_program(ConfigReader config){
 				out.replace_extension("ibf");
 				
 				ibf_build_parser params = { out.string(), file.string(), false, false, config.IBF_Parsed.size_k, config.IBF_Parsed.threads, config.IBF_Parsed.fragment_size, 0, true };
-				buildIBF(params);
+                buildIBF(params);
 				std::cout <<'\n';
 			}
 
@@ -496,7 +496,7 @@ void run_program(ConfigReader config){
 				out.replace_extension("ibf");
 
 				ibf_build_parser params = { out.string(), file.string(), false, false, config.IBF_Parsed.size_k, config.IBF_Parsed.threads, config.IBF_Parsed.fragment_size, 0, true };
-				buildIBF(params);
+                buildIBF(params);
 				std::cout <<'\n';
 			}
 			else 
@@ -573,6 +573,7 @@ void IBF_mainwindow::on_pushButton_clicked()
 {
     slot_control_std();
     StopClock NanoLiveTime;
+
     if (IBF_mainwindow::k < 10){
 
         std::string warning_kmer = "The selcted k-mer size is smaller than 10, we will use the default value 13";

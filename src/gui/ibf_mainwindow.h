@@ -12,6 +12,7 @@
 #include <QDebugStream.h>
 #include <iostream>
 
+
 namespace Ui {
 class IBF_mainwindow;
 }
@@ -23,6 +24,8 @@ class IBF_mainwindow : public QDialog
 public:
     explicit IBF_mainwindow(QWidget *parent = nullptr);
     ~IBF_mainwindow();
+    Ui::IBF_mainwindow *ui;
+
 
 private slots:
     void on_pushButton_clicked();
@@ -47,8 +50,8 @@ private slots:
 
     void clean_results();
 
+
 private:
-    Ui::IBF_mainwindow *ui;
 
     //IBF params
     std::string output_path, reference_file {};

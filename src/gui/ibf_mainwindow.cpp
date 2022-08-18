@@ -87,11 +87,18 @@ void IBF_mainwindow::on_spinBox_6_valueChanged(int arg1)
 
 
 void IBF_mainwindow::slot_control_std(){
-    QDebugStream* test_1 = new QDebugStream(std::cerr, ui->output_window);
-    QDebugStream* test = new QDebugStream(std::cout, ui->output_window);
+    QDebugStream* out_cerr = new QDebugStream(std::cerr, ui->output_window);
+    QDebugStream* out_cout = new QDebugStream(std::cout, ui->output_window);
 
 }
 
 void IBF_mainwindow::clean_results(){
     ui->output_window->QTextEdit::clear();
 }
+
+/*
+void IBF_mainwindow::exception_catching(QString error){
+
+    QMessageBox::warning(this , tr("Warning"), error);
+}
+*/

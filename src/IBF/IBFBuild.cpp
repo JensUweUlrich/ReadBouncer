@@ -1,10 +1,22 @@
 
 #include "IBF.hpp"
+#include <QApplication>
+#include <QDebug>
+#include <QGuiApplication>
+//#include <QMessageBox>
+//#include "ibf_mainwindow.h"
+//#include "mainwindow.h"
 
 namespace interleave
 {
     std::filesystem::path IbfClassificationLog{};
     std::filesystem::path InterleavedBloomFilterLog{};
+
+
+    void warning(QString msg){
+
+        QMessageBox::warning(0, "Error", msg);
+    }
 
     /**
         read reference sequences from files and store them in reference sequence queue
@@ -15,6 +27,7 @@ namespace interleave
     */
     std::future< void > IBF::parse_ref_seqs(SafeQueue< Seqs > &queue_refs, interleave::IBFConfig &config, FilterStats &stats)
     {
+        std::shared_ptr<spdlog::logger> logger = spdlog::get("IbfLog");
         
         this->ibf_logger->info("Starting to parse reference sequence files");
         this->ibf_logger->flush();
@@ -22,24 +35,51 @@ namespace interleave
         {
             this->ibf_logger->error("No refernce file specified!");
             this->ibf_logger->flush();
-            throw MissingReferenceFilesException("There were no reference files specified!");
+            QMessageBox::critical(NULL, "Error", "There were no reference files specified!");
+            //throw MissingReferenceFilesException("There were no reference files specified!");
         }
 
+
+        for ( std::string const& reference_file : config.reference_files )
+        {
+            logger->info("Start parsing sequences from " + reference_file);
+            logger->flush();
+            seqan::SeqFileIn seqFileIn;
+            // open input file in first iteration
+            if ( !seqan::open( seqFileIn, seqan::toCString( reference_file ) ) )
+            {
+
+                logger->error("Could not open " + reference_file + ": Check existence or permissions!");
+                logger->flush();
+
+                std::string msg =  "Could not open " + reference_file + ": Check existence or permissions!";
+                QMessageBox msgBox;
+                msgBox.setIcon(QMessageBox::Critical);
+                msgBox.setWindowTitle("Error opening file");
+                msgBox.setInformativeText(QString::fromStdString(msg));
+                msgBox.setStandardButtons(QMessageBox::Retry | QMessageBox::Cancel);
+                int ret = msgBox.exec();
+                //throw FileParserException("Unable to open the file: " + reference_file );
+
+                switch (ret) {
+                  case QMessageBox::Retry:
+                    continue;
+                  case QMessageBox::Cancel:
+                    QApplication::quit();
+                    exit(0);
+                  default:
+                    break;
+                }
+
+            }
+        }
+
+
         std::future< void > read_task( std::async( std::launch::async, [=, &queue_refs, &stats] {
-            // iterate over all reference sequence input files stated in config file
-            std::shared_ptr<spdlog::logger> logger = spdlog::get("IbfLog");
             for ( std::string const& reference_file : config.reference_files )
             {
-                logger->info("Start parsing sequences from " + reference_file);
-                logger->flush();
                 seqan::SeqFileIn seqFileIn;
-                // open input file in first iteration
-                if ( !seqan::open( seqFileIn, seqan::toCString( reference_file ) ) )
-                {
-                    logger->error("Could not open " + reference_file + ": Check existence or permissions!");
-                    logger->flush();
-                    throw FileParserException("Unable to open the file: " + reference_file );
-                }
+
                 // read current input file
                 while ( !seqan::atEnd( seqFileIn ) )
                 {
@@ -55,10 +95,10 @@ namespace interleave
                     {
                         logger->error("Problems parsing the file : " + reference_file + "[" + e.what() + "]");
                         logger->flush();
+                        QString error_message = QString::fromStdString(reference_file);
+                        error_message.push_front("Error parsing the file: ");
                         throw FileParserException( "ERROR: Problems parsing the file: " + reference_file + "[" + e.what() + "]");
                     }
-
-                    //assert(seqan::length( ids ) == seqan::length( seq ) )
 
                     // iterate over all sequences loaded into the sequence bin
                     logger->info("Fragment reference sequences based on NNNs");
@@ -195,6 +235,8 @@ namespace interleave
                                 sstr << "Sequence Length=" << seqan::length(val.seq) << " , Fragment start=" << fragstart << " , Fragment end=" << fragend;
                                 logger->error(sstr.str());
                                 logger->flush();
+                                //QMessageBox::critical(NULL, "Error inserting the sequence to the IBF: ", QString::fromStdString(val.seqid));
+
                                 throw InsertSequenceException("Error inserting the sequence of " + val.seqid + " to the IBF!");
                             }
                             fragIdx++;
@@ -224,6 +266,7 @@ namespace interleave
         {
             ibf_logger->error("Given IBFConfig is not valid");
             logIBFConfig(config);
+            //QMessageBox::critical(NULL, "Error", "Config not valid!");
             throw InvalidConfigException("Config not valid!");
         }
 
@@ -237,7 +280,8 @@ namespace interleave
         }
         catch (const FileParserException &e)
         {
-            throw;
+            QMessageBox::critical(NULL, "Error loading the filter from file! ", e.what());
+            //;
         }
 
         // config.n_batches*config.n_refs = max. amount of references in memory
@@ -252,6 +296,7 @@ namespace interleave
         }
         catch(const FileParserException &e)
         {
+            //QMessageBox::critical(NULL, "Error starting extra thread for reading the input ", e.what());
             throw;
         }    
 
@@ -287,6 +332,7 @@ namespace interleave
         }
         catch(const IBFBuildException &e)
         {
+            //QMessageBox::critical(NULL, "Error", e.what());
             throw;
         }
         stats.timeBuild.stop();
@@ -308,6 +354,10 @@ namespace interleave
             sstr << "Could not store updated IBF in " << config.update_filter_file << ":" << e.what();
             this->ibf_logger->error(sstr.str());
             this->ibf_logger->flush();
+
+            QString error_message = QString::fromStdString(config.update_filter_file);
+            error_message.push_front("Could not store IBF to ");
+            //QMessageBox::critical(NULL, "Error", error_message);
             throw StoreFilterException("Could not store IBF to " + config.update_filter_file + ":" + e.what());
         }
         stats.timeSaveFilter.stop();
@@ -344,6 +394,9 @@ namespace interleave
                 sstr << "Error parsing IBF update file " << config.update_filter_file << ": " << e.what();
                 this->ibf_logger->error(sstr.str());
                 this->ibf_logger->flush();
+                QString error_message = QString::fromStdString(config.update_filter_file);
+                error_message.push_front("Error parsing IBF update file ");
+                //QMessageBox::critical(NULL, "Error", error_message);
                 throw ParseIBFFileException("Error parsing IBF update file " + config.update_filter_file + ": " + e.what());
             }
             
@@ -361,6 +414,11 @@ namespace interleave
                 sstr << "Error parsing IBF input file " << config.input_filter_file << ": " << e.what();
                 this->ibf_logger->error(sstr.str());
                 this->ibf_logger->flush();
+
+                QString error_message = QString::fromStdString(config.input_filter_file);
+                error_message.push_front("Error parsing IBF input file ");
+                //QMessageBox::critical(NULL, "Error", error_message);
+
                 throw ParseIBFFileException("Error parsing IBF input file " + config.input_filter_file + ": " + e.what());
             }
         }
@@ -368,6 +426,8 @@ namespace interleave
         {
             this->ibf_logger->error("Error: Either update_filter_file or input_filter_file have to be specified.");
             this->ibf_logger->flush();
+
+            //QMessageBox::critical(NULL, "Error", "Either update_filter_file or input_filter_file have to be specified!");
             throw MissingIBFFileException("Error: Either update_filter_file or input_filter_file have to be specified.");
         }
 
@@ -423,6 +483,7 @@ namespace interleave
             this->ibf_logger->error("Given IBFConfig is not valid");
             logIBFConfig(config);
             throw InvalidConfigException("Config not valid!");
+            //QMessageBox::critical(NULL, "Error", "Config not valid!");
         }
         FilterStats stats;
         
@@ -441,6 +502,8 @@ namespace interleave
         }
         catch(const FileParserException &e)
         {
+            //QMessageBox::critical(NULL, "Error", e.what());
+
             throw;
         }
 
@@ -469,6 +532,9 @@ namespace interleave
             sstr << "Kmer size : " << config.kmer_size << ", IBF size in bits : " << config.filter_size_bits;
             this->ibf_logger->error(sstr.str());
             this->ibf_logger->flush();
+
+            //QMessageBox::critical(NULL, "Error", "Could not instantiate IBF Filter");
+
             throw NullFilterException("Could not instantiate IBF Filter");
         }
         // Start execution threads to add kmers
@@ -484,6 +550,7 @@ namespace interleave
         }
         catch(const IBFBuildException &e)
         {
+            //QMessageBox::critical(NULL, "Error", e.what());
             throw;
         }
         stats.timeBuild.stop();
@@ -502,6 +569,9 @@ namespace interleave
             sstr << "Could not store IBF to " << config.output_filter_file << ":" << e.what();
             this->ibf_logger->error(sstr.str());
             this->ibf_logger->flush();
+            QString error_message = QString::fromStdString(config.output_filter_file);
+            error_message.push_front("Could not store IBF to ");
+            //QMessageBox::critical(NULL, "Error", error_message);
             throw StoreFilterException("Could not store IBF to " + config.output_filter_file + ":" + e.what());
         }
         stats.timeSaveFilter.stop();

@@ -5,6 +5,9 @@
  *      Author: jens-uwe.ulrich
  */
 
+#include <QMessageBox>
+#include <QTimer>
+#include "ibf_mainwindow.h"
 /**
 * initialize config forand build IBF
 * @parser	: input from the command line for "build" command
@@ -24,15 +27,15 @@ interleave::TIbf buildIBF(ibf_build_parser & parser)
 	config.verbose = parser.verbose;
 
 	interleave::IBF filter{};
-	//interleave::TIbf filter_out;
-	try
+    //interleave::TIbf filter_out;
+    try
+    {
+        interleave::FilterStats stats = filter.create_filter(config);
+        interleave::print_build_stats(stats);
+    }
+    catch (const interleave::IBFBuildException& e)
 	{
-		interleave::FilterStats stats = filter.create_filter(config);
-		interleave::print_build_stats(stats);
-	}
-	catch (const interleave::IBFBuildException& e)
-	{
-		nanolive_logger->error("Error building IBF using the following parameters");
+        nanolive_logger->error("Error building IBF using the following parameters");
 		nanolive_logger->error("Input reference file                : " + parser.reference_file);
 		nanolive_logger->error("Output IBF file                     : " + parser.bloom_filter_output_path);
 		nanolive_logger->error("Kmer size                           : " + parser.size_k);
@@ -41,9 +44,10 @@ interleave::TIbf buildIBF(ibf_build_parser & parser)
 		nanolive_logger->error("Building threads                    : " + parser.threads);
 		nanolive_logger->error("Error message : " + std::string(e.what()));
 		nanolive_logger->error("---------------------------------------------------------------------------------------------------");
-		nanolive_logger->flush();
-		throw;
-	}
+        nanolive_logger->flush();
+
+        throw;
+    }
 
 	return filter.getFilter();
 
