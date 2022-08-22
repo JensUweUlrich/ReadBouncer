@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="/picsGUI/">
+     <file>logo.png</file>
+     <file>RB_QR.svg</file> 
+  </qresource>
+<RCC>

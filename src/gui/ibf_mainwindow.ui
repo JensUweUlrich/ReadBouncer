@@ -52,7 +52,7 @@ background-color: rgba(93, 152, 165, 214);</string>
     <rect>
      <x>10</x>
      <y>0</y>
-     <width>511</width>
+     <width>561</width>
      <height>501</height>
     </rect>
    </property>
@@ -63,117 +63,10 @@ background-color: rgba(93, 152, 165, 214);</string>
     <property name="spacing">
      <number>5</number>
     </property>
-    <item row="7" column="1">
-     <widget class="QLabel" name="label_4">
-      <property name="styleSheet">
-       <string notr="true">border-color: rgb(0, 0, 0);
-color: rgb(255, 255, 255);</string>
-      </property>
-      <property name="text">
-       <string>K-mer Size</string>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="5">
-     <layout class="QFormLayout" name="formLayout"/>
-    </item>
-    <item row="10" column="1">
-     <widget class="QLabel" name="label_2">
-      <property name="styleSheet">
-       <string notr="true">border-color: rgb(0, 0, 0);
-color: rgb(255, 255, 255);</string>
-      </property>
-      <property name="text">
-       <string>Fragment Size</string>
-      </property>
-     </widget>
+    <item row="17" column="8">
+     <layout class="QHBoxLayout" name="horizontalLayout_2"/>
     </item>
     <item row="7" column="6">
-     <widget class="QSpinBox" name="spinBox_3">
-      <property name="styleSheet">
-       <string notr="true">border-color: rgb(0, 0, 0);
-color: rgb(255, 255, 255);</string>
-      </property>
-      <property name="maximum">
-       <number>31</number>
-      </property>
-     </widget>
-    </item>
-    <item row="6" column="9">
-     <spacer name="verticalSpacer_4">
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>20</width>
-        <height>40</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item row="2" column="11">
-     <spacer name="horizontalSpacer_2">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>40</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item row="9" column="9">
-     <spacer name="verticalSpacer_9">
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>20</width>
-        <height>40</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item row="9" column="6">
-     <widget class="QSpinBox" name="spinBox_5">
-      <property name="styleSheet">
-       <string notr="true">border-color: rgb(0, 0, 0);
-color: rgb(255, 255, 255);</string>
-      </property>
-      <property name="maximum">
-       <number>1000000000</number>
-      </property>
-     </widget>
-    </item>
-    <item row="10" column="6">
-     <widget class="QSpinBox" name="spinBox_6">
-      <property name="styleSheet">
-       <string notr="true">border-color: rgb(0, 0, 0);
-color: rgb(255, 255, 255);</string>
-      </property>
-      <property name="maximum">
-       <number>1000000000</number>
-      </property>
-     </widget>
-    </item>
-    <item row="11" column="9">
-     <spacer name="verticalSpacer_7">
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>20</width>
-        <height>40</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item row="8" column="6">
      <widget class="QSpinBox" name="spinBox_4">
       <property name="styleSheet">
        <string notr="true">border-color: rgb(0, 0, 0);
@@ -181,58 +74,10 @@ color: rgb(255, 255, 255);</string>
       </property>
      </widget>
     </item>
-    <item row="0" column="10">
-     <layout class="QGridLayout" name="gridLayout_2"/>
+    <item row="18" column="8">
+     <layout class="QVBoxLayout" name="verticalLayout_4"/>
     </item>
-    <item row="14" column="6">
-     <spacer name="horizontalSpacer_5">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>40</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item row="14" column="10">
-     <spacer name="verticalSpacer_11">
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>20</width>
-        <height>40</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item row="6" column="6">
-     <widget class="QPushButton" name="pushButton_5">
-      <property name="styleSheet">
-       <string notr="true">border-color: rgb(0, 0, 0);
-color: rgb(255, 255, 255);</string>
-      </property>
-      <property name="text">
-       <string>Open </string>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="6">
-     <widget class="QPushButton" name="pushButton_4">
-      <property name="styleSheet">
-       <string notr="true">border-color: rgb(0, 0, 0);
-color: rgb(255, 255, 255);</string>
-      </property>
-      <property name="text">
-       <string>Open </string>
-      </property>
-     </widget>
-    </item>
-    <item row="8" column="9">
+    <item row="7" column="9">
      <spacer name="verticalSpacer_8">
       <property name="orientation">
        <enum>Qt::Vertical</enum>
@@ -245,55 +90,19 @@ color: rgb(255, 255, 255);</string>
       </property>
      </spacer>
     </item>
-    <item row="14" column="5">
-     <layout class="QVBoxLayout" name="verticalLayout_2"/>
-    </item>
-    <item row="14" column="0">
-     <layout class="QHBoxLayout" name="horizontalLayout"/>
-    </item>
-    <item row="9" column="1">
-     <widget class="QLabel" name="label">
+    <item row="16" column="1">
+     <widget class="QPushButton" name="pushButton">
       <property name="styleSheet">
        <string notr="true">border-color: rgb(0, 0, 0);
 color: rgb(255, 255, 255);</string>
       </property>
       <property name="text">
-       <string>Filter Size </string>
+       <string>Build</string>
       </property>
      </widget>
-    </item>
-    <item row="6" column="1">
-     <widget class="QLabel" name="label_6">
-      <property name="styleSheet">
-       <string notr="true">border-color: rgb(0, 0, 0);
-color: rgb(255, 255, 255);</string>
-      </property>
-      <property name="text">
-       <string>Input Reference Sequence</string>
-      </property>
-     </widget>
-    </item>
-    <item row="14" column="2">
-     <layout class="QVBoxLayout" name="verticalLayout"/>
-    </item>
-    <item row="16" column="7" rowspan="2">
-     <layout class="QFormLayout" name="formLayout_2"/>
-    </item>
-    <item row="14" column="1">
-     <spacer name="horizontalSpacer_3">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>40</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
     </item>
     <item row="5" column="9">
-     <spacer name="verticalSpacer_3">
+     <spacer name="verticalSpacer_4">
       <property name="orientation">
        <enum>Qt::Vertical</enum>
       </property>
@@ -305,7 +114,115 @@ color: rgb(255, 255, 255);</string>
       </property>
      </spacer>
     </item>
-    <item row="10" column="9">
+    <item row="1" column="8">
+     <spacer name="horizontalSpacer">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>40</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="13" column="10">
+     <spacer name="verticalSpacer_11">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="8" column="6">
+     <widget class="QSpinBox" name="spinBox_5">
+      <property name="styleSheet">
+       <string notr="true">border-color: rgb(0, 0, 0);
+color: rgb(255, 255, 255);</string>
+      </property>
+      <property name="maximum">
+       <number>1000000000</number>
+      </property>
+     </widget>
+    </item>
+    <item row="9" column="6">
+     <widget class="QSpinBox" name="spinBox_6">
+      <property name="styleSheet">
+       <string notr="true">border-color: rgb(0, 0, 0);
+color: rgb(255, 255, 255);</string>
+      </property>
+      <property name="maximum">
+       <number>1000000000</number>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="1">
+     <widget class="QLabel" name="label">
+      <property name="styleSheet">
+       <string notr="true">border-color: rgb(0, 0, 0);
+color: rgb(255, 255, 255);</string>
+      </property>
+      <property name="text">
+       <string>Filter Size </string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="1">
+     <widget class="QLabel" name="label_3">
+      <property name="styleSheet">
+       <string notr="true">border-color: rgb(0, 0, 0);
+color: rgb(255, 255, 255);</string>
+      </property>
+      <property name="text">
+       <string>Number of Threads</string>
+      </property>
+     </widget>
+    </item>
+    <item row="17" column="7" rowspan="2">
+     <layout class="QFormLayout" name="formLayout_2"/>
+    </item>
+    <item row="13" column="6">
+     <spacer name="horizontalSpacer_5">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>40</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="4" column="6">
+     <widget class="QPushButton" name="pushButton_4">
+      <property name="styleSheet">
+       <string notr="true">border-color: rgb(0, 0, 0);
+color: rgb(255, 255, 255);</string>
+      </property>
+      <property name="text">
+       <string>Open </string>
+      </property>
+     </widget>
+    </item>
+    <item row="9" column="1">
+     <widget class="QLabel" name="label_2">
+      <property name="styleSheet">
+       <string notr="true">border-color: rgb(0, 0, 0);
+color: rgb(255, 255, 255);</string>
+      </property>
+      <property name="text">
+       <string>Fragment Size</string>
+      </property>
+     </widget>
+    </item>
+    <item row="9" column="9">
      <spacer name="verticalSpacer_10">
       <property name="orientation">
        <enum>Qt::Vertical</enum>
@@ -318,10 +235,89 @@ color: rgb(255, 255, 255);</string>
       </property>
      </spacer>
     </item>
-    <item row="16" column="8">
-     <layout class="QHBoxLayout" name="horizontalLayout_2"/>
+    <item row="6" column="1">
+     <widget class="QLabel" name="label_4">
+      <property name="styleSheet">
+       <string notr="true">border-color: rgb(0, 0, 0);
+color: rgb(255, 255, 255);</string>
+      </property>
+      <property name="text">
+       <string>K-mer Size</string>
+      </property>
+     </widget>
     </item>
-    <item row="14" column="8">
+    <item row="4" column="9">
+     <spacer name="verticalSpacer_3">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="5" column="6">
+     <widget class="QPushButton" name="pushButton_5">
+      <property name="styleSheet">
+       <string notr="true">border-color: rgb(0, 0, 0);
+color: rgb(255, 255, 255);</string>
+      </property>
+      <property name="text">
+       <string>Open </string>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="6">
+     <widget class="QSpinBox" name="spinBox_3">
+      <property name="styleSheet">
+       <string notr="true">border-color: rgb(0, 0, 0);
+color: rgb(255, 255, 255);</string>
+      </property>
+      <property name="maximum">
+       <number>31</number>
+      </property>
+     </widget>
+    </item>
+    <item row="13" column="2">
+     <layout class="QVBoxLayout" name="verticalLayout"/>
+    </item>
+    <item row="13" column="0">
+     <layout class="QHBoxLayout" name="horizontalLayout"/>
+    </item>
+    <item row="0" column="10">
+     <layout class="QGridLayout" name="gridLayout_2"/>
+    </item>
+    <item row="5" column="1">
+     <widget class="QLabel" name="label_6">
+      <property name="styleSheet">
+       <string notr="true">border-color: rgb(0, 0, 0);
+color: rgb(255, 255, 255);</string>
+      </property>
+      <property name="text">
+       <string>Input Reference Sequence</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="5">
+     <layout class="QFormLayout" name="formLayout"/>
+    </item>
+    <item row="10" column="9">
+     <spacer name="verticalSpacer_7">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="13" column="8">
      <spacer name="verticalSpacer_6">
       <property name="orientation">
        <enum>Qt::Vertical</enum>
@@ -334,32 +330,47 @@ color: rgb(255, 255, 255);</string>
       </property>
      </spacer>
     </item>
-    <item row="17" column="8">
-     <layout class="QVBoxLayout" name="verticalLayout_4"/>
+    <item row="13" column="1">
+     <spacer name="horizontalSpacer_3">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>40</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
     </item>
-    <item row="5" column="1">
-     <widget class="QLabel" name="label_7">
+    <item row="8" column="9">
+     <spacer name="verticalSpacer_9">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="13" column="5">
+     <layout class="QVBoxLayout" name="verticalLayout_2"/>
+    </item>
+    <item row="16" column="6" colspan="2">
+     <widget class="QPushButton" name="pushButton_6">
       <property name="styleSheet">
        <string notr="true">border-color: rgb(0, 0, 0);
 color: rgb(255, 255, 255);</string>
       </property>
       <property name="text">
-       <string>Output Path</string>
+       <string>Clear Results</string>
       </property>
      </widget>
     </item>
-    <item row="8" column="1">
-     <widget class="QLabel" name="label_3">
-      <property name="styleSheet">
-       <string notr="true">border-color: rgb(0, 0, 0);
-color: rgb(255, 255, 255);</string>
-      </property>
-      <property name="text">
-       <string>Number of Threads</string>
-      </property>
-     </widget>
-    </item>
-    <item row="7" column="9">
+    <item row="6" column="9">
      <spacer name="verticalSpacer_5">
       <property name="orientation">
        <enum>Qt::Vertical</enum>
@@ -372,36 +383,14 @@ color: rgb(255, 255, 255);</string>
       </property>
      </spacer>
     </item>
-    <item row="15" column="1">
-     <widget class="QPushButton" name="pushButton_3">
+    <item row="4" column="1">
+     <widget class="QLabel" name="label_7">
       <property name="styleSheet">
        <string notr="true">border-color: rgb(0, 0, 0);
 color: rgb(255, 255, 255);</string>
       </property>
       <property name="text">
-       <string>Cancel</string>
-      </property>
-     </widget>
-    </item>
-    <item row="15" column="6">
-     <widget class="QPushButton" name="pushButton_2">
-      <property name="styleSheet">
-       <string notr="true">border-color: rgb(0, 0, 0);
-color: rgb(255, 255, 255);</string>
-      </property>
-      <property name="text">
-       <string>Back</string>
-      </property>
-     </widget>
-    </item>
-    <item row="15" column="11">
-     <widget class="QPushButton" name="pushButton">
-      <property name="styleSheet">
-       <string notr="true">border-color: rgb(0, 0, 0);
-color: rgb(255, 255, 255);</string>
-      </property>
-      <property name="text">
-       <string>Build</string>
+       <string>Output Path</string>
       </property>
      </widget>
     </item>
@@ -415,6 +404,40 @@ color: rgb(255, 255, 255);</string>
      <width>361</width>
      <height>451</height>
     </rect>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pushButton_3">
+   <property name="geometry">
+    <rect>
+     <x>750</x>
+     <y>470</y>
+     <width>140</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border-color: rgb(0, 0, 0);
+color: rgb(255, 255, 255);</string>
+   </property>
+   <property name="text">
+    <string>Quit</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pushButton_2">
+   <property name="geometry">
+    <rect>
+     <x>580</x>
+     <y>470</y>
+     <width>140</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border-color: rgb(0, 0, 0);
+color: rgb(255, 255, 255);</string>
+   </property>
+   <property name="text">
+    <string>Back</string>
    </property>
   </widget>
  </widget>

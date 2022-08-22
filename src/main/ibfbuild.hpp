@@ -15,7 +15,7 @@
 */
 interleave::TIbf buildIBF(ibf_build_parser & parser)
 {
-	std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("ReadBouncerLog");
+    std::shared_ptr<spdlog::logger> readbouncer_logger = spdlog::get("ReadBouncerLog");
 	interleave::IBFConfig config{};
 
 	config.reference_files.emplace_back(parser.reference_file);
@@ -35,16 +35,16 @@ interleave::TIbf buildIBF(ibf_build_parser & parser)
     }
     catch (const interleave::IBFBuildException& e)
 	{
-        nanolive_logger->error("Error building IBF using the following parameters");
-		nanolive_logger->error("Input reference file                : " + parser.reference_file);
-		nanolive_logger->error("Output IBF file                     : " + parser.bloom_filter_output_path);
-		nanolive_logger->error("Kmer size                           : " + parser.size_k);
-		nanolive_logger->error("Size of reference fragments per bin : " + parser.fragment_size);
-		nanolive_logger->error("IBF file size in MegaBytes          : " + parser.filter_size);
-		nanolive_logger->error("Building threads                    : " + parser.threads);
-		nanolive_logger->error("Error message : " + std::string(e.what()));
-		nanolive_logger->error("---------------------------------------------------------------------------------------------------");
-        nanolive_logger->flush();
+        readbouncer_logger->error("Error building IBF using the following parameters");
+        readbouncer_logger->error("Input reference file                : " + parser.reference_file);
+        readbouncer_logger->error("Output IBF file                     : " + parser.bloom_filter_output_path);
+        readbouncer_logger->error("Kmer size                           : " + parser.size_k);
+        readbouncer_logger->error("Size of reference fragments per bin : " + parser.fragment_size);
+        readbouncer_logger->error("IBF file size in MegaBytes          : " + parser.filter_size);
+        readbouncer_logger->error("Building threads                    : " + parser.threads);
+        readbouncer_logger->error("Error message : " + std::string(e.what()));
+        readbouncer_logger->error("---------------------------------------------------------------------------------------------------");
+        readbouncer_logger->flush();
 
         throw;
     }

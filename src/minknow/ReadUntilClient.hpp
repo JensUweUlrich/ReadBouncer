@@ -37,7 +37,7 @@ namespace readuntil
 
 			std::shared_ptr<::grpc::Channel> channel;
 			std::string mk_host{ "127.0.0.1" };
-			std::filesystem::path NanoLiveRoot{};
+            std::filesystem::path ReadBouncerRoot{};
 			std::string mk_port{"9501"};
 			bool connected{false};
 			//std::shared_ptr<spdlog::sinks::daily_file_sink_mt> daily_sink = std::make_shared<spdlog::sinks::daily_file_sink_mt>("RUClientLog", 23, 59);
@@ -72,7 +72,7 @@ namespace readuntil
 
 			inline void setRootPath(std::filesystem::path& path)
 			{
-				NanoLiveRoot = path;
+                ReadBouncerRoot = path;
 			}
 
 			bool connect(std::string device);

@@ -60,27 +60,26 @@ std::vector<std::string> split(const string& s, char delim) {
 */
 void classify_reads(ConfigReader config, std::vector<interleave::IBFMeta> DepletionFilters, std::vector<interleave::IBFMeta> TargetFilters)
 {
-	std::shared_ptr<spdlog::logger> nanolive_logger = spdlog::get("ReadBouncerLog");
+    std::shared_ptr<spdlog::logger> readbouncer_logger = spdlog::get("ReadBouncerLog");
 	// create classification config
 	interleave::ClassifyConfig Conf{};
 
 	bool deplete = false;
 	bool target = false;
 
-	if(DepletionFilters.size() >= 1){
+    if(DepletionFilters.size() >= 1){
 
-		deplete = true;
-	}
-	else if(TargetFilters.size() >= 1){
+            deplete = true;
 
-		target = true;
-	}
-	else{
+        } if(TargetFilters.size() >= 1){
 
-		std::cerr<<"No depletion or target filters have been provided! "<<'\n';
-		exit(1);
-	}
+            target = true;
 
+        } if(!deplete && !target) {
+
+            std::cerr<<"[Error] No depletion or target filters have been provided for classification! "<<'\n';
+            exit(1);
+        }
 	//std::cout<< "Size of depletion filters: "<< DepletionFilters.size() << '\n';
 	//std::cout<< "Size of target filters: "<< TargetFilters.size() << '\n';
 
@@ -276,11 +275,11 @@ void classify_reads(ConfigReader config, std::vector<interleave::IBFMeta> Deplet
 				failed++;
 				std::stringstream estr;
 				estr << "Error classifying Read : " << r.id << "(Len=" << seqan::length(r.sequence) << ")";
-				nanolive_logger->error(estr.str());
+                readbouncer_logger->error(estr.str());
 				estr.str("");
 				estr << "Error message          : " << e.what();
-				nanolive_logger->error(estr.str());
-				nanolive_logger->flush();
+                readbouncer_logger->error(estr.str());
+                readbouncer_logger->flush();
 			}
 		
 			avgClassifyduration += (classifyRead.elapsed() - avgClassifyduration) / readCounter;
@@ -288,20 +287,20 @@ void classify_reads(ConfigReader config, std::vector<interleave::IBFMeta> Deplet
 			if (elapsed.count() > 60.0)
 			{
 				std::stringstream sstr;
-				nanolive_logger->info("------------------------------- Intermediate Results -------------------------------");
+                readbouncer_logger->info("------------------------------- Intermediate Results -------------------------------");
 				sstr << "Number of classified reads                         :   " << found;
-				nanolive_logger->info(sstr.str());
+                readbouncer_logger->info(sstr.str());
 				sstr.str("");
 				sstr << "Number of of too short reads (len < " << config.IBF_Parsed.chunk_length << ")   :   " << too_short;
-				nanolive_logger->info(sstr.str());
+                readbouncer_logger->info(sstr.str());
 				sstr.str("");
 				sstr << "Number of all reads                                :   " << readCounter;
-				nanolive_logger->info(sstr.str());
+                readbouncer_logger->info(sstr.str());
 				sstr.str("");
 				sstr << "Average Processing Time Read Classification        :   " << avgClassifyduration;
-				nanolive_logger->info(sstr.str());
-				nanolive_logger->info("-----------------------------------------------------------------------------------");
-				nanolive_logger->flush();
+                readbouncer_logger->info(sstr.str());
+                readbouncer_logger->info("-----------------------------------------------------------------------------------");
+                readbouncer_logger->flush();
 				begin = classifyRead.end();
 			}
 

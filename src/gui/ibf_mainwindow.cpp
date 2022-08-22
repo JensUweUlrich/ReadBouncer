@@ -39,7 +39,7 @@ void IBF_mainwindow::on_pushButton_4_clicked()
 
     if(!out_file.open(QFile::WriteOnly | QFile::Text)){
 
-        QMessageBox::warning(this , trUtf8("Warning") ,
+        QMessageBox::warning(this , "Warning",
                              "<P><FONT COLOR='#ffffff'>Cannot save the selected file</FONT>");
 
     }
@@ -52,7 +52,7 @@ void IBF_mainwindow::on_pushButton_5_clicked()
     IBF_mainwindow::reference_file =inputRef.toLocal8Bit().constData();
     QFile file(inputRef);
      if(!file.open(QIODevice::ReadOnly | QFile::Text)){
-         QMessageBox::warning(this , trUtf8("Warning") ,
+         QMessageBox::warning(this , "Warning" ,
                    "<P><FONT COLOR='#ffffff'>Cannot open the selected file</FONT>");
          return;
       }
@@ -96,9 +96,12 @@ void IBF_mainwindow::clean_results(){
     ui->output_window->QTextEdit::clear();
 }
 
-/*
-void IBF_mainwindow::exception_catching(QString error){
 
-    QMessageBox::warning(this , tr("Warning"), error);
+// Clear old results in the case of building many IBF's using the same dialog window
+void IBF_mainwindow::on_pushButton_6_clicked()
+{
+
+    ui->output_window->QTextEdit::clear();
+
 }
-*/
+

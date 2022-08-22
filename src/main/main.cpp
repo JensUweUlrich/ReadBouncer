@@ -14,7 +14,7 @@
 #include <SafeMap.hpp>
 #include <SafeSet.hpp>
 #include <StopClock.hpp>
-#include <NanoLiveExceptions.hpp>
+#include <ReadBouncerExceptions.hpp>
 
 // Qt
 #include <QApplication>
@@ -66,8 +66,8 @@
 	#include <sys/time.h>
 #endif
 
-std::shared_ptr<spdlog::logger> nanolive_logger;
-//std::filesystem::path NanoLiveRoot;
+std::shared_ptr<spdlog::logger> readbouncer_logger;
+//std::filesystem::path ReadBouncerRoot;
 //readuntil::Data* data;
 
 /**
@@ -113,7 +113,7 @@ void test_connection(ConfigReader config)
 	readuntil::ReadUntilClient& client = readuntil::ReadUntilClient::getClient();
 	client.setHost(config.MinKNOW_Parsed.host);
 	client.setPort(config.MinKNOW_Parsed.port); 
-	client.setRootPath(NanoLiveRoot);
+    client.setRootPath(ReadBouncerRoot);
 
 	// TODO: throw exception if connection could not be established
 	try
@@ -157,8 +157,8 @@ void test_connection(ConfigReader config)
 			//if (parser.verbose)
 			std::cout << "Sequencing has begun. Starting live signal processing!" << ::std::endl;
 
-			nanolive_logger->info("Sequencing has begun. Starting live signal processing!");
-			nanolive_logger->flush();
+            readbouncer_logger->info("Sequencing has begun. Starting live signal processing!");
+            readbouncer_logger->flush();
 
 		}
 
@@ -169,8 +169,8 @@ void test_connection(ConfigReader config)
 		// set unblock all reads
 
 		//(*data).setUnblockAll(true);
-		nanolive_logger->info("Unblocking all reads without basecalling or classification!");
-		nanolive_logger->flush();
+        readbouncer_logger->info("Unblocking all reads without basecalling or classification!");
+        readbouncer_logger->flush();
 
 		// start live streaming of data
 		try
@@ -179,9 +179,9 @@ void test_connection(ConfigReader config)
 		}
 		catch (readuntil::DataServiceException& e)
 		{
-			nanolive_logger->error("Could not start streaming signals from device (" + config.MinKNOW_Parsed.flowcell + ")");
-			nanolive_logger->error("Error message : " + std::string(e.what()));
-			nanolive_logger->flush();
+            readbouncer_logger->error("Could not start streaming signals from device (" + config.MinKNOW_Parsed.flowcell + ")");
+            readbouncer_logger->error("Error message : " + std::string(e.what()));
+            readbouncer_logger->flush();
 			throw;
 		}
 
@@ -249,8 +249,8 @@ void initializeLogger(ConfigReader config)
 		std::filesystem::path ReadBouncerLog (config.log_dir);
 
 		ReadBouncerLog /= "ReadBouncerLog.txt";
-		nanolive_logger = spdlog::rotating_logger_mt("ReadBouncerLog",  ReadBouncerLog.string() , 1048576 * 5, 100);
-		nanolive_logger->set_level(spdlog::level::debug);
+        readbouncer_logger = spdlog::rotating_logger_mt("ReadBouncerLog",  ReadBouncerLog.string() , 1048576 * 5, 100);
+        readbouncer_logger->set_level(spdlog::level::debug);
 	}
 
 	catch (const spdlog::spdlog_ex& e)
@@ -340,10 +340,10 @@ std::vector<interleave::IBFMeta> getIBF (ConfigReader config, bool targetFilter,
 				}
 				catch (interleave::ParseIBFFileException& e)
 				{
-					nanolive_logger->error("Error parsing depletion IBF using the following parameters");
-					nanolive_logger->error("Depletion IBF file                : " + deplete_file.string());
-					nanolive_logger->error("Error message : " + std::string(e.what()));
-					nanolive_logger->flush();
+                    readbouncer_logger->error("Error parsing depletion IBF using the following parameters");
+                    readbouncer_logger->error("Depletion IBF file                : " + deplete_file.string());
+                    readbouncer_logger->error("Error message : " + std::string(e.what()));
+                    readbouncer_logger->flush();
 					throw;
 				}
 
@@ -392,10 +392,10 @@ std::vector<interleave::IBFMeta> getIBF (ConfigReader config, bool targetFilter,
 				}
 				catch (interleave::ParseIBFFileException& e)
 				{
-					nanolive_logger->error("Error building IBF for target file using the following parameters");
-					nanolive_logger->error("Depletion IBF file                : " + target_file.string());
-					nanolive_logger->error("Error message : " + std::string(e.what()));
-					nanolive_logger->flush();
+                    readbouncer_logger->error("Error building IBF for target file using the following parameters");
+                    readbouncer_logger->error("Depletion IBF file                : " + target_file.string());
+                    readbouncer_logger->error("Error message : " + std::string(e.what()));
+                    readbouncer_logger->flush();
 					throw;
 				}
 
@@ -530,7 +530,7 @@ void run_program(ConfigReader config){
 		try
 		{
 		    config.createLog(config.usage);
-			adaptive_sampling(config, getIBF(config, false, true), getIBF(config, true, false));
+            adaptive_sampling(config, getIBF(config, true, false), getIBF(config, false, true));
 		}
 		catch(std::exception& e)
 		{
@@ -572,12 +572,12 @@ void run_program(ConfigReader config){
 void IBF_mainwindow::on_pushButton_clicked()
 {
     slot_control_std();
-    StopClock NanoLiveTime;
+    StopClock ReadBouncerTime;
 
-    if (IBF_mainwindow::k < 10){
+   if (IBF_mainwindow::k < 10){
 
         std::string warning_kmer = "The selcted k-mer size is smaller than 10, we will use the default value 13";
-        QMessageBox::warning(this , tr("Warning"), QString::fromUtf8(warning_kmer.c_str()));
+        QMessageBox::warning(this , "Warning", QString::fromUtf8(warning_kmer.c_str()));
         IBF_mainwindow::k = 13;
     }
 
@@ -588,14 +588,14 @@ void IBF_mainwindow::on_pushButton_clicked()
                                 IBF_mainwindow::threads,
                                 IBF_mainwindow::fragment_size,
                                 IBF_mainwindow::filter_size, true };
-    NanoLiveTime.start();
+    ReadBouncerTime.start();
     buildIBF(params);
-    NanoLiveTime.stop();
+    ReadBouncerTime.stop();
     size_t peakSize = getPeakRSS();
     int peakSizeMByte = (int)(peakSize / (1024 * 1024));
 
     std::cout<<"--------------------------------------------------------------"<<std::endl;
-    std::cout << "Real time : " << NanoLiveTime.elapsed() << " sec" << std::endl;
+    std::cout << "Real time : " << ReadBouncerTime.elapsed() << " sec" << std::endl;
     std::cout << "CPU time  : " << cputime() << " sec" << std::endl;
     std::cout << "Peak RSS  : " << peakSizeMByte << " MByte" << std::endl;
     std::cout<<"--------------------------------------------------------------"<<std::endl;
@@ -608,20 +608,8 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     MainWindow mw;
 
-    /*
-    int x = mw.width()*0.7;
-    int y = mw.height()*0.7;
-
-    mw.setFixedSize(x, y);*/
-    /*QGuiApplication app(argc, argv);
-
-    QCoreApplication::addLibraryPath("./gui/");
-
-    QQmlApplicationEngine engine;
-    engine.load(QUrl(QStringLiteral("qrc:/main.qml")));*/
-
-
     mw.show();
+
 
     return app.exec();
 }
@@ -629,13 +617,13 @@ int main(int argc, char *argv[])
 /*
 int main(int argc, char const **argv)
 {
-	StopClock NanoLiveTime;
-	NanoLiveTime.start();
+    StopClock ReadBouncerTime;
+    ReadBouncerTime.start();
 
 	std::signal(SIGINT, signalHandler);
 
 	std::string binPath = argv[0];
-	NanoLiveRoot = binPath.substr(0, binPath.find("bin"));
+    ReadBouncerRoot = binPath.substr(0, binPath.find("bin"));
 
 	std::string const tomlFile = argv[1];
 	ConfigReader config{};
@@ -654,12 +642,12 @@ int main(int argc, char const **argv)
 	initializeLogger(config);
 	run_program(config);
 
-	NanoLiveTime.stop();
+    ReadBouncerTime.stop();
 
 	size_t peakSize = getPeakRSS();
 	int peakSizeMByte = (int)(peakSize / (1024 * 1024));
 
-	std::cout << "Real time : " << NanoLiveTime.elapsed() << " sec" << std::endl;
+    std::cout << "Real time : " << ReadBouncerTime.elapsed() << " sec" << std::endl;
 	std::cout << "CPU time  : " << cputime() << " sec" << std::endl;
     std::cout << "Peak RSS  : " << peakSizeMByte << " MByte" << std::endl;
 

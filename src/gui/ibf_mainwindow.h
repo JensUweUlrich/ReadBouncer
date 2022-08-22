@@ -51,6 +51,8 @@ private slots:
     void clean_results();
 
 
+    void on_pushButton_6_clicked();
+
 private:
 
     //IBF params

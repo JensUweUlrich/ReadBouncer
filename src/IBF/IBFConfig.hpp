@@ -35,9 +35,7 @@ namespace interleave
                 }
                 catch (const spdlog::spdlog_ex& e)
                 {
-                    //QMessageBox::critical(NULL, "Classification Log initialization failed", e.what());
-                    std::cerr << "Classification Log initialization failed: " << e.what() << std::endl;
-
+                    QMessageBox::critical(NULL, "Classification Log initialization failed", e.what());
                 }
                 classification_logger->set_level(spdlog::level::debug);
                 //classification_logger->flush_on(spdlog::level::debug);
