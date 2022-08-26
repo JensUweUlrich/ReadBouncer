@@ -1,6 +1,9 @@
 
 set(Main_SRC "main.cpp")
 file(GLOB MAIN_HDRS "*.hpp")
+
+qt_add_resources(Main_SRC pics.qrc)
+
 add_executable (${PROJECT_NAME} ${MAIN_HDRS} ${Main_SRC})
 #find_package (Threads)
 

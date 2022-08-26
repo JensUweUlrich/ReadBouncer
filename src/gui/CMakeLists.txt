@@ -35,8 +35,8 @@ set(gui_SRC
     mainwindow.ui
     ibf_mainwindow.cpp
     ibf_mainwindow.ui
-    #classify_mainwindow.cpp
-    #classify_mainwindow.ui
+    classify_mainwindow.cpp
+    classify_mainwindow.ui
     #live_deplete_mainwindow.cpp
     #live_deplete_mainwindow.ui
     #connection_test_mainwindow.cpp
@@ -51,7 +51,7 @@ set(gui_SRC
 set(gui_HDRS
     mainwindow.h
     ibf_mainwindow.h
-    #classify_mainwindow.h
+    classify_mainwindow.h
     #live_deplete_mainwindow.h
     #connection_test_mainwindow.h
     #QDebugStream.h

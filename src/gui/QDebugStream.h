@@ -46,13 +46,14 @@ public:
   log_window = text_edit;
   m_old_buf = stream.rdbuf();
   stream.rdbuf(this);
+  stream.flush();
  }
  ~QDebugStream()
  {
   // output anything that is left
   if (!m_string.empty())
    log_window->append(m_string.c_str());
-
+  m_stream.flush();
   m_stream.rdbuf(m_old_buf);
  }
 
@@ -62,6 +63,7 @@ protected:
   if (v == '\n')
   {
    log_window->append(m_string.c_str());
+
    m_string.erase(m_string.begin(), m_string.end());
   }
   else

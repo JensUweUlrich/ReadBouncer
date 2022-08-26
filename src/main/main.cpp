@@ -577,9 +577,23 @@ void IBF_mainwindow::on_pushButton_clicked()
    if (IBF_mainwindow::k < 10){
 
         std::string warning_kmer = "The selcted k-mer size is smaller than 10, we will use the default value 13";
-        QMessageBox::warning(this , "Warning", QString::fromUtf8(warning_kmer.c_str()));
         IBF_mainwindow::k = 13;
+        QMessageBox::warning(this , "Warning", QString::fromUtf8(warning_kmer.c_str()));
+
     }
+
+   if (IBF_mainwindow::output_path.empty()){
+
+        QMessageBox::warning(this , "Warning", "There is no output file selcted! ");
+
+    }
+
+   if (IBF_mainwindow::reference_file.empty()){
+
+        QMessageBox::warning(this , "Warning", "There is no reference file selcted! ");
+
+    }
+
 
     ibf_build_parser params = { IBF_mainwindow::output_path,
                                 IBF_mainwindow::reference_file,

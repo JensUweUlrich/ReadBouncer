@@ -6,7 +6,7 @@
 #include <QPixmap>
 
 #include "ibf_mainwindow.h"
-//#include "ibfmainwindow.h"
+#include "classify_mainwindow.h"
 
 namespace Ui {
 class MainWindow;
@@ -20,11 +20,15 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     IBF_mainwindow *ibf_multi_window;
+    Classify_mainwindow *classify_multi_window;
+
 
 private slots:
     void on_pushButton_clicked();
 
     void on_pushButton_10_clicked();
+
+    void on_pushButton_11_clicked();
 
 private:
     Ui::MainWindow *ui;

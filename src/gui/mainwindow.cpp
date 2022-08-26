@@ -28,3 +28,11 @@ void MainWindow::on_pushButton_10_clicked()
     ibf_multi_window -> show();
 }
 
+
+void MainWindow::on_pushButton_11_clicked()
+{
+    hide();
+    classify_multi_window = new Classify_mainwindow(this); // this: is mainwindow class
+    classify_multi_window -> show();
+}
+

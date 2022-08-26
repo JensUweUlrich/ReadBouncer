@@ -71,6 +71,11 @@ void IBF_mainwindow::on_spinBox_3_valueChanged(int arg1)
 void IBF_mainwindow::on_spinBox_4_valueChanged(int arg1)
 {
     IBF_mainwindow::threads = arg1;
+
+    if (IBF_mainwindow::threads < 1){
+
+        IBF_mainwindow::threads = 1;
+    }
 }
 
 
@@ -86,13 +91,15 @@ void IBF_mainwindow::on_spinBox_6_valueChanged(int arg1)
 }
 
 
-void IBF_mainwindow::slot_control_std(){
+void IBF_mainwindow::slot_control_std()
+{
     QDebugStream* out_cerr = new QDebugStream(std::cerr, ui->output_window);
     QDebugStream* out_cout = new QDebugStream(std::cout, ui->output_window);
 
 }
 
-void IBF_mainwindow::clean_results(){
+void IBF_mainwindow::clean_results()
+{
     ui->output_window->QTextEdit::clear();
 }
 
