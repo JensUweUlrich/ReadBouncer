@@ -91,7 +91,7 @@ color: rgb(255, 255, 255);</string>
      </spacer>
     </item>
     <item row="16" column="1">
-     <widget class="QPushButton" name="pushButton">
+     <widget class="QPushButton" name="buildIBFbutton">
       <property name="styleSheet">
        <string notr="true">border-color: rgb(0, 0, 0);
 color: rgb(255, 255, 255);</string>

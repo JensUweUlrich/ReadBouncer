@@ -58,7 +58,7 @@ namespace interleave
                 msgBox.setWindowTitle("Error opening file");
                 msgBox.setInformativeText(QString::fromStdString(msg));
                 msgBox.setStandardButtons(QMessageBox::Ok);
-                throw msgBox.exec();
+                msgBox.exec();
                 continue;
             }
         }

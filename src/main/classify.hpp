@@ -5,6 +5,8 @@
  *      Author: jens-uwe.ulrich
  */
 
+#include <QMessageBox>
+
 void parse_reads(std::string const& reads_file,
 	interleave::TReads& reads,
 	uint64_t prefixLength)
@@ -12,7 +14,7 @@ void parse_reads(std::string const& reads_file,
 	seqan::SeqFileIn seqFileIn;
 	if (!seqan::open(seqFileIn, seqan::toCString(reads_file)))
 	{
-		std::cerr << "ERROR: Unable to open the file: " << reads_file << std::endl;
+        QMessageBox::critical(NULL , "ERROR: Unable to open the file: ", QString::fromStdString(reads_file));
 		return;
 	}
 
@@ -35,7 +37,14 @@ void parse_reads(std::string const& reads_file,
 		}
 		catch (seqan::Exception const& e)
 		{
-			std::cerr << "ERROR: " << e.what() << " [@" << id << "]" << std::endl;
+            QString titel = "Error: ";
+            titel.push_back(e.what());
+
+            QString msg = "[@ ";
+            msg.push_back(QString::fromStdString(toCString(id)));
+            msg.push_back("]");
+
+            QMessageBox::critical(NULL , titel, msg);
 			break;
 		}
 	}
@@ -77,8 +86,8 @@ void classify_reads(ConfigReader config, std::vector<interleave::IBFMeta> Deplet
 
         } if(!deplete && !target) {
 
-            std::cerr<<"[Error] No depletion or target filters have been provided for classification! "<<'\n';
-            exit(1);
+            QMessageBox::critical(NULL , "Error", "No depletion or target filters have been provided for classification! ");
+            return;
         }
 	//std::cout<< "Size of depletion filters: "<< DepletionFilters.size() << '\n';
 	//std::cout<< "Size of target filters: "<< TargetFilters.size() << '\n';
@@ -128,9 +137,9 @@ void classify_reads(ConfigReader config, std::vector<interleave::IBFMeta> Deplet
 
 		std::filesystem::path outfile(config.output_dir);
 		outfile /= "unclassified.fasta";
-		if (!seqan::open(UnclassifiedOut, seqan::toCString(outfile.string())))
+        if (!seqan::open(UnclassifiedOut, seqan::toCString(outfile.string())))
 		{
-			std::cerr << "ERROR: Unable to open the file: " << outfile.string() << std::endl;
+            QMessageBox::critical(NULL , "Unable to open the file: ", QString::fromStdString(outfile.string()));
 			return;
 		}
 		
@@ -138,7 +147,7 @@ void classify_reads(ConfigReader config, std::vector<interleave::IBFMeta> Deplet
 		seqan::SeqFileIn seqFileIn;
 		if (!seqan::open(seqFileIn, seqan::toCString(read_file.string())))
 		{
-			std::cerr << "ERROR: Unable to open the file: " << read_file.string() << std::endl;
+            QMessageBox::critical(NULL , "Unable to open the file: ", QString::fromStdString(read_file.string()));
 			return;
 		}
 
@@ -158,7 +167,14 @@ void classify_reads(ConfigReader config, std::vector<interleave::IBFMeta> Deplet
 			}
 			catch (seqan::Exception const& e)
 			{
-				std::cerr << "ERROR: " << e.what() << " [@" << id << "]" << std::endl;
+                QString titel = "Error: ";
+                titel.push_back(e.what());
+
+                QString msg = "[@ ";
+                msg.push_back(QString::fromStdString(toCString(id)));
+                msg.push_back("]");
+
+                QMessageBox::critical(NULL , titel, msg);
 				continue;
 			}
 
@@ -280,6 +296,8 @@ void classify_reads(ConfigReader config, std::vector<interleave::IBFMeta> Deplet
 				estr << "Error message          : " << e.what();
                 readbouncer_logger->error(estr.str());
                 readbouncer_logger->flush();
+
+                QMessageBox::critical(NULL , "Error", QString::fromStdString(estr.str()));
 			}
 		
 			avgClassifyduration += (classifyRead.elapsed() - avgClassifyduration) / readCounter;

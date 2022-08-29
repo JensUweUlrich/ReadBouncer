@@ -323,14 +323,14 @@ std::vector<interleave::IBFMeta> getIBF (ConfigReader config, bool targetFilter,
 
 	if(depleteFilter){
 		// parse depletion IBF if given as parameter
-		for (std::filesystem::path deplete_file : config.IBF_Parsed.deplete_files)
+        for (std::filesystem::path deplete_file : config.IBF_Parsed.deplete_files)
 		{
 			interleave::IBFMeta filter{};
 			filter.name = deplete_file.stem().string();
 			interleave::IBF tf{};
 			interleave::IBFConfig DepleteIBFconfig{};
 
-			if (config.filterException(deplete_file)){
+            if (config.filterException(deplete_file)){
 				try
 				{
 					DepleteIBFconfig.input_filter_file = deplete_file.string();
@@ -344,7 +344,7 @@ std::vector<interleave::IBFMeta> getIBF (ConfigReader config, bool targetFilter,
                     readbouncer_logger->error("Depletion IBF file                : " + deplete_file.string());
                     readbouncer_logger->error("Error message : " + std::string(e.what()));
                     readbouncer_logger->flush();
-					throw;
+                    QMessageBox::critical(NULL , "Error", QString::fromUtf8(e.what()));
 				}
 
 				DepletionFilters.emplace_back(std::move(filter));
@@ -355,16 +355,16 @@ std::vector<interleave::IBFMeta> getIBF (ConfigReader config, bool targetFilter,
 				try
                 {
 					//ibf_build_parser params;
-					std::filesystem::path out = std::filesystem::path(config.output_dir);
+                    std::filesystem::path out = std::filesystem::path(config.output_dir);
 					out /= deplete_file.filename();
 					out.replace_extension("ibf");
-					ibf_build_parser params = { out.string(), deplete_file.string(), false, false, config.IBF_Parsed.size_k, config.IBF_Parsed.threads, config.IBF_Parsed.fragment_size, 0, true };
+                    ibf_build_parser params = { out.string(), deplete_file.string(), false, false, config.IBF_Parsed.size_k, config.IBF_Parsed.threads, config.IBF_Parsed.fragment_size, 0, true };
                     filter.filter = buildIBF(params);
 					}
 
 				catch (std::out_of_range& e)
 				{
-					throw ConfigReaderException(e.what());
+                    QMessageBox::critical(NULL , "Error", QString::fromUtf8(e.what()));
 				}
 			DepletionFilters.emplace_back(std::move(filter));
 			}
@@ -374,13 +374,13 @@ std::vector<interleave::IBFMeta> getIBF (ConfigReader config, bool targetFilter,
 
 	if(targetFilter)
 	{
-		for (std::filesystem::path target_file : config.IBF_Parsed.target_files)
+        for (std::filesystem::path target_file : config.IBF_Parsed.target_files)
 		{
 			interleave::IBFMeta filter{};
 			filter.name = target_file.stem().string();
 			interleave::IBF tf{};
 			interleave::IBFConfig TargetIBFconfig{};
-			if (config.filterException(target_file))
+            if (config.filterException(target_file))
 			{
 				try
 				{
@@ -396,7 +396,7 @@ std::vector<interleave::IBFMeta> getIBF (ConfigReader config, bool targetFilter,
                     readbouncer_logger->error("Depletion IBF file                : " + target_file.string());
                     readbouncer_logger->error("Error message : " + std::string(e.what()));
                     readbouncer_logger->flush();
-					throw;
+                    QMessageBox::critical(NULL , "Error", QString::fromUtf8(e.what()));
 				}
 
 				TargetFilters.emplace_back(std::move(filter));
@@ -407,22 +407,21 @@ std::vector<interleave::IBFMeta> getIBF (ConfigReader config, bool targetFilter,
 				try
 				{
 					//ibf_build_parser params;
-					std::filesystem::path out = std::filesystem::path(config.output_dir);
+                    std::filesystem::path out = std::filesystem::path(config.output_dir);
 					out /= target_file.filename();
 					out.replace_extension("ibf");
-					ibf_build_parser params = { out.string(), target_file.string(), false, false, config.IBF_Parsed.size_k, config.IBF_Parsed.threads, config.IBF_Parsed.fragment_size, 0, true };
+                    ibf_build_parser params = { out.string(), target_file.string(), false, false, config.IBF_Parsed.size_k, config.IBF_Parsed.threads, config.IBF_Parsed.fragment_size, 0, true };
                     filter.filter = buildIBF(params);
 				}
 
 				catch (std::out_of_range& e)
 				{
-					throw ConfigReaderException(e.what());
+                    QMessageBox::critical(NULL , "Error", QString::fromUtf8(e.what()));
 				}
 
 				TargetFilters.emplace_back(std::move(filter));
 			}
 		}
-
 		return TargetFilters;
 	}
 
@@ -445,6 +444,7 @@ void run_program(ConfigReader config){
 	}
 	std::string subcommand = config.usage;
 
+    /*
 	if (subcommand == "build") {
 
 		//ibf_build_parser params;
@@ -505,17 +505,17 @@ void run_program(ConfigReader config){
 			}
 		}
 
-}
+}*/
 	
-	else if (subcommand == "classify") {
+     /*if (subcommand == "classify") {
 
 		try
 		{
 			
 			config.createLog(config.usage);
-			//std::vector<interleave::IBFMeta> DepletionFilters = getIBF(config, false, true);// avoid copying the IBF's 
-			//std::vector<interleave::IBFMeta> TargetFilters = getIBF(config, true, false);// avoid copying the IBF's 
-			classify_reads(config, getIBF(config, false, true), getIBF(config, true, false));
+            //std::vector<interleave::IBFMeta> DepletionFilters = getIBF(config, false, true);// avoid copying the IBF's
+            //std::vector<interleave::IBFMeta> TargetFilters = getIBF(config, true, false);// avoid copying the IBF's
+            classify_reads(config, getIBF(config, false, true), getIBF(config, true, false));
 		}
 		catch(std::exception& e)
 		{
@@ -523,9 +523,9 @@ void run_program(ConfigReader config){
 		    return;
 		}
 
-	}
+    }*/
 
-	else if (subcommand == "target") {
+    if (subcommand == "target") {
 
 		try
 		{
@@ -616,6 +616,65 @@ void IBF_mainwindow::on_pushButton_clicked()
 
 }
 
+
+// classify
+void Classify_mainwindow::on_classifyButton_clicked()
+{
+    slot_control_std();
+    StopClock ReadBouncerTime;
+
+
+    if (Classify_mainwindow::k < 10){
+
+         std::string warning_kmer = "The selcted k-mer size is smaller than 10, we will use the default value 13";
+         Classify_mainwindow::k = 13;
+         QMessageBox::warning(this , "Warning", QString::fromUtf8(warning_kmer.c_str()));
+
+     }
+
+
+    // Use configReader object to call functions and use params
+    ConfigReader config;
+
+    try
+    {
+
+        Classify_mainwindow::check_params();
+
+        config.output_dir = Classify_mainwindow::output_dir;
+        config.log_dir = Classify_mainwindow::output_dir;
+        config.IBF_Parsed.size_k = Classify_mainwindow::k;
+        config.IBF_Parsed.fragment_size = Classify_mainwindow::fragment_size;
+        config.IBF_Parsed.threads = Classify_mainwindow::threads;
+        config.IBF_Parsed.target_files = Classify_mainwindow::target_files;
+        config.IBF_Parsed.deplete_files = Classify_mainwindow::deplete_files;
+        config.IBF_Parsed.read_files = Classify_mainwindow::read_files;
+        config.IBF_Parsed.error_rate = Classify_mainwindow::error_rate;
+        config.IBF_Parsed.chunk_length = Classify_mainwindow::chunk_length;
+        config.IBF_Parsed.max_chunks = Classify_mainwindow::max_chunks;
+
+        initializeLogger(config);
+        ReadBouncerTime.start();
+
+        classify_reads(config, getIBF(config, false, true), getIBF(config, true, false));
+
+        ReadBouncerTime.stop();
+        size_t peakSize = getPeakRSS();
+        int peakSizeMByte = (int)(peakSize / (1024 * 1024));
+
+        std::cout<<"--------------------------------------------------------------"<<std::endl;
+        std::cout << "Real time : " << ReadBouncerTime.elapsed() << " sec" << std::endl;
+        std::cout << "CPU time  : " << cputime() << " sec" << std::endl;
+        std::cout << "Peak RSS  : " << peakSizeMByte << " MByte" << std::endl;
+        std::cout<<"--------------------------------------------------------------"<<std::endl;
+    }
+    catch(std::exception& e)
+    {
+        QMessageBox::warning(this , "Warning", QString::fromUtf8(e.what()));
+        return;
+    }
+
+}
 
 int main(int argc, char *argv[])
 {
