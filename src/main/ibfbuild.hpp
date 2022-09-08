@@ -66,7 +66,10 @@ interleave::TIbf buildIBF(ConfigReader config_reader, const std::string referenc
  * @return vector of loaded/constructed IBF's 
  */
 
-std::vector<interleave::IBFMeta> getIBF (ConfigReader config, bool depleteFilter, bool targetFilter){
+std::vector<interleave::IBFMeta> getIBF (ConfigReader config, bool depleteFilter, bool targetFilter)
+{
+
+	std::shared_ptr<spdlog::logger> readbouncer_logger = spdlog::get("ReadBouncerLog");
 
 	std::vector<interleave::IBFMeta> DepletionFilters{};
 	std::vector<interleave::IBFMeta> TargetFilters{};

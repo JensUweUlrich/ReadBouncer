@@ -364,7 +364,7 @@ namespace interleave
         return result;
     }
 
-
+/*
 //gtest
 
 bool Read::select_matches_test(std::vector< uint16_t >& selectedBins,
@@ -395,5 +395,5 @@ uint64_t  Read::max_matches_test(std::vector< uint16_t >& selectedBins, std::vec
 
 
                 }
-
+*/
 } // end namespace interleave

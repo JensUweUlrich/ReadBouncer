@@ -102,7 +102,7 @@ namespace interleave
 
     class IBF
     {
-        friend class IBFTest;
+        //friend class IBFTest;
 
         private:
             TIbf filter{};
@@ -142,6 +142,7 @@ namespace interleave
                 return filter;
             }
 
+/*
             std::future< void > test_read_task;// for gtest
             std::string cutOutNNNsTest; // for gtest
             TIbf filter_{}; // for gtest
@@ -153,7 +154,7 @@ namespace interleave
                 int64_t fragstart;
                 uint64_t fragend;
             } test_func1;
-    
+*/    
 
     };
 
@@ -211,7 +212,7 @@ namespace interleave
             int classify(std::vector< IBFMeta >& filters, ClassifyConfig& config);
             std::pair<int, int> classify(std::vector< IBFMeta >& filt1, std::vector< IBFMeta >& filt2, ClassifyConfig& config);
 
-            // gtest
+/*            // gtest
             bool select_matches_test(std::vector< uint16_t >& selectedBins,
                                 std::vector< uint16_t >& selectedBinsRev,
                                 TIbf&                    filter,
@@ -221,7 +222,7 @@ namespace interleave
             uint64_t max_matches_test(std::vector< uint16_t >& selectedBins, std::vector< uint16_t >& selectedBinsRev,
                 TIbf& filter, uint16_t threshold);
             bool find_matches_test(std::vector<interleave::TIbf> &filters, interleave::ClassifyConfig &config);
-        
+*/        
     };
     
     typedef std::vector<Read> TReads;
