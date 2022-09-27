@@ -29,35 +29,47 @@ void IBF_mainwindow::on_pushButton_3_clicked()
 
 }
 
+// output dir
 void IBF_mainwindow::on_pushButton_4_clicked()
 {
-    QString out = QFileDialog::getSaveFileName(this, "Save the IBF as");
-    IBF_mainwindow::output_path = out.toLocal8Bit().constData();
+    QString output_log_file =QFileDialog::getExistingDirectory(this, "Select log and output directory");
+    IBF_mainwindow::output_dir = output_log_file.toStdString();
+    IBF_mainwindow::output_dir.make_preferred();
 
-    // Create file (like ofstream)
-    QFile out_file(out);
+    if(!std::filesystem::is_directory(IBF_mainwindow::output_dir) || !std::filesystem::exists(IBF_mainwindow::output_dir)){
 
-    if(!out_file.open(QFile::WriteOnly | QFile::Text)){
-
-        QMessageBox::warning(this , "Warning",
-                             "<P><FONT COLOR='#ffffff'>Cannot save the selected file</FONT>");
-
+        std::filesystem::create_directory(IBF_mainwindow::output_dir);
     }
 }
 
-
+// reference files
 void IBF_mainwindow::on_pushButton_5_clicked()
 {
-    QString inputRef = QFileDialog::getOpenFileName(this, "Reference sequence file in FASTA format");
-    IBF_mainwindow::reference_file =inputRef.toLocal8Bit().constData();
-    QFile file(inputRef);
-     if(!file.open(QIODevice::ReadOnly | QFile::Text)){
-         QMessageBox::warning(this , "Warning" ,
-                   "<P><FONT COLOR='#ffffff'>Cannot open the selected file</FONT>");
-         return;
-      }
-        setWindowTitle(inputRef);
-        file.close();
+    QStringList referenceFilesQ = QFileDialog::getOpenFileNames(this, "Select reference files");
+
+    for (QString reference : referenceFilesQ){
+
+        QFile file(reference);
+
+        if(!std::filesystem::exists(std::filesystem::path(reference.toStdString()))){
+
+             QString msg = "The following reference file does not exist: ";
+             msg.push_back(reference);
+             QMessageBox::warning(this , "Warning" , msg);
+
+          }else if(!file.open(QIODevice::ReadOnly)){
+
+              QString msg = "Cannot open the selected file: ";
+              msg.push_back(reference);
+              QMessageBox::warning(this , "Warning" , msg);
+              return;
+
+           }else{
+
+            IBF_mainwindow::reference_files.emplace_back((std::filesystem::path(reference.toStdString())).make_preferred());
+
+        }
+    }
 }
 
 // K-mer size
@@ -111,4 +123,12 @@ void IBF_mainwindow::on_pushButton_6_clicked()
     ui->output_window->QTextEdit::clear();
 
 }
+
+// plainTextEdit
+
+void IBF_mainwindow::plainTextEditChange(QString &text){
+
+    //ui->plainTextEdit->setPlainText(text);
+}
+
 

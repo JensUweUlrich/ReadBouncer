@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>946</width>
+    <width>1181</width>
     <height>564</height>
    </rect>
   </property>
@@ -355,16 +355,6 @@ color: rgb(255, 255, 255);</string>
      <layout class="QGridLayout" name="gridLayout_3"/>
     </item>
     <item>
-     <widget class="QLabel" name="label_4">
-      <property name="text">
-       <string/>
-      </property>
-      <property name="pixmap">
-       <pixmap>../../../../picsGUI/RB_QR.svg</pixmap>
-      </property>
-     </widget>
-    </item>
-    <item>
      <spacer name="verticalSpacer_2">
       <property name="orientation">
        <enum>Qt::Vertical</enum>
@@ -384,7 +374,7 @@ color: rgb(255, 255, 255);</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>946</width>
+     <width>1181</width>
      <height>22</height>
     </rect>
    </property>

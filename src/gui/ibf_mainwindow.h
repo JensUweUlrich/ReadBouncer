@@ -10,6 +10,7 @@
 #include <fstream>
 #include <QDebug>
 #include <QDebugStream.h>
+#include <filesystem>
 #include <iostream>
 
 
@@ -28,7 +29,7 @@ public:
 
 
 private slots:
-    void on_pushButton_clicked();
+    //void on_pushButton_clicked();
 
     void on_pushButton_2_clicked();
 
@@ -50,13 +51,19 @@ private slots:
 
     void clean_results();
 
-
+    void plainTextEditChange(QString&);
     void on_pushButton_6_clicked();
+
+    void on_buildIBFbutton_clicked();
 
 private:
 
     //IBF params
-    std::string output_path, reference_file {};
+    std::vector<std::filesystem::path>
+    reference_files{};
+
+    std::filesystem::path output_dir;
+    //std::string output_path, reference_file {};
     int k = 13;
     int threads = 1;
     int fragment_size = 100000;

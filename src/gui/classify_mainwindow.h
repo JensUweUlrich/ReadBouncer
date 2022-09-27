@@ -19,6 +19,8 @@
 #include <fstream>
 #include <filesystem>
 
+#include "qcustomplot.h"
+
 namespace Ui {
 class Classify_mainwindow;
 }
@@ -62,8 +64,12 @@ private slots:
 
     void slot_control_std();
 
+    void update_output_window(std::string msg);
+
 
     void on_pushButton_6_clicked();
+
+    void on_pushButton_clicked();
 
 private:
     Ui::Classify_mainwindow *ui;
@@ -85,6 +91,8 @@ private:
     int k = 13;
     int threads = 1;
     int fragment_size = 100000;
+
+    QCustomPlot *customPlot;
 
 };
 
