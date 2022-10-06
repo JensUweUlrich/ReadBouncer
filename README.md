@@ -186,7 +186,7 @@ When nanopore reads are not of interest, these reads can be rejected from the po
   host                = "xxx.xxx.xxx"                     #(ip address or name of the computer hosting Guppy Basecall Server, or ipc path, e.g. ipc:///tmp/.guppy; default: 127.0.0.1)
   port                = X                                 #(port number on which the basecall server is running on the host; default: 5555)
   threads             = X                                 #(unsigned integer; default 3) basecall threads; only required for DeepNano base-calling
-  
+  config              = "config_name"                     #(only needed for Guppy; name of the Guppy basecalling config, e.g. "dna_r9.4.1_450bps_fast")
 ```
 
 <b> [IBF] fragment_size</b> and <b> kmer_size</b><br>
@@ -218,6 +218,9 @@ TCP/IP port of guppy basecall server. Only required for Guppy live base-calling.
 
 <b> [Basecaller] threads </b><br>
 Number of threads used for base calling. This parameter only has an effect if CPU basecalling with DeepNano-blitz is used.
+
+<b> [Basecaller] config </b><br>
+Name of Guppy's baecalling config used by the guppy_basecall_server. Not required when using DeepNano as basecaller.
 
 ### <a name="ucase"></a>Use Cases 
 
