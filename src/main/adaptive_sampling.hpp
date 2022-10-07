@@ -30,8 +30,9 @@ uint64_t rCounter = 0;
 
 //-------------------------------------------------------------------
 /*
+*  @return : 0 => do nothing; 1 => unblock; 2 => stop_further 
 */
-bool check_unblock( interleave::Read& read,
+uint8_t check_unblock( interleave::Read& read,
 					interleave::ClassifyConfig& conf,
 					std::vector<interleave::IBFMeta>& DepletionFilters,
 					std::vector<interleave::IBFMeta>& TargetFilters)
@@ -53,36 +54,53 @@ bool check_unblock( interleave::Read& read,
 				// assume less sequencing errors to increase specificity
 				conf.error_rate -= 0.02;
 				p = read.classify(DepletionFilters, TargetFilters, conf);
+				//				std::cout << conf.error_rate << std::endl;
+				//				std::cout << p.first << "\t" << p.second << std::endl;
 				conf.error_rate += 0.02;
+
 
 
 				if (p.first > 0 && p.second == 0)
 				{
-					// now read only matches to depletion filters
-					unblock = true;
+					// now read only matches to depletion filters => unblock
+					return 1;
 				}
 				else
 				{
 					// read still matches to both => continue sequencing
-					unblock = false;
+					return 0;
 				}
 			}
-			// read only matches to depletion filters
+			// read only matches to depletion filters => unblock
 			else
-				unblock = true;
+				return 1;
 		}
 		// read does not match depletion filters
 		else
-			unblock = false;
+		{
+			// read only matches target filter => stop_further_data
+			if (p.second > 0)
+				return 2;
+			else
+				return 0;
+		}
 	}
 	// in depletion mode only => only unblock reads matching depletion filters
 	else if (withDepletion)
-		unblock = read.classify(DepletionFilters, conf) > -1;
+	{
+		if (read.classify(DepletionFilters, conf) > -1)
+			return 1;
+		else
+			return 0;
+	}
 	// if only target filters given => unblock reads not mapping the target
 	else
 	{
 		int best_filter_index = read.classify(TargetFilters, conf);
-		unblock = best_filter_index < 0;
+		if (best_filter_index < 0)
+			return 1;
+		else
+			return 2;
 		/*if (best_filter_index != -1)
 		{
 			TargetFilters[best_filter_index].classified += 1;
@@ -91,7 +109,7 @@ bool check_unblock( interleave::Read& read,
 		}
 		*/
 	}
-	return unblock;
+	return 0;
 }
 
 /*void add_target_reads_to_action_queue(bool unblock,
@@ -216,11 +234,11 @@ void classify_live_reads(SafeQueue<RTPair>& classification_queue,
 			try
 			{
 				rp.second.timeClassifyRead.start();
-				bool unblock = check_unblock(read, conf, DepletionFilters, TargetFilters);
+				uint8_t decision = check_unblock(read, conf, DepletionFilters, TargetFilters);
 				rp.second.timeClassifyRead.stop();
 
 				// push classified reads to action queue
-				if (unblock)
+				if (decision == 1)
 				{
 					std::unordered_map<std::string, std::pair<interleave::Read, uint8_t>>::iterator it = once_seen.find(rp.first.id);
 					// concat with sequence from earlier seen read chunks that have not been classified
@@ -244,6 +262,17 @@ void classify_live_reads(SafeQueue<RTPair>& classification_queue,
 					
 					
 				}
+				else if (decision == 2)
+				{
+					once_seen.erase(rp.first.id);
+					rp.first.unblock = false;
+					action_queue.push(rp);
+					TargetReads.push(read);
+
+					avgReadLenMutex.lock();
+					avgReadLen += ((double)read.getReadLength() - avgReadLen) / (double) ++rCounter;
+					avgReadLenMutex.unlock();
+				}
 				else
 				{
 					// check if we already marked read as unclassified
@@ -256,9 +285,9 @@ void classify_live_reads(SafeQueue<RTPair>& classification_queue,
 						std::stringstream sstr;
 						sstr << (*it).second.first.sequence << read.sequence;
 						read.sequence = std::move((seqan::Dna5String)sstr.str());
-						unblock = check_unblock(read, conf, DepletionFilters, TargetFilters);
+						decision = check_unblock(read, conf, DepletionFilters, TargetFilters);
 
-						if (unblock)
+						if (decision == 1)
 						{
 							rp.first.unblock = true;
 							action_queue.push(std::move(rp));
@@ -267,6 +296,17 @@ void classify_live_reads(SafeQueue<RTPair>& classification_queue,
 							avgReadLen += ((double)read.getReadLength() - avgReadLen) / (double) ++rCounter;
 							avgReadLenMutex.unlock();
 							once_seen.erase(rp.first.id);
+						}
+						else if (decision == 2)
+						{
+							once_seen.erase(rp.first.id);
+							rp.first.unblock = false;
+							action_queue.push(rp);
+							TargetReads.push(read);
+
+							avgReadLenMutex.lock();
+							avgReadLen += ((double)read.getReadLength() - avgReadLen) / (double) ++rCounter;
+							avgReadLenMutex.unlock();
 						}
 						else
 						{

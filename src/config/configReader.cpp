@@ -370,7 +370,7 @@ void ConfigReader::readMinKNOW(){
         MinKNOW_Parsed.host = toml::find_or<std::string>(MinKNOW, "host", "127.0.0.1");
         MinKNOW_Parsed.port = toml::find_or<std::string>(MinKNOW, "port", "9501");
         std::vector<int> channels = toml::find_or<std::vector<int>>(MinKNOW, "channels", std::vector<int>{});
-        MinKNOW_Parsed.token_path = toml::find<std::string>(MinKNOW, "token_path");
+        MinKNOW_Parsed.token_path = toml::find_or<std::string>(MinKNOW, "token_path", "");
         if (channels.size() == 2)
         {
             MinKNOW_Parsed.minChannel = (uint16_t) channels[0];
