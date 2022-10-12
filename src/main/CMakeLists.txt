@@ -13,7 +13,7 @@ file(GLOB MAIN_HDRS "*.hpp")
 add_executable (${PROJECT_NAME} ${MAIN_HDRS} ${Main_SRC})
 #find_package (Threads)
 
-#add_test(NAME example_test COMMAND ${PROJECT_NAME})
+add_test(NAME example_test COMMAND ${PROJECT_NAME})
 
 # include spd fast logging
 set(spdlog_DIR ${CMAKE_CURRENT_BINARY_DIR}/../spdlog/spdlog/lib/cmake/spdlog)
