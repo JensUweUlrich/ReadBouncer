@@ -3,6 +3,7 @@
 #include "configReader.hpp"
 #include <algorithm>
 
+// @TODO rewrite all tests
 
 class ConfigReaderTest: public ::testing::Test
 {
@@ -47,6 +48,7 @@ TEST_F(ConfigReaderTest, TestConfigReaderConstructur)
 {
     std::cout<<'\n';
     std::cout << "Testing ConfigReaderConstructur......................................" << '\n';
+    std::cout << "GMock......................................" << '\n';
     std::cout<<'\n';
     // check if file exists
     EXPECT_TRUE(std::filesystem::exists(tomlF));

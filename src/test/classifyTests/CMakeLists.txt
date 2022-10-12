@@ -24,3 +24,5 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 #target_link_libraries(classifyTest sdsl seqan IBF interfaces gmock_main)
 target_link_libraries(classifyTest IBF config ReadUntil Guppy spdlog::spdlog_header_only gmock_main)
 install(TARGETS classifyTest DESTINATION bin COMPONENT applications)
+
+#fatal error C1083: Cannot open include file: 'sys/time.h': No such file or directory
