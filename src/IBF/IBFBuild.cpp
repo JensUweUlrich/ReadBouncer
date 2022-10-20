@@ -1,6 +1,10 @@
 
 #include "IBF.hpp"
 
+
+//TODO: rewrite the test methods without using any secondary test variables inside the productive methods
+
+
 namespace interleave
 {
     std::filesystem::path IbfClassificationLog{};

@@ -19,6 +19,12 @@ endif()
 add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
                  ${CMAKE_CURRENT_BINARY_DIR}/googletest-build)
 
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/test_toml_file.toml
+     DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
+ # Use this command only if you want to change the toml file during the tests, otherwise keep the previous one with "file()"
+#configure_file(${CMAKE_CURRENT_SOURCE_DIR}/test_toml_file.toml
+#    ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 
 # include SafeQueue and StopClock
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../util" "${CMAKE_CURRENT_SOURCE_DIR}/../interfaces")

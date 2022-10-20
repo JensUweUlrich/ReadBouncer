@@ -14,12 +14,16 @@ class ConfigReaderTest: public ::testing::Test
 		// prepare the objects for each test.
 		void SetUp() override
 		{
-			config = new ConfigReader("/mnt/c/bug29/readbouncer/config.toml");
+            //tomlF = "C:/gTest/VS/ReadBouncer/src/test/test_toml_file.toml";
+            tomlF = "./../../test_toml_file.toml";
+			config = new ConfigReader(tomlF.string());
 
-            std::filesystem::path path = "/mnt/c/bug29/readbouncer/config.toml";
-            tomlF /= path;
-            std::ifstream tomlFileReadBouncer(path, std::ios_base::binary);
-            configurationSet = toml::parse(tomlFileReadBouncer, /*optional -> */ path.string());
+            //std::filesystem::path path = "C:/gTest/VS/ReadBouncer/src/test/";
+            //tomlF /= path;
+            std::ifstream tomlFileReadBouncer(tomlF, std::ios_base::binary);
+            configurationSet = toml::parse(tomlFileReadBouncer, /*optional -> */ tomlF.string());
+            //config->configuration_ = toml::parse(tomlFileReadBouncer, /*optional -> */ path.string());
+
 			
 		}
         // release any resources we allocated in SetUp()
@@ -29,7 +33,6 @@ class ConfigReaderTest: public ::testing::Test
 		}
 
     public:
-
      toml::basic_value<struct toml::discard_comments, std::unordered_map, std::vector> configurationSet;
      std::filesystem::path tomlF, log, output; 
      std::string subcommand;
@@ -44,38 +47,42 @@ class ConfigReaderTest: public ::testing::Test
 * @TEST_F writing two or more tests that operate on similar data
 */
 
-TEST_F(ConfigReaderTest, TestConfigReaderConstructur)
+TEST_F(ConfigReaderTest, ConfigReaderConstructurTest)
 {
     std::cout<<'\n';
-    std::cout << "Testing ConfigReaderConstructur......................................" << '\n';
-    std::cout << "GMock......................................" << '\n';
+    std::cout << "Testing ConfigReader Constructur......................................" << '\n';
     std::cout<<'\n';
-    // check if file exists
-    EXPECT_TRUE(std::filesystem::exists(tomlF));
 
-	EXPECT_EQ(config->configuration_, configurationSet);
+    EXPECT_TRUE(std::filesystem::exists(tomlF));
+	EXPECT_EQ(config->configuration_, configurationSet); // check if the loaded configurations are same
+
+    log = toml::find<std::string>(configurationSet, "log_directory"); // testing class
 
 }
 
 /*
 * Test parsing [General] from config.toml 
 */
-TEST_F(ConfigReaderTest, TestParseGeneral)
+
+TEST_F(ConfigReaderTest, ParseGeneralTest)
 {
     config->parse_general();
 
-    log        = toml::find<std::string>(configurationSet, "log_directory");
-    output     = toml::find<std::string>(configurationSet, "output_directory");
-    subcommand = toml::find<std::string>(configurationSet, "usage");
+    log        = toml::find<std::string>(configurationSet, "log_directory"); // testing class
+    output     = toml::find<std::string>(configurationSet, "output_directory"); // testing class
+    subcommand = toml::find<std::string>(configurationSet, "usage"); // testing class
+
+    std::cout << "subcommand: " << subcommand << '\n';
 
     std::cout<<'\n';
     std::cout << "Testing parse_general......................................" << '\n';
     std::cout<<'\n';
 
     // Test if toml::find acutally parses correctly! 
-    EXPECT_EQ("RB_out/logs", log);// Nonfatal assertion to check afterwards if ConfigReader throws an exception at this point! 
-    EXPECT_EQ("RB_out", output);
+    EXPECT_EQ("log_tests", log);// Nonfatal assertion to check afterwards if ConfigReader throws an exception at this point! 
+    EXPECT_EQ("output_tests", output);
 
+    // Breaking point of testing file
     if(subcommand == "build" || subcommand == "test" || subcommand == "classify" || subcommand == "target"){
 
         SUCCEED();
@@ -83,14 +90,16 @@ TEST_F(ConfigReaderTest, TestParseGeneral)
 
     else{
 
+        std::cerr << "This test failed due to the changes in the used commands [build, target, classify, test]" << '\n';
         FAIL(); 
     }
 
-
+    // Testing configReader parsing process
 	EXPECT_EQ(config->log_dir, log);// Nonfatal assertion to check afterwards if ConfigReader throws an exception at this point! 
     EXPECT_EQ(config->output_dir, output);
     EXPECT_EQ(config->usage, subcommand);
 
+    // If any test fails! Expect an throw exception from configReader lib as ConfigReaderException
     if (Test::HasFailure()){
         
         EXPECT_THROW(config->parse_general(),ConfigReaderException);// Does ConfigReader throws exception? 
@@ -104,7 +113,7 @@ TEST_F(ConfigReaderTest, TestParseGeneral)
 
 /*
 * Test writing the correct path/to/configLog.toml file  
-*/
+
 
 TEST_F(ConfigReaderTest, TestCreateLog){
 
@@ -123,11 +132,11 @@ TEST_F(ConfigReaderTest, TestCreateLog){
 
         FAIL();
     }
-}
+}*/
 
 /*
 * Testparse function from ConfigReader class
-*/
+
 
 TEST_F(ConfigReaderTest, TestParse)
 {
@@ -210,11 +219,11 @@ TEST_F(ConfigReaderTest, TestParse)
     } 
 
 
-}
+}*/
 
 /*
 * Struct equality [IBF]
-*/
+
 
 TEST_F(ConfigReaderTest, TestIBFStruct){ 
 
@@ -250,11 +259,11 @@ TEST_F(ConfigReaderTest, TestIBFStruct){
     EXPECT_EQ(IBF_Struct_Test_.error_rate, config->IBF_Parsed.error_rate); 
     EXPECT_EQ(IBF_Struct_Test_.chunk_length, config->IBF_Parsed.chunk_length); 
     EXPECT_EQ(IBF_Struct_Test_.max_chunks, config->IBF_Parsed.max_chunks); 
-}
+}*/
 
 /*
 * Struct equality [MinKNOW]
-*/
+
 
 TEST_F(ConfigReaderTest, TestMinKNOWStruct){ 
 
@@ -281,11 +290,11 @@ TEST_F(ConfigReaderTest, TestMinKNOWStruct){
    EXPECT_EQ(MinKNOW_Struct_Test_.minChannel, config->MinKNOW_Parsed.minChannel);
    EXPECT_EQ(MinKNOW_Struct_Test_.maxChannel, config->MinKNOW_Parsed.maxChannel);
 
-}
+}*/
 
 /*
 * Struct equality [IBaseCaller]
-*/
+
 
 TEST_F(ConfigReaderTest, TestBaseCallerStruct){ 
 
@@ -312,7 +321,7 @@ TEST_F(ConfigReaderTest, TestBaseCallerStruct){
    EXPECT_EQ(Basecaller_Struct_Test_.basecall_threads, config->Basecaller_Parsed.basecall_threads);
    EXPECT_EQ(Basecaller_Struct_Test_.guppy_config, config->Basecaller_Parsed.guppy_config);
 
-}
+}*/
 
 
 int main(int argc, char** argv)
