@@ -14,7 +14,7 @@ class ConfigReaderTest: public ::testing::Test
 		// prepare the objects for each test.
 		void SetUp() override
 		{
-            tomlF = "./../test_toml_file.toml";
+            tomlF = "./test_toml_file.toml";
 			config = new ConfigReader(tomlF.string());
 
             std::ifstream tomlFileReadBouncer(tomlF, std::ios_base::binary);
@@ -109,9 +109,9 @@ TEST_F(ConfigReaderTest, ParseTest)
    EXPECT_EQ(360, config->IBF_Parsed.chunk_length); 
    EXPECT_EQ(1, config->IBF_Parsed.max_chunks); 
 
-   std::vector<std::filesystem::path> target_files = { "./../target_test1.fasta", "./../target_test2.fasta" };
-   std::vector<std::filesystem::path> deplete_files = { "./../deplete_test1.fasta", "./../deplete_test2.fasta" };
-   std::vector<std::filesystem::path> reads = {"./../reads_test.fastq"};
+   std::vector<std::filesystem::path> target_files = { "./target_test1.fasta", "./target_test2.fasta" };
+   std::vector<std::filesystem::path> deplete_files = { "./deplete_test1.fasta", "./deplete_test2.fasta" };
+   std::vector<std::filesystem::path> reads = {"./reads_test.fastq"};
 
    EXPECT_EQ(target_files, config->IBF_Parsed.target_files);
    EXPECT_EQ(deplete_files, config->IBF_Parsed.deplete_files);
@@ -157,9 +157,9 @@ TEST_F(ConfigReaderTest, IBFStructTest){
         int size_k = 15;
         int fragment_size = 100000;
         int threads = 3;
-        std::vector<std::filesystem::path> target_files = { "./../target_test1.fasta", "./../target_test2.fasta" };
-        std::vector<std::filesystem::path> deplete_files = { "./../deplete_test1.fasta", "./../deplete_test2.fasta" };
-        std::vector<std::filesystem::path> reads = { "./../reads_test.fastq" };
+        std::vector<std::filesystem::path> target_files = { "./target_test1.fasta", "./target_test2.fasta" };
+        std::vector<std::filesystem::path> deplete_files = { "./deplete_test1.fasta", "./deplete_test2.fasta" };
+        std::vector<std::filesystem::path> reads = { "./reads_test.fastq" };
         double error_rate = 0.1;
         int chunk_length = 360;
         int max_chunks = 1;
