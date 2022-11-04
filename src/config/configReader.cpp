@@ -120,11 +120,11 @@ void ConfigReader::createLog(std::string& usage){
 
          tbl = toml::value{ {
 		{usage, toml::table{{
+                { "kmer_size", IBF_Parsed.size_k },
+                { "fragment_size", IBF_Parsed.fragment_size},
+                { "threads", IBF_Parsed.threads },
 				{ "target_files", target_files},
-				{ "deplete_files", deplete_files},
-				{ "kmer-size", IBF_Parsed.size_k },
-				{ "threads", IBF_Parsed.threads },
-				{ "fragment-size", IBF_Parsed.fragment_size}
+				{ "deplete_files", deplete_files}
 				 }}
 				},
 		} };
@@ -138,13 +138,12 @@ void ConfigReader::createLog(std::string& usage){
 				{ "target_files", target_files},
 				{ "deplete_files", deplete_files},
                 { "read_files", read_files},
-				{ "kmer-size", IBF_Parsed.size_k },
+				{ "kmer_size", IBF_Parsed.size_k },
 				{ "threads", IBF_Parsed.threads },
-				{ "fragment-size", IBF_Parsed.fragment_size},
+				{ "fragment_size", IBF_Parsed.fragment_size},
                 { "exp_seq_error_rate", IBF_Parsed.error_rate},
                 { "chunk_length", IBF_Parsed.chunk_length},
-                { "max_chunks", IBF_Parsed.max_chunks},
-                
+                { "max_chunks", IBF_Parsed.max_chunks},    
 				 }}
 				},
 		} };
@@ -156,21 +155,22 @@ void ConfigReader::createLog(std::string& usage){
 		{usage, toml::table{{
 				{ "target_files", target_files},
 				{ "deplete_files", deplete_files},
-				{ "kmer-size", IBF_Parsed.size_k },
+				{ "kmer_size", IBF_Parsed.size_k },
 				{ "threads", IBF_Parsed.threads },
-				{ "fragment-size", IBF_Parsed.fragment_size},
+				{ "fragment_size", IBF_Parsed.fragment_size},
                 { "exp_seq_error_rate", IBF_Parsed.error_rate},
-                {"host" , MinKNOW_Parsed.host},
-                {"port" , MinKNOW_Parsed.port},
-                {"flowcell" , MinKNOW_Parsed.flowcell},
-                {"MinChannel", MinKNOW_Parsed.minChannel},
-                {"MaxChannel", MinKNOW_Parsed.maxChannel},
-                {"caller", Basecaller_Parsed.caller},
-                {"GuppyConfig", Basecaller_Parsed.guppy_config},
-                {"host", Basecaller_Parsed.guppy_host},
-                {"port", Basecaller_Parsed.guppy_port},
-                {"threads", Basecaller_Parsed.basecall_threads},
-                
+                { "host" , MinKNOW_Parsed.host},
+                { "port" , MinKNOW_Parsed.port},
+                { "flowcell" , MinKNOW_Parsed.flowcell},
+                { "token_path" , MinKNOW_Parsed.token_path.string()},
+                { "MinChannel", MinKNOW_Parsed.minChannel},
+                { "MaxChannel", MinKNOW_Parsed.maxChannel},
+                { "caller", Basecaller_Parsed.caller},
+                { "GuppyConfig", Basecaller_Parsed.guppy_config},
+                { "caller_host", Basecaller_Parsed.guppy_host},
+                { "caller_port", Basecaller_Parsed.guppy_port},
+                { "config", Basecaller_Parsed.guppy_config},
+                { "Basecaller_threads", Basecaller_Parsed.basecall_threads}, 
 				 }}
 				},
 		} };
@@ -179,9 +179,10 @@ void ConfigReader::createLog(std::string& usage){
 
          tbl = toml::value{ {
 		{usage, toml::table{{
-                {"host" , MinKNOW_Parsed.host},
-                {"port" , MinKNOW_Parsed.port},
-                {"flowcell" , MinKNOW_Parsed.flowcell},
+                { "host" , MinKNOW_Parsed.host},
+                { "port" , MinKNOW_Parsed.port},
+                { "flowcell" , MinKNOW_Parsed.flowcell},
+                { "token_path" , MinKNOW_Parsed.token_path.string()},
 				 }}
 				},
 		} };
@@ -195,7 +196,7 @@ void ConfigReader::createLog(std::string& usage){
 	std::time_t end_time = std::chrono::system_clock::to_time_t(end);
 
 	outputLog << "#Computation time: " << std::ctime(&end_time) << '\n';
-	outputLog << toml::format(tbl) << '\n';
+	outputLog << std::fixed << toml::format(tbl) << '\n';
 	outputLog.close();
 }
 

@@ -167,7 +167,6 @@ TEST_F(ConfigReaderTest, IBFStructTest){
 
     
     EXPECT_EQ(IBFTestStruct_.size_k, config->IBF_Parsed.size_k);
-    EXPECT_EQ(IBFTestStruct_.fragment_size, config->IBF_Parsed.fragment_size);
     EXPECT_EQ(IBFTestStruct_.threads, config->IBF_Parsed.threads);
     EXPECT_EQ(IBFTestStruct_.fragment_size, config->IBF_Parsed.fragment_size);
     EXPECT_EQ(IBFTestStruct_.target_files, config->IBF_Parsed.target_files);
@@ -234,26 +233,234 @@ TEST_F(ConfigReaderTest, BaseCallerStructTest){
 }
 
 /*
-* Test writing the correct path/to/configLog.toml file
-
-
-TEST_F(ConfigReaderTest, CreateLogTest){
+* Test writing the correct log file content while using the "build" command
+* TODO: Test table length! (if we add any new items inside the main function!) 
+*/
+TEST_F(ConfigReaderTest, CreateLogIBFTest){
 
     config->parse_general();
     config->parse();
 
-    std::string usage = {"build"};
+    // IBF log
+    std::string usage{ "build" };
     config->createLog(usage);
 
-    if(std::filesystem::exists("configLog.toml")){
+    std::filesystem::path logFile = config->output_dir += "/configLog.toml";
+    toml::basic_value<struct toml::discard_comments, std::unordered_map, std::vector> configurationSetting;
+    std::ifstream tomlLogFile(logFile, std::ios_base::binary);
+    configurationSetting = toml::parse(tomlLogFile, /*optional -> */ logFile.string());
+
+    if (std::filesystem::exists(logFile)) {
 
         SUCCEED();
     }
-    else{
+    else {
 
         FAIL();
     }
-}*/
+
+    int kmer_size = toml::find<int>(configurationSetting, "build", "kmer_size");
+    int fragment_size = toml::find<int>(configurationSetting, "build", "fragment_size");
+    int threads =  toml::find<int>(configurationSetting, "build", "threads");
+
+    std::vector<std::filesystem::path> target_files, deplete_files;
+    std::vector<std::string> target_files_tmp = toml::find<std::vector<std::string>>(configurationSetting, "build", "target_files");
+    std::vector<std::string> deplete_files_tmp = toml::find<std::vector<std::string>>(configurationSetting, "build", "deplete_files");
+
+    for (std::string s : target_files_tmp) target_files.emplace_back((std::filesystem::path(s)).make_preferred());
+    for (std::string s : deplete_files_tmp) deplete_files.emplace_back((std::filesystem::path(s)).make_preferred());
+    
+    std::vector<std::filesystem::path> target_files_test = { "./target_test1.fasta", "./target_test2.fasta" };
+    std::vector<std::filesystem::path> deplete_files_test = { "./deplete_test1.fasta", "./deplete_test2.fasta" };
+    
+    EXPECT_EQ(kmer_size, 15);
+    EXPECT_EQ(fragment_size, 100000);
+    EXPECT_EQ(threads, 3);
+    EXPECT_EQ(target_files, target_files_test);
+    EXPECT_EQ(deplete_files, deplete_files_test);
+
+}
+
+
+/*
+* Test writing the correct log file content while using the "classify" command
+* TODO: Test table length! (if we add any new items inside the main function!) 
+*/
+TEST_F(ConfigReaderTest, CreateLogClassifyTest) {
+
+    config->parse_general();
+    config->parse();
+
+    std::string usage{ "classify" };
+    config->createLog(usage);
+
+    std::filesystem::path logFile = config->output_dir += "/configLog.toml";
+    toml::basic_value<struct toml::discard_comments, std::unordered_map, std::vector> configurationSetting;
+    std::ifstream tomlLogFile(logFile, std::ios_base::binary);
+    configurationSetting = toml::parse(tomlLogFile, /*optional -> */ logFile.string());
+
+    if (std::filesystem::exists(logFile)) {
+
+        SUCCEED();
+    }
+    else {
+
+        FAIL();
+    }
+
+    int kmer_size = toml::find<int>(configurationSetting, "classify", "kmer_size");
+    int fragment_size = toml::find<int>(configurationSetting, "classify", "fragment_size");
+    int threads = toml::find<int>(configurationSetting, "classify", "threads");
+    double exp_seq_error_rate = toml::find<double>(configurationSetting, "classify", "exp_seq_error_rate");
+    int chunk_length = toml::find<int>(configurationSetting, "classify", "chunk_length");
+    int max_chunks = toml::find<int>(configurationSetting, "classify", "max_chunks");
+
+    std::vector<std::filesystem::path> target_files, deplete_files, read_files;
+    std::vector<std::string> target_files_tmp = toml::find<std::vector<std::string>>(configurationSetting, "classify", "target_files");
+    std::vector<std::string> deplete_files_tmp = toml::find<std::vector<std::string>>(configurationSetting, "classify", "deplete_files");
+    std::vector<std::string> read_files_tmp = toml::find<std::vector<std::string>>(configurationSetting, "classify", "read_files");
+
+    for (std::string s : target_files_tmp) target_files.emplace_back((std::filesystem::path(s)).make_preferred());
+    for (std::string s : deplete_files_tmp) deplete_files.emplace_back((std::filesystem::path(s)).make_preferred());
+    for (std::string s : read_files_tmp) read_files.emplace_back((std::filesystem::path(s)).make_preferred());
+
+    std::vector<std::filesystem::path> target_files_test = { "./target_test1.fasta", "./target_test2.fasta" };
+    std::vector<std::filesystem::path> deplete_files_test = { "./deplete_test1.fasta", "./deplete_test2.fasta" };
+    std::vector<std::filesystem::path> read_files_test = { "./reads_test.fastq" };
+
+    EXPECT_EQ(kmer_size, 15);
+    EXPECT_EQ(fragment_size, 100000);
+    EXPECT_EQ(threads, 3);
+    EXPECT_EQ(exp_seq_error_rate, 0.1);// not fixed value! 
+    EXPECT_EQ(chunk_length, 360);
+    EXPECT_EQ(max_chunks, 1);
+    EXPECT_EQ(target_files, target_files_test);
+    EXPECT_EQ(deplete_files, deplete_files_test);
+    EXPECT_EQ(read_files, read_files_test);
+
+}
+
+
+/*
+* Test writing the correct log file content while using the "target" command
+* TODO: Test table length! (if we add any new items inside the main function!) 
+*/
+TEST_F(ConfigReaderTest, CreateLogTargetTest) {
+
+    config->parse_general();
+    config->parse();
+
+    std::string usage{ "target" };
+    config->createLog(usage);
+
+    std::filesystem::path logFile = config->output_dir += "/configLog.toml";
+    toml::basic_value<struct toml::discard_comments, std::unordered_map, std::vector> configurationSetting;
+    std::ifstream tomlLogFile(logFile, std::ios_base::binary);
+    configurationSetting = toml::parse(tomlLogFile, /*optional -> */ logFile.string());
+
+    if (std::filesystem::exists(logFile)) {
+
+        SUCCEED();
+    }
+    else {
+
+        FAIL();
+    }
+
+    int kmer_size = toml::find<int>(configurationSetting, "target", "kmer_size");
+    int fragment_size = toml::find<int>(configurationSetting, "target", "fragment_size");
+    int threads = toml::find<int>(configurationSetting, "target", "threads");
+    int basecaller_threads = toml::find<int>(configurationSetting, "target", "Basecaller_threads");
+    double exp_seq_error_rate = toml::find<double>(configurationSetting, "target", "exp_seq_error_rate");
+
+    uint16_t MinChannel = toml::find<uint16_t>(configurationSetting, "target", "MinChannel");
+    uint16_t MaxChannel = toml::find<uint16_t>(configurationSetting, "target", "MaxChannel");
+
+    std::string host = toml::find<std::string>(configurationSetting, "target", "host");
+    std::string port = toml::find<std::string>(configurationSetting, "target", "port");
+    std::string flowcell = toml::find<std::string>(configurationSetting, "target", "flowcell");
+    std::string token_path = toml::find<std::string>(configurationSetting, "target", "token_path");
+
+    std::string caller = toml::find<std::string>(configurationSetting, "target", "caller");
+    std::string caller_host = toml::find<std::string>(configurationSetting, "target", "caller_host");
+    std::string caller_port = toml::find<std::string>(configurationSetting, "target", "caller_port");
+    std::string config = toml::find<std::string>(configurationSetting, "target", "GuppyConfig");
+
+    std::vector<std::filesystem::path> target_files, deplete_files, read_files;
+    std::vector<std::string> target_files_tmp = toml::find<std::vector<std::string>>(configurationSetting, "target", "target_files");
+    std::vector<std::string> deplete_files_tmp = toml::find<std::vector<std::string>>(configurationSetting, "target", "deplete_files");
+
+    for (std::string s : target_files_tmp) target_files.emplace_back((std::filesystem::path(s)).make_preferred());
+    for (std::string s : deplete_files_tmp) deplete_files.emplace_back((std::filesystem::path(s)).make_preferred());
+
+    std::vector<std::filesystem::path> target_files_test = { "./target_test1.fasta", "./target_test2.fasta" };
+    std::vector<std::filesystem::path> deplete_files_test = { "./deplete_test1.fasta", "./deplete_test2.fasta" };
+
+    
+    EXPECT_EQ(kmer_size, 15);
+    EXPECT_EQ(fragment_size, 100000);
+    EXPECT_EQ(threads, 3);
+    EXPECT_EQ(basecaller_threads, 3);
+    EXPECT_EQ(exp_seq_error_rate, 0.1);
+    EXPECT_EQ(MinChannel, 1);
+    EXPECT_EQ(MaxChannel, 512);
+    EXPECT_EQ(host, "localhost");
+    EXPECT_EQ(port, "9502");
+    EXPECT_EQ(flowcell, "MS00000");
+    EXPECT_EQ(token_path, "test/tmp/minknow-auth-token.json");
+    EXPECT_EQ(caller, "DeepNano");
+    EXPECT_EQ(caller_host, "127.0.0.1");
+    EXPECT_EQ(caller_port, "9502");
+    EXPECT_EQ(config, "dna_r9.4.1_450bps_fast");
+    EXPECT_EQ(basecaller_threads, 3);
+    EXPECT_EQ(target_files, target_files_test);
+    EXPECT_EQ(deplete_files, deplete_files_test);
+
+
+
+}
+
+
+/*
+* Test writing the correct log file content while using the "test" command
+* TODO: Test table length! (if we add any new items inside the main function!) 
+*/
+TEST_F(ConfigReaderTest, CreateLogConnectionTestTest) {
+
+    config->parse_general();
+    config->parse();
+
+    std::string usage{ "test" };
+    config->createLog(usage);
+
+    std::filesystem::path logFile = config->output_dir += "/configLog.toml";
+    toml::basic_value<struct toml::discard_comments, std::unordered_map, std::vector> configurationSetting;
+    std::ifstream tomlLogFile(logFile, std::ios_base::binary);
+    configurationSetting = toml::parse(tomlLogFile, /*optional -> */ logFile.string());
+
+    //std::cout << "Size of setting: " << configurationSetting.size() << std::endl;
+    if (std::filesystem::exists(logFile)) {
+
+        SUCCEED();
+    }
+    else {
+
+        FAIL();
+    }
+
+    std::string host = toml::find<std::string>(configurationSetting, "test", "host");
+    std::string port = toml::find<std::string>(configurationSetting, "test", "port");
+    std::string flowcell = toml::find<std::string>(configurationSetting, "test", "flowcell");
+    std::string token_path = toml::find<std::string>(configurationSetting, "test", "token_path");
+
+    EXPECT_EQ(host, "localhost");
+    EXPECT_EQ(port, "9502");
+    EXPECT_EQ(flowcell, "MS00000");
+    EXPECT_EQ(token_path, "test/tmp/minknow-auth-token.json");
+
+    // Creating new empty file in order to avoid having the same table twice 
+    std::ofstream file(logFile.string());
+}
 
 
 int main(int argc, char** argv)
