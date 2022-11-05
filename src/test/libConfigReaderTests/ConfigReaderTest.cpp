@@ -234,7 +234,6 @@ TEST_F(ConfigReaderTest, BaseCallerStructTest){
 
 /*
 * Test writing the correct log file content while using the "build" command
-* TODO: Test table length! (if we add any new items inside the main function!) 
 */
 TEST_F(ConfigReaderTest, CreateLogIBFTest){
 
@@ -273,6 +272,15 @@ TEST_F(ConfigReaderTest, CreateLogIBFTest){
     std::vector<std::filesystem::path> target_files_test = { "./target_test1.fasta", "./target_test2.fasta" };
     std::vector<std::filesystem::path> deplete_files_test = { "./deplete_test1.fasta", "./deplete_test2.fasta" };
     
+    // Check tha parsed table size! any changes will break all tests! 
+    toml::value tbl = toml::find<toml::value>(configurationSetting, "build");
+
+    if (tbl.size() != 5) {
+
+        std::cerr << "[ERROR] the expected content of build command is 5, please check the productive method! " << std::endl;
+    }
+
+    ASSERT_EQ(tbl.size(), 5);
     EXPECT_EQ(kmer_size, 15);
     EXPECT_EQ(fragment_size, 100000);
     EXPECT_EQ(threads, 3);
@@ -284,7 +292,6 @@ TEST_F(ConfigReaderTest, CreateLogIBFTest){
 
 /*
 * Test writing the correct log file content while using the "classify" command
-* TODO: Test table length! (if we add any new items inside the main function!) 
 */
 TEST_F(ConfigReaderTest, CreateLogClassifyTest) {
 
@@ -328,6 +335,15 @@ TEST_F(ConfigReaderTest, CreateLogClassifyTest) {
     std::vector<std::filesystem::path> deplete_files_test = { "./deplete_test1.fasta", "./deplete_test2.fasta" };
     std::vector<std::filesystem::path> read_files_test = { "./reads_test.fastq" };
 
+    // Check tha parsed table size! any changes will break all tests! 
+    toml::value tbl = toml::find<toml::value>(configurationSetting, "classify");
+
+    if (tbl.size() != 9) {
+
+        std::cerr << "[ERROR] the expected content of classify command is 9, please check the productive method! " << std::endl;
+    }
+
+    ASSERT_EQ(tbl.size(), 9);
     EXPECT_EQ(kmer_size, 15);
     EXPECT_EQ(fragment_size, 100000);
     EXPECT_EQ(threads, 3);
@@ -343,7 +359,6 @@ TEST_F(ConfigReaderTest, CreateLogClassifyTest) {
 
 /*
 * Test writing the correct log file content while using the "target" command
-* TODO: Test table length! (if we add any new items inside the main function!) 
 */
 TEST_F(ConfigReaderTest, CreateLogTargetTest) {
 
@@ -396,7 +411,15 @@ TEST_F(ConfigReaderTest, CreateLogTargetTest) {
     std::vector<std::filesystem::path> target_files_test = { "./target_test1.fasta", "./target_test2.fasta" };
     std::vector<std::filesystem::path> deplete_files_test = { "./deplete_test1.fasta", "./deplete_test2.fasta" };
 
-    
+    // Check tha parsed table size! any changes will break all tests! 
+    toml::value tbl = toml::find<toml::value>(configurationSetting, "target");
+
+    if (tbl.size() != 18) {
+
+        std::cerr << "[ERROR] the expected content of target command is 18, please check the productive method! " << std::endl;
+    }
+
+    ASSERT_EQ(tbl.size(), 18);
     EXPECT_EQ(kmer_size, 15);
     EXPECT_EQ(fragment_size, 100000);
     EXPECT_EQ(threads, 3);
@@ -423,7 +446,6 @@ TEST_F(ConfigReaderTest, CreateLogTargetTest) {
 
 /*
 * Test writing the correct log file content while using the "test" command
-* TODO: Test table length! (if we add any new items inside the main function!) 
 */
 TEST_F(ConfigReaderTest, CreateLogConnectionTestTest) {
 
@@ -453,6 +475,15 @@ TEST_F(ConfigReaderTest, CreateLogConnectionTestTest) {
     std::string flowcell = toml::find<std::string>(configurationSetting, "test", "flowcell");
     std::string token_path = toml::find<std::string>(configurationSetting, "test", "token_path");
 
+    // Check tha parsed table size! any changes will break all tests! 
+    toml::value tbl = toml::find<toml::value>(configurationSetting, "test");
+
+    if (tbl.size() != 4) {
+
+        std::cerr << "[ERROR] the expected content of test command is 4, please check the productive method! " << std::endl;
+    }
+
+    ASSERT_EQ(tbl.size(), 4);
     EXPECT_EQ(host, "localhost");
     EXPECT_EQ(port, "9502");
     EXPECT_EQ(flowcell, "MS00000");

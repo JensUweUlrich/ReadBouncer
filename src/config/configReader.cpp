@@ -124,7 +124,7 @@ void ConfigReader::createLog(std::string& usage){
                 { "fragment_size", IBF_Parsed.fragment_size},
                 { "threads", IBF_Parsed.threads },
 				{ "target_files", target_files},
-				{ "deplete_files", deplete_files}
+				{ "deplete_files", deplete_files},
 				 }}
 				},
 		} };
@@ -143,7 +143,7 @@ void ConfigReader::createLog(std::string& usage){
 				{ "fragment_size", IBF_Parsed.fragment_size},
                 { "exp_seq_error_rate", IBF_Parsed.error_rate},
                 { "chunk_length", IBF_Parsed.chunk_length},
-                { "max_chunks", IBF_Parsed.max_chunks},    
+                { "max_chunks", IBF_Parsed.max_chunks},
 				 }}
 				},
 		} };
