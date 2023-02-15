@@ -33,7 +33,7 @@ ReadBouncer is a nanopore adaptive sampling tool for Windows and Linux (x64 or A
 
 ### <a name="install"></a>Installation
 
-The easiest way is to download the provided installer files for [Windows](https://github.com/JensUweUlrich/ReadBouncer/releases/download/v1.1.1/ReadBouncer-1.1.1-win64.exe), [Linux x86_64](https://github.com/JensUweUlrich/ReadBouncer/releases/download/v1.1.1/ReadBouncer-1.1.1-Linux_x64.tar.gz) or [Linux arm64](https://github.com/JensUweUlrich/ReadBouncer/releases/download/v1.1.1/ReadBouncer-1.1.1-Linux_arm64.tar.gz) and simply click through the installation process. 
+The easiest way is to download the provided installer files for [Windows](https://github.com/JensUweUlrich/ReadBouncer/releases/download/v1.2.2/ReadBouncer-1.2.2-win64.exe), [Linux x86_64](https://github.com/JensUweUlrich/ReadBouncer/releases/download/v1.2.2/ReadBouncer-1.2.2-Linux_x64.tar.gz) or [Linux arm64](https://github.com/JensUweUlrich/ReadBouncer/releases/download/v1.2.2/ReadBouncer-1.2.2-Linux_arm64.tar.gz) and simply click through the installation process. 
 
 ### <a name="compile"></a>Compilation From Source
 
@@ -63,7 +63,7 @@ cmake.exe  ..\src
 cmake.exe --build . --config Release
 cmake.exe --build . --config Release --target package
 ```
-The last step creates the <b>ReadBouncer-1.1.1-win64.exe</b> within the build directory, which is a simple installer for Windows that leads you through the installation process.
+The last step creates the <b>ReadBouncer-1.2.2-win64.exe</b> within the build directory, which is a simple installer for Windows that leads you through the installation process.
 
 #### <a name="linuxcompile"></a>Compilation on Linux
 
@@ -78,7 +78,7 @@ cmake  ../src
 cmake --build . --config Release
 cmake --build . --config Release --target package
 ```
-The last step creates the <b>ReadBouncer-1.1.1-Linux.sh</b> within the build directory, which is a simple command line installer for Linux that leads you through the installation process. You can also skip the last `cmake` step and just call `sudo make install`, which installs ReadBouncer in your `/usr/local/` directory. 
+The last step creates the <b>ReadBouncer-1.2.2-Linux.sh</b> within the build directory, which is a simple command line installer for Linux that leads you through the installation process. You can also skip the last `cmake` step and just call `sudo make install`, which installs ReadBouncer in your `/usr/local/` directory. 
 
 
 ### <a name="general"></a>General usage
