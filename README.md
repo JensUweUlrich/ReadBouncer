@@ -244,7 +244,7 @@ target_files  = ['path/to/reference/file/Bacillus_subtilis_complete_genome.fasta
 deplete_files = ['path/to/reference/file/Saccharomyces_cerevisiae_draft_genome.fasta']
 read_files    = ['path/to/read/file/SampleZMCDataSet.fasta']
 ```
-In this example, we would try to find all reads that match to <i>B.subtilis</i>, <i>E.faecalis</i> and <i>E.coli</i>, but not to <i>S.cerevisiae</i>. You can easily add the other fasta files as well. Now we can start ReadBouncer from the command line using the config.toml file. For testing purposes, you can download a small set of sequenced Zymo Mock community nanopore reads that were basecalled with DeepNano ([sample read set](https://owncloud.hpi.de/s/HFFYsDhbukXBsu4))
+In this example, we would try to find all reads that match to <i>B.subtilis</i>, <i>E.faecalis</i> and <i>E.coli</i>, but not to <i>S.cerevisiae</i>. You can easily add the other fasta files as well. Now we can start ReadBouncer from the command line using the config.toml file. For testing purposes, you can download a small set of sequenced Zymo Mock community nanopore reads that were basecalled with DeepNano ([sample read set](https://www.dropbox.com/s/gh6d9w8e9xgzj2g/SampleZMCDataSet.fasta.gz?dl=0))
 ```
 full\path\to\ReadBouncer\root\directory\bin\ReadBouncer.exe  --config full\path\to\ReadBouncer\config.toml 
 ```
