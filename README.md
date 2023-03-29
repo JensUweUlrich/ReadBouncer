@@ -227,7 +227,7 @@ Name of Guppy's baecalling config used by the guppy_basecall_server. Not require
 #### <a name="classifyreads"></a>Classify already sequenced reads
 Sometimes it can be useful to find all reads of an organism in a set of reads that were already sequenced without aligning the sequences. ReadBouncer offers this functionality by using the `classify` subcommand. The following steps describe how to classify all reads from a Zymo Mock Community to their corresponding reference genome. 
 
-1. Download the reference sequences of the Zymo Mock Community from [here](https://owncloud.hpi.de/s/ZBIf9x6gkEsXb0A) and store it in your working directory.
+1. Download the reference sequences of the Zymo Mock Community from [here]([https://owncloud.hpi.de/s/ZBIf9x6gkEsXb0A](https://www.dropbox.com/s/nyn91zb0wvbgso2/ZMCReferences.zip?dl=0)) and store it in your working directory.
 2. Create a configuration file similar to the following one, providing all necessary parameters, file and directory paths in the config.toml file.
 
 ```
