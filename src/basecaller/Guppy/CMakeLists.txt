@@ -27,7 +27,7 @@ if (WIN32)
 elseif(ARM_BUILD)
   execute_process(COMMAND "${CMAKE_COMMAND}" "-E" "tar" "xvzf" "${CMAKE_CURRENT_SOURCE_DIR}/libGuppyCppClient_linux_arm_64.tar.gz" WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
   set_target_properties(GuppyClient PROPERTIES 
-      IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/libGuppyCppClient_guppy_6.2.a"
+      IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/libGuppyCppClient_guppy_6.4.a"
    )
 else()
   
