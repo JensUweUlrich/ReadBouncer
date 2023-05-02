@@ -42,7 +42,7 @@ else()
       )
   else()
       set_target_properties(GuppyClient PROPERTIES 
-        IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/libGuppyCppClient_guppy_6.2_gcc-10.a"
+        IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/libGuppyCppClient_guppy_6.4_gcc-10.a"
       )
   endif()
 endif()
