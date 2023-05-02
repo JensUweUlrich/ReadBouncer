@@ -22,12 +22,12 @@ add_library(GuppyClient STATIC IMPORTED GLOBAL)
 if (WIN32)
   execute_process(COMMAND "${CMAKE_COMMAND}" "-E" "tar" "xvzf" "${CMAKE_CURRENT_SOURCE_DIR}/GuppyCPPClient.tar.gz" WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})  
   set_target_properties(GuppyClient PROPERTIES 
-      IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/GuppyCPPClient_6.2.lib"
+      IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/GuppyCPPClient_6.4.lib"
    )
 elseif(ARM_BUILD)
   execute_process(COMMAND "${CMAKE_COMMAND}" "-E" "tar" "xvzf" "${CMAKE_CURRENT_SOURCE_DIR}/libGuppyCppClient_linux_arm_64.tar.gz" WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
   set_target_properties(GuppyClient PROPERTIES 
-      IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/libGuppyCppClient_guppy_6.2.a"
+      IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/libGuppyCppClient_guppy_6.4.a"
    )
 else()
   
@@ -42,7 +42,7 @@ else()
       )
   else()
       set_target_properties(GuppyClient PROPERTIES 
-        IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/libGuppyCppClient_guppy_6.2_gcc-10.a"
+        IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/libGuppyCppClient_guppy_6.4_gcc-10.a"
       )
   endif()
 endif()
